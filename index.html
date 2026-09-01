@@ -48,8 +48,21 @@
   <div class="main-container" id="drawing-container">
     <div class="char-tabs" id="char-tabs"></div>
 
-    <div class="box">
-      <canvas id="draw-canvas" width="300" height="300"></canvas>
+    <!-- アンドゥ・キャンバス・リドゥを左右に配置するラッパー -->
+    <div class="canvas-row-wrapper">
+      <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>
+        <span class="history-icon">↶</span>
+        <span class="history-text">1画もどす</span>
+      </button>
+
+      <div class="box">
+        <canvas id="draw-canvas" width="300" height="300"></canvas>
+      </div>
+
+      <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>
+        <span class="history-icon">↷</span>
+        <span class="history-text">1画すすむ</span>
+      </button>
     </div>
 
     <div class="info-panel" id="stroke-info">いまの画数: 0画</div>

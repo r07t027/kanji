@@ -1,12 +1,13 @@
-// 手書きCanvas操作モジュール
+// 手書きCanvas操作モジュール (アンドゥ・リドゥ対応)
 
 export class CanvasController {
-  constructor(canvasEl, onStrokeEndCallback) {
+  constructor(canvasEl, onChangeCallback) {
     this.canvas = canvasEl;
     this.ctx = canvasEl.getContext('2d');
-    this.onStrokeEnd = onStrokeEndCallback;
+    this.onChange = onChangeCallback;
 
     this.strokesData = [];
+    this.redoStack = [];
     this.currentStroke = [];
     this.strokeCount = 0;
     this.isDrawing = false;
@@ -63,9 +64,40 @@ export class CanvasController {
     if (this.currentStroke.length > 0) {
       this.strokesData.push(this.currentStroke);
       this.strokeCount++;
-      if (this.onStrokeEnd) {
-        this.onStrokeEnd(this.strokeCount, this.strokesData);
-      }
+      this.redoStack = [];
+      this._notifyChange();
+    }
+  }
+
+  undo() {
+    if (this.strokesData.length === 0) return;
+    const popped = this.strokesData.pop();
+    this.redoStack.push(popped);
+    this.strokeCount = this.strokesData.length;
+    this.redraw();
+    this._notifyChange();
+  }
+
+  redo() {
+    if (this.redoStack.length === 0) return;
+    const restored = this.redoStack.pop();
+    this.strokesData.push(restored);
+    this.strokeCount = this.strokesData.length;
+    this.redraw();
+    this._notifyChange();
+  }
+
+  canUndo() {
+    return this.strokesData.length > 0;
+  }
+
+  canRedo() {
+    return this.redoStack.length > 0;
+  }
+
+  _notifyChange() {
+    if (this.onChange) {
+      this.onChange(this.strokeCount, this.strokesData, this.canUndo(), this.canRedo());
     }
   }
 
@@ -73,13 +105,17 @@ export class CanvasController {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.strokeCount = 0;
     this.strokesData = [];
+    this.redoStack = [];
+    this._notifyChange();
   }
 
-  loadStrokes(strokesData, strokeCount) {
-    this.clear();
+  loadStrokes(strokesData, strokeCount, redoStack = []) {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.strokesData = [...strokesData];
     this.strokeCount = strokeCount;
+    this.redoStack = [...redoStack];
     this.redraw();
+    this._notifyChange();
   }
 
   redraw() {
@@ -98,7 +134,8 @@ export class CanvasController {
   getData() {
     return {
       strokesData: [...this.strokesData],
-      strokeCount: this.strokeCount
+      strokeCount: this.strokeCount,
+      redoStack: [...this.redoStack]
     };
   }
 }

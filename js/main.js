@@ -15,7 +15,7 @@ class KanjiApp {
     this.ui = new UIController();
     this.canvasController = new CanvasController(
       document.getElementById('draw-canvas'),
-      (strokeCount, strokesData) => this.onStrokeEnd(strokeCount, strokesData)
+      (strokeCount, strokesData, canUndo, canRedo) => this.onCanvasChange(strokeCount, strokesData, canUndo, canRedo)
     );
 
     this.init();
@@ -41,6 +41,32 @@ class KanjiApp {
     document.getElementById('btn-prev').addEventListener('click', () => this.handlePrev());
     document.getElementById('btn-next').addEventListener('click', () => this.handleNext());
     document.getElementById('btn-check').addEventListener('click', () => this.handleCheck());
+
+    // アンドゥ・リドゥボタン
+    document.getElementById('btn-undo').addEventListener('click', () => {
+      this.canvasController.undo();
+    });
+    document.getElementById('btn-redo').addEventListener('click', () => {
+      this.canvasController.redo();
+    });
+
+    // キーボードショートカット (Ctrl+Z / Cmd+Z, Ctrl+Y / Cmd+Shift+Z)
+    window.addEventListener('keydown', (e) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const isModifier = isMac ? e.metaKey : e.ctrlKey;
+
+      if (isModifier && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          this.canvasController.redo();
+        } else {
+          this.canvasController.undo();
+        }
+      } else if (isModifier && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        this.canvasController.redo();
+      }
+    });
   }
 
   getCurrentQuestion() {
@@ -84,7 +110,8 @@ class KanjiApp {
     if (this.userInputs[cIndex]) {
       this.canvasController.loadStrokes(
         this.userInputs[cIndex].strokesData,
-        this.userInputs[cIndex].strokeCount
+        this.userInputs[cIndex].strokeCount,
+        this.userInputs[cIndex].redoStack || []
       );
     } else {
       this.canvasController.clear();
@@ -93,6 +120,7 @@ class KanjiApp {
     const currentCount = this.canvasController.strokeCount;
     this.ui.updateStrokeInfo(currentCount, targetStroke, isOkurigana, cIndex);
     this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars);
+    this.ui.updateHistoryButtons(this.canvasController.canUndo(), this.canvasController.canRedo());
     this.checkButtonState();
 
     this.ui.setMessage(`${cIndex + 1}文字目を書いてね`);
@@ -107,12 +135,13 @@ class KanjiApp {
     }
   }
 
-  onStrokeEnd(strokeCount, strokesData) {
+  onCanvasChange(strokeCount, strokesData, canUndo, canRedo) {
     const q = this.getCurrentQuestion();
     const isOkurigana = (q.type === 'okurigana');
     const targetStroke = (this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
 
     this.ui.updateStrokeInfo(strokeCount, targetStroke, isOkurigana, this.currentCharIndex);
+    this.ui.updateHistoryButtons(canUndo, canRedo);
     this.saveCurrentDrawing();
     this.ui.renderTabs(
       this.userInputs.length,
@@ -155,6 +184,7 @@ class KanjiApp {
     const targetStroke = (this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
 
     this.ui.updateStrokeInfo(0, targetStroke, isOkurigana, this.currentCharIndex);
+    this.ui.updateHistoryButtons(false, false);
     this.ui.renderTabs(
       this.userInputs.length,
       this.currentCharIndex,
@@ -228,28 +258,40 @@ class KanjiApp {
 
         if (!input || input.strokeCount === 0) {
           charResults.push(false);
-          adviceMessages.push(`${i + 1}文字目: 書かれていません`);
+          adviceMessages.push({
+            index: i,
+            type: 'empty',
+            msg: `${i + 1}文字目: 書かれていません`
+          });
           continue;
         }
 
-        // 1. OCR認識チェック（誤字判定を最優先）
+        // 1. OCR認識チェック（誤字判定最優先）
         const candidates = await recognizeChar(input.strokesData);
         const isCharMatched = candidates.slice(0, 4).includes(target.char);
 
         if (!isCharMatched) {
           charResults.push(false);
-          adviceMessages.push(`${i + 1}文字目: ちがう字を書いているかも？（認識: 「${candidates[0] || '？'}」）`);
+          adviceMessages.push({
+            index: i,
+            type: 'char',
+            msg: `${i + 1}文字目: ちがう字を書いているかも？（認識: 「${candidates[0] || '？'}」）`
+          });
           continue;
         }
 
-        // 2. 画数チェック（字形が合っている場合の画数不一致）
+        // 2. 画数チェック
         if (input.strokeCount !== target.strokes) {
           charResults.push(false);
-          adviceMessages.push(`${i + 1}文字目: 画数がちがうよ（目標: ${target.strokes}画 / 入力: ${input.strokeCount}画）`);
+          adviceMessages.push({
+            index: i,
+            type: 'stroke',
+            msg: `${i + 1}文字目: 画数がちがうよ（目標: ${target.strokes}画 / 入力: ${input.strokeCount}画）`
+          });
           continue;
         }
 
-        // OCRも画数も両方一致で正解(◯)
+        // 正解
         charResults.push(true);
       }
 
@@ -280,16 +322,26 @@ class KanjiApp {
       } else {
         playMistakeSound();
 
-        let feedbackMessage = '';
-        if (isOkurigana && !isCountMatched) {
-          feedbackMessage = 'おしい！ 送り仮名がちがうよ。';
+        let feedbackHtml = '';
+
+        if (isOkurigana) {
+          // 送り仮名問題のフィードバック集約:
+          // 1. 1文字目（主漢字）のエラーがある場合 ➔ 1文字目のアドバイスのみ出力
+          const firstCharError = adviceMessages.find(a => a.index === 0);
+          if (firstCharError) {
+            feedbackHtml = firstCharError.msg;
+          } else {
+            // 2. 1文字目が合っている場合 ➔ 「おしい！ 送り仮名がちがうよ。」に集約
+            feedbackHtml = 'おしい！ 送り仮名がちがうよ。';
+          }
         } else {
-          feedbackMessage = adviceMessages.join(' / ');
+          // 通常問題: 全文字のエラーを改行して出力
+          feedbackHtml = adviceMessages.map(a => a.msg).join('<br>');
         }
 
         this.ui.showResultView(
           false,
-          feedbackMessage,
+          feedbackHtml,
           q.targets.map(t => t.char),
           validInputs,
           charResults

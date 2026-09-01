@@ -4,21 +4,25 @@
 ## 1. 全体構造とアーキテクチャ方針
 
 本プロジェクトは、小学校児童向けのタブレット（Chromebook / iPad 等）およびPC環境で動作する **漢字手書き練習Webアプリケーション** です。
-外部ビルドツール（Webpack / Vite 等）を必要とせず、ブラウザ標準の **ES Modules (`import` / `export`)** による疎結合なモジュール設計を採用しています。
+外部ビルドツール（Webpack / Vite 等）を一切使用せず、ブラウザ標準の **ES Modules (`import` / `export`)** による疎結合なモジュール設計を採用しています。
 
 ### 核心設計思想
 
 1. **関心事の完全分離 (SoC / DRY 原則)**:
-   手書き入力制御 (`canvas.js`)、OCR字形認識 (`recognition.js`)、効果音合成・再生 (`audio.js`)、教科書体筆順SVG描画 (`kanjivg.js`)、画面更新 (`ui.js`) を独立したモジュールとして分離し、メインロジック (`main.js`) で統括する。
+   手書き入力制御 (`canvas.js`)、OCR字形認識 (`recognition.js`)、効果音再生 (`audio.js`)、教科書体筆順SVG描画 (`kanjivg.js`)、画面更新 (`ui.js`) を独立したモジュールとして分離し、メインロジック (`main.js`) で統括する。
 2. **問題種別に応じた柔軟な入力・判定制御**:
    * **通常問題 (`normal`)**: 最初から正解文字数分のタブ・マスを用意し、目標画数を案内。
    * **送り仮名問題 (`okurigana`)**: 児童が文字数を推測して解けるよう、1文字目のみ表示からスタートし、動的にタブを追加（最大 `maxChars` まで）。ヒント防止のため2文字目以降は画数案内を非表示化。
 3. **教育的配慮に基づいたUI・フィードバック**:
-   * 日本の文部科学省・筆順指導要領および教科書体に完全準拠した **KanjiVG SVGデータ** を採用。
-   * 正誤判定画面は **「上段: 児童の手書き筆跡（◯✕バッジ付き）」** と **「下段: 教科書体のお手本（タップ/クリックで枠内筆順アニメーション再生）」** の上下比較レイアウトに統合。
-   * 誤答時のアドバイスは **「① 誤字チェック（ちがう字を書いているかも？）」➔「② 画数チェック（画数がちがうよ）」** の優先順位で分かりやすく通知。
+   * 日本の文部科学省・筆順指導要領および教科書体に完全準拠した **KanjiVG公式SVGデータ** を採用。
+   * 正誤判定画面は **「上段: 児童の手書き筆跡（◯✕バッジ付き）」** と **「下段: 教科書体のお手本（タップ/クリックで枠内筆順アニメーション再生）」** の上下統合レイアウト。
+   * 誤答時のアドバイス優先順位:
+     * **通常問題**: 「① 誤字チェック」➔「② 画数チェック」を各文字ごとに改行して表示。
+     * **送り仮名問題**: 「1文字目の漢字間違い（最優先）」または「おしい！ 送り仮名がちがうよ。」の2パターンに集約して明快に通知。
 4. **低遅延・頭切れ防止オーディオ**:
    Web Audio API (`AudioContext` + `decodeAudioData`) により MP3 ファイルをメモリ上にプリロード展開。モバイル環境特有の再生遅延や頭切れを根絶。
+5. **手書き操作のアンドゥ・リドゥ（履歴管理）**:
+   Canvas描画マスの左右に「↶ 1画もどす」「1画すすむ ↷」ボタンを配置。キーボードショートカット（`Ctrl+Z` / `Cmd+Z`, `Ctrl+Y` / `Cmd+Shift+Z`）にも完全対応。
 
 ---
 
@@ -29,7 +33,7 @@ kanji_practice_app/
 │
 ├── index.html                    # HTML骨格 (Google Fonts, モジュール読み込み)
 ├── css/
-│   └── style.css                 # 全体スタイルシート (レスポンシブ・アニメーション対応)
+│   └── style.css                 # 全体スタイルシート (上下配置カード・履歴ボタン・アニメーション)
 ├── data/
 │   └── questions.json            # 出題問題データ (通常 / 送り仮名 混在定義)
 ├── assets/
@@ -39,7 +43,7 @@ kanji_practice_app/
 │       └── complete.mp3          # 全問クリア音 (ファンファーレ)
 └── js/
     ├── main.js                   # アプリ全体の進行・問題遷移・統合判定ロジック
-    ├── canvas.js                 # Canvas手書き描画・画数カウント・ストローク管理
+    ├── canvas.js                 # Canvas手書き描画・アンドゥ/リドゥ・ストローク管理
     ├── recognition.js            # Google Input Tools 手書き文字認識 API 連携
     ├── audio.js                  # Web Audio API による MP3 プリロード & 低遅延再生
     ├── kanjivg.js                # 日本の文科省筆順・KanjiVG公式SVG直接描画 & 筆順再生
@@ -56,28 +60,29 @@ kanji_practice_app/
 
 * 問題データ (`data/questions.json`) の読み込みと進行管理。
 * 「通常問題 (`normal`)」と「送り仮名問題 (`okurigana`)」の入力フロー切り替え。
+* アンドゥ・リドゥ操作およびショートカットキー（`Ctrl/Cmd+Z`, `Ctrl+Y / Cmd+Shift+Z`）のバインド。
 * 答え合わせ処理（`handleCheck`）:
-1. 送り仮名問題の文字数一致チェック（不一致時は「おしい！ 送り仮名がちがうよ。」）。
-2. 1文字ごとの個別判定:
-* **優先1 (OCR)**: `recognizeChar()` の上位4件に正解文字が含まれるか ➔ 不一致なら「ちがう字を書いているかも？（認識: 「X」）」。
-* **優先2 (画数)**: ペン離し回数（`strokeCount`）が目標画数と一致するか ➔ 不一致なら「画数がちがうよ（目標: X画 / 入力: Y画）」。
+1. 各文字のOCR認識（最優先）および画数を照合。
+2. メッセージ生成:
+* **送り仮名問題**: 1文字目エラー時は「1文字目: ちがう字を書いているかも？/画数がちがうよ」、1文字目正解で送り仮名不一致時は「おしい！ 送り仮名がちがうよ。」を出力。
+* **通常問題**: 各文字のエラーを `<br>` 改行で出力。
 
 
-3. 各文字の正誤配列 `charResults` (`[true, false, ...]`) を生成して `ui.showResultView()` へ伝達。
+3. 各文字の正誤配列 `charResults` を生成して `ui.showResultView()` へ伝達。
 4. 全問クリア時は `playFanfareSound()` を鳴らし、はなまる画面を表示。
 
 
 
 ### 2. `js/kanjivg.js`（KanjiVG SVG レンダラー & 筆順アニメーター）
 
-* 文字の Unicode 16進コードから KanjiVG 公式 SVG (`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/{hex}.svg`) を非同期取得。
-* 通常時は教科書体ストロークの静止画として描画。
+* 文字の Unicode 16進コードから KanjiVG 公式 SVG を非同期取得。
+* 通常時は教科書体ストロークの静止画として描画（十字ガイドライン入り）。
 * 不正解時（`isInteractive = true`）は、クリック/タップ時に `stroke-dashoffset` を用いた1画ごとの滑らかな筆順アニメーションを再生。
 
 ### 3. `js/ui.js`（UI レンダラー）
 
 * **上下統合比較ビュー**:
-* **上段（あなたの答え）**: 80×80px の枠内にユーザー筆跡を縮小描画し、右上にポップインアニメーション付きの「◯」「✕」バッジを表示。
+* **上段（あなたの答え）**: 80×80px の枠内にユーザー筆跡を縮小描画し、右上に「◯」「✕」バッジを表示。
 * **下段（正解のお手本）**: 漢字は `KanjiVGPlayer`、ひらがなは `Klee One` フォントで描画。
 
 
@@ -86,15 +91,20 @@ kanji_practice_app/
 * 送り仮名問題 ➔ 1文字目のみ「いまの画数: X画 (目標: Y画)」、2文字目以降は非表示。
 
 
+* **履歴ボタン制御**:
+* `updateHistoryButtons(canUndo, canRedo)` で左右のボタンの活性/非活性（グレーアウト）を更新。
 
-### 4. `js/canvas.js`（手書き入力管理）
 
-* Pointer / Touch / Mouse イベントを共通化し、タッチペンおよび指での手書きに完全対応。
-* ストローク座標配列（`strokesData`）の記録と、ペン離し回数（`strokeCount`）のカウント。
+
+### 4. `js/canvas.js`（手書き入力 & 履歴管理）
+
+* Pointer / Touch / Mouse イベントを共通化。
+* `strokesData` 配列と `redoStack` 配列を管理し、`undo()` / `redo()` を提供。
+* 1画描画ごとに `onChangeCallback` で画数・アンドゥ/リドゥ可否を上位へ通知。
 
 ### 5. `js/recognition.js`（手書き認識 API 連携）
 
-* Google Input Tools 手書き認識 API (`https://inputtools.google.com/request?ime=handwriting...`) へ `ink` 座標データを POST 送信。
+* Google Input Tools 手書き認識 API へ `ink` 座標データを POST 送信。
 * 認識された候補文字（最大5件）を配列で返却。
 
 ### 6. `js/audio.js`（低遅延オーディオ管理）
@@ -125,17 +135,6 @@ kanji_practice_app/
       { "char": "現", "strokes": 11 },
       { "char": "れ", "strokes": 2 },
       { "char": "る", "strokes": 1 }
-    ]
-  },
-  {
-    "type": "okurigana",
-    "notice": "💡 おくりがなまで全部書いてね！",
-    "sentenceHtml": "<span class=\"highlight-target\">よつば</span>の植物。",
-    "maxChars": 3,
-    "targets": [
-      { "char": "四", "strokes": 5 },
-      { "char": "つ", "strokes": 1 },
-      { "char": "葉", "strokes": 12 }
     ]
   }
 ]
@@ -186,7 +185,5 @@ python -m http.server 8000
 ```
 
 ブラウザで `http://localhost:8000` にアクセスして動作確認を行います。
-
-```
 
 ```

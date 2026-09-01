@@ -17,6 +17,8 @@ export class UIController {
     this.userCanvasesContainer = document.getElementById('user-canvases-container');
     this.resultLabelEl = document.getElementById('result-label');
 
+    this.btnUndo = document.getElementById('btn-undo');
+    this.btnRedo = document.getElementById('btn-redo');
     this.btnPrev = document.getElementById('btn-prev');
     this.btnNext = document.getElementById('btn-next');
     this.btnCheck = document.getElementById('btn-check');
@@ -66,6 +68,11 @@ export class UIController {
     }
   }
 
+  updateHistoryButtons(canUndo, canRedo) {
+    this.btnUndo.disabled = !canUndo;
+    this.btnRedo.disabled = !canRedo;
+  }
+
   updateNavButtons(currentIndex, totalCount, isOkurigana, maxChars) {
     this.btnPrev.style.display = (currentIndex > 0) ? 'inline-block' : 'none';
 
@@ -85,7 +92,7 @@ export class UIController {
     return /[\u4E00-\u9FAF\u3400-\u4DBF]/.test(char);
   }
 
-  showResultView(isAllSuccess, messageText, targetChars, userInputs, charResults) {
+  showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
     // 1. 上段: ユーザーの答えの描画 (80x80)
     this.userCanvasesContainer.innerHTML = '';
     userInputs.forEach((input, index) => {
@@ -149,7 +156,7 @@ export class UIController {
       this.correctCharsContainer.appendChild(item);
     });
 
-    this.resultLabelEl.textContent = messageText;
+    this.resultLabelEl.innerHTML = messageHtml;
     this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
     this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
 

@@ -37,7 +37,6 @@ export class KanjiVGPlayer {
 
       this.paths = Array.from(svgEl.querySelectorAll('path')).filter(p => p.id && p.id.includes('-s'));
 
-      // 線のスタイリング
       this.paths.forEach(path => {
         path.style.stroke = '#00695c';
         path.style.strokeWidth = '4.5px';
