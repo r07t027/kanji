@@ -1,0 +1,349 @@
+* {
+  box-sizing: border-box;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+}
+body {
+  margin: 0;
+  padding: 20px;
+  background-color: #f4f9fd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+h1 {
+  color: #2b5876;
+  margin-bottom: 8px;
+}
+.progress-bar {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #4a708b;
+  margin-bottom: 12px;
+}
+
+/* 問題文カード */
+.question-card {
+  background: #ffffff;
+  padding: 16px 36px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.question-notice {
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.95rem;
+  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: inline-block;
+  border: 1px solid #ffe0b2;
+}
+.question-sentence {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #333;
+  letter-spacing: 2px;
+}
+.highlight-target {
+  color: #e65100;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* 比較・判定結果エリア */
+.result-comparison-area {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+  width: 100%;
+  max-width: 500px;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 上下配置カラム */
+.cards-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  align-items: center;
+}
+
+.compare-card {
+  border-radius: 18px;
+  padding: 16px 24px;
+  text-align: center;
+  width: 100%;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+/* ユーザーの答えカード（青） */
+.user-card {
+  background: #f0f7ff;
+  border: 2px solid #b3d7ff;
+}
+.user-title {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #1565c0;
+  margin-bottom: 10px;
+}
+.user-canvases-container {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 1文字ごとの手書きプレビュー枠 */
+.user-char-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px solid #bbdefb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.user-char-wrapper.is-correct {
+  border-color: #81c784;
+  background: #f1f8e9;
+}
+.user-char-wrapper.is-wrong {
+  border-color: #e57373;
+  background: #ffebee;
+}
+
+.user-mini-canvas {
+  width: 72px;
+  height: 72px;
+  background: transparent;
+}
+
+/* ○×バッジ */
+.judge-badge {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.judge-badge.badge-ok {
+  background: #2e7d32;
+  color: #ffffff;
+}
+.judge-badge.badge-ng {
+  background: #d32f2f;
+  color: #ffffff;
+}
+@keyframes popIn {
+  0% { transform: scale(0); }
+  80% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* 正解お手本カード（緑枠・KanjiVG連携） */
+.correct-card {
+  background: #ffffff;
+  border: 2px solid #80cbc4;
+}
+.correct-title {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #00695c;
+  margin-bottom: 10px;
+}
+.correct-chars-container {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* お手本文字ボックス */
+.correct-char-item {
+  width: 80px;
+  height: 80px;
+  background: #fafffe;
+  border-radius: 12px;
+  border: 1.5px dashed #b2dfdb;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
+}
+.correct-char-item.interactive {
+  cursor: pointer;
+}
+.correct-char-item.interactive:hover {
+  transform: scale(1.06);
+  background: #e0f2f1;
+  border-color: #4db6ac;
+}
+
+/* 十字ガイド線 */
+.correct-char-item::before, .correct-char-item::after {
+  content: '';
+  position: absolute;
+  background-color: #e0f2f1;
+  pointer-events: none;
+}
+.correct-char-item::before { top: 0; bottom: 0; left: 50%; width: 1px; }
+.correct-char-item::after { left: 0; right: 0; top: 50%; height: 1px; }
+
+/* ひらがな用フォント表示 */
+.correct-kana-text {
+  font-family: 'Klee One', 'Yu Kyokasho', serif;
+  font-size: 3.2rem;
+  color: #00695c;
+  z-index: 1;
+  line-height: 1;
+}
+
+/* KanjiVG SVG用 */
+.kanji-stroke-svg {
+  width: 72px;
+  height: 72px;
+  z-index: 1;
+}
+
+/* アドバイス / 正解表示ラベル */
+.result-label {
+  font-size: 1.35rem;
+  font-weight: bold;
+  text-align: center;
+  min-height: 2.4rem;
+  max-width: 550px;
+  line-height: 1.45;
+}
+.result-label.success { color: #2e7d32; font-size: 2.2rem; }
+.result-label.mistake { color: #d32f2f; font-size: 1.15rem; }
+
+/* メイン描画エリア */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  padding: 24px 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* タブ */
+.char-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.char-tab {
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: #eef2f5;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #78909c;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.char-tab.active {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #1976d2;
+}
+.char-tab.done {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* 描画マス目 */
+.box {
+  width: 300px;
+  height: 300px;
+  border: 3px dashed #b0c4de;
+  border-radius: 12px;
+  background: #fafafa;
+  position: relative;
+  touch-action: none;
+}
+.box::before, .box::after {
+  content: '';
+  position: absolute;
+  background-color: #e0e6ed;
+  pointer-events: none;
+}
+.box::before { top: 0; bottom: 0; left: 50%; width: 1px; }
+.box::after { left: 0; right: 0; top: 50%; height: 1px; }
+
+canvas#draw-canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 9px;
+  cursor: crosshair;
+}
+
+.info-panel {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #444;
+  min-height: 1.5rem;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+button {
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  transition: opacity 0.2s;
+}
+button.btn-reset { background-color: #78909c; }
+button.btn-restart-all { background-color: #f57c00; font-size: 1.1rem; padding: 12px 32px; }
+button.btn-prev { background-color: #546e7a; }
+button.btn-next { background-color: #1976d2; }
+button.btn-check { background-color: #2e7d32; padding: 10px 22px; }
+button:hover { opacity: 0.85; }
+button:disabled { background-color: #cfd8dc; cursor: not-allowed; }
+
+.status-msg {
+  margin-top: 15px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  min-height: 1.8rem;
+  text-align: center;
+}
