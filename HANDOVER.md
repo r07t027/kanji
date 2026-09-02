@@ -1,53 +1,51 @@
 ```markdown
-# 📖 漢字練習Webアプリ システム設計・保守・データ定義完全ガイド（HANDOVER）
+# 📖 漢字練習Webアプリ システム設計・保守・データ定義完全ガイド（HANDOVER v2）
 
 ## 1. 全体構造とアーキテクチャ方針
 
-本プロジェクトは、小学校児童向けのタブレット（Chromebook / iPad 等）およびPC環境で動作する **漢字手書き練習Webアプリケーション** です。
+本プロジェクトは、小学校児童向けのタブレット（Chromebook / iPad 等）およびPC環境に最適化された **漢字手書き練習Webアプリケーション** です。
 外部ビルドツール（Webpack / Vite 等）を一切使用せず、ブラウザ標準の **ES Modules (`import` / `export`)** による疎結合なモジュール設計を採用しています。
 
 ### 核心設計思想
 
-1. **関心事の完全分離 (SoC / DRY 原則)**:
-   手書き入力制御 (`canvas.js`)、OCR字形認識 (`recognition.js`)、効果音再生 (`audio.js`)、教科書体筆順SVG描画 (`kanjivg.js`)、画面更新 (`ui.js`) を独立したモジュールとして分離し、メインロジック (`main.js`) で統括する。
-2. **問題種別に応じた柔軟な入力・判定制御**:
-   * **通常問題 (`normal`)**: 最初から正解文字数分のタブ・マスを用意し、目標画数を案内。
-   * **送り仮名問題 (`okurigana`)**: 児童が文字数を推測して解けるよう、1文字目のみ表示からスタートし、動的にタブを追加（最大 `maxChars` まで）。ヒント防止のため2文字目以降は画数案内を非表示化。
+1. **Chromebook（1366×768）完全対応（スクロールゼロ設計）**:
+   * アドレスバーやシェルフによる実効表示領域（約550〜600px）を考慮し、全体を `height: 100vh; overflow: hidden;` で固定。
+   * 手書きキャンバス（260×260px）と上下配置の正誤判定カード（72×72px）により、一切の縦スクロールを発生させません。
+2. **ユニバーサルデザイン・インクルーシブ対応（利き手モード）**:
+   * メニュー画面で「みぎきき」「ひだりきき」を選択可能。
+   * 左利き時は CSS の `flex-direction: row-reverse;` により、手書き描画領域を画面左側、問題提示を画面右側へと瞬時に反転。書く手で問題文が隠れるのを防ぎます。
 3. **教育的配慮に基づいたUI・フィードバック**:
-   * 日本の文部科学省・筆順指導要領および教科書体に完全準拠した **KanjiVG公式SVGデータ** を採用。
-   * 正誤判定画面は **「上段: 児童の手書き筆跡（◯✕バッジ付き）」** と **「下段: 教科書体のお手本（タップ/クリックで枠内筆順アニメーション再生）」** の上下統合レイアウト。
-   * 誤答時のアドバイス優先順位:
-     * **通常問題**: 「① 誤字チェック」➔「② 画数チェック」を各文字ごとに改行して表示。
-     * **送り仮名問題**: 「1文字目の漢字間違い（最優先）」または「おしい！ 送り仮名がちがうよ。」の2パターンに集約して明快に通知。
+   * 日本の文部科学省・筆順指導要領および教科書体に完全準拠した **KanjiVG公式SVGデータ** を直接描画・アニメーション再生。
+   * 誤答時メッセージの優先順位:
+     * **通常問題**: 各文字の「① 誤字チェック」➔「② 画数チェック」を改行して出力。
+     * **送り仮名問題**: 「1文字目の漢字間違い（最優先）」または「おしい！ 送り仮名がちがうよ。」の2パターンに集約。
 4. **低遅延・頭切れ防止オーディオ**:
-   Web Audio API (`AudioContext` + `decodeAudioData`) により MP3 ファイルをメモリ上にプリロード展開。モバイル環境特有の再生遅延や頭切れを根絶。
-5. **手書き操作のアンドゥ・リドゥ（履歴管理）**:
-   Canvas描画マスの左右に「↶ 1画もどす」「1画すすむ ↷」ボタンを配置。キーボードショートカット（`Ctrl+Z` / `Cmd+Z`, `Ctrl+Y` / `Cmd+Shift+Z`）にも完全対応。
+   Web Audio API (`AudioContext` + `decodeAudioData`) を採用。ボタン操作時にも `ctx.resume()` のガード処理を入れ、自動再生ポリシーによる音切れを防止。
 
 ---
 
-### ディレクトリ構成（最新状態）
+### ディレクトリ構成
 
 ```text
 kanji_practice_app/
 │
-├── index.html                    # HTML骨格 (Google Fonts, モジュール読み込み)
+├── index.html                    # メニュー画面 & 練習画面の2ペイン骨格
 ├── css/
-│   └── style.css                 # 全体スタイルシート (上下配置カード・履歴ボタン・アニメーション)
+│   └── style.css                 # 2カラムレイアウト・利き手反転・アニメーション
 ├── data/
-│   └── questions.json            # 出題問題データ (通常 / 送り仮名 混在定義)
+│   └── grade5_questions.json     # 小学5年生 全44回（計220問・各5問）構造化データ
 ├── assets/
 │   └── audio/                    # 効果音アセット (MP3)
 │       ├── correct.mp3           # 正解音 (ピンポン♪)
 │       ├── wrong.mp3             # 不正解音 (ブブー)
 │       └── complete.mp3          # 全問クリア音 (ファンファーレ)
 └── js/
-    ├── main.js                   # アプリ全体の進行・問題遷移・統合判定ロジック
-    ├── canvas.js                 # Canvas手書き描画・アンドゥ/リドゥ・ストローク管理
+    ├── main.js                   # アプリ全体の進行・メニュー遷移・単元切替・統合判定
+    ├── canvas.js                 # 260px手書き描画・アンドゥ/リドゥ・ストローク管理
     ├── recognition.js            # Google Input Tools 手書き文字認識 API 連携
-    ├── audio.js                  # Web Audio API による MP3 プリロード & 低遅延再生
+    ├── audio.js                  # Web Audio API によるプリロード & 自動再生ガード
     ├── kanjivg.js                # 日本の文科省筆順・KanjiVG公式SVG直接描画 & 筆順再生
-    ├── ui.js                     # DOM描画・上下比較カード・タブ・メッセージ制御
+    ├── ui.js                     # メニュー/練習/クリア画面DOM描画・利き手制御
     └── logger.js                 # （将来拡張用）GAS/スプレッドシート学習ログ送信モジュール
 
 ```
@@ -58,132 +56,86 @@ kanji_practice_app/
 
 ### 1. `js/main.js`（アプリケーション統括コントローラー）
 
-* 問題データ (`data/questions.json`) の読み込みと進行管理。
-* 「通常問題 (`normal`)」と「送り仮名問題 (`okurigana`)」の入力フロー切り替え。
+* メニュー画面の単元ボタン（全44回・学期タブ）生成と遷移制御。
+* 利き手モードの `localStorage` 保持と反映。
 * アンドゥ・リドゥ操作およびショートカットキー（`Ctrl/Cmd+Z`, `Ctrl+Y / Cmd+Shift+Z`）のバインド。
-* 答え合わせ処理（`handleCheck`）:
-1. 各文字のOCR認識（最優先）および画数を照合。
-2. メッセージ生成:
-* **送り仮名問題**: 1文字目エラー時は「1文字目: ちがう字を書いているかも？/画数がちがうよ」、1文字目正解で送り仮名不一致時は「おしい！ 送り仮名がちがうよ。」を出力。
-* **通常問題**: 各文字のエラーを `<br>` 改行で出力。
+* 単元（5問）の進行管理、正誤判定、連続学習（「つぎの回にすすむ」）処理。
 
+### 2. `js/ui.js`（UI レンダラー）
 
-3. 各文字の正誤配列 `charResults` を生成して `ui.showResultView()` へ伝達。
-4. 全問クリア時は `playFanfareSound()` を鳴らし、はなまる画面を表示。
+* `setHandedness(isLeftHanded)`: `.left-handed` クラスの付与による左右反転。
+* `showMenuView()` / `showPracticeView()`: メニュー画面と練習画面のシームレスな切り替え。
+* `showResultView()`: 描画ペイン内の上下比較カード ＋ アドバイスメッセージ ＋ やり直すボタンの表示。
+* `showAllClear()`: 描画ペイン中央に「💮 はなまる満点！」と次セットへ進むボタンを大きく表示。
 
+### 3. `js/kanjivg.js`（KanjiVG SVG レンダラー & 筆順アニメーター）
 
-
-### 2. `js/kanjivg.js`（KanjiVG SVG レンダラー & 筆順アニメーター）
-
-* 文字の Unicode 16進コードから KanjiVG 公式 SVG を非同期取得。
-* 通常時は教科書体ストロークの静止画として描画（十字ガイドライン入り）。
-* 不正解時（`isInteractive = true`）は、クリック/タップ時に `stroke-dashoffset` を用いた1画ごとの滑らかな筆順アニメーションを再生。
-
-### 3. `js/ui.js`（UI レンダラー）
-
-* **上下統合比較ビュー**:
-* **上段（あなたの答え）**: 80×80px の枠内にユーザー筆跡を縮小描画し、右上に「◯」「✕」バッジを表示。
-* **下段（正解のお手本）**: 漢字は `KanjiVGPlayer`、ひらがなは `Klee One` フォントで描画。
-
-
-* **画数表示制御**:
-* 通常問題 ➔ 全文字で「いまの画数: X画 (目標: Y画)」。
-* 送り仮名問題 ➔ 1文字目のみ「いまの画数: X画 (目標: Y画)」、2文字目以降は非表示。
-
-
-* **履歴ボタン制御**:
-* `updateHistoryButtons(canUndo, canRedo)` で左右のボタンの活性/非活性（グレーアウト）を更新。
-
-
+* Unicode 16進コードから KanjiVG 公式 SVG を取得。
+* 静止画として教科書体を表示し、不正解時はタップ/クリックで枠内筆順アニメーション（`stroke-dashoffset`）を再生。
 
 ### 4. `js/canvas.js`（手書き入力 & 履歴管理）
 
-* Pointer / Touch / Mouse イベントを共通化。
-* `strokesData` 配列と `redoStack` 配列を管理し、`undo()` / `redo()` を提供。
-* 1画描画ごとに `onChangeCallback` で画数・アンドゥ/リドゥ可否を上位へ通知。
+* 260×260px のマス目描画。
+* `strokesData` と `redoStack` による1画ずつの「↶ もどす」「↷ すすむ」制御。
 
-### 5. `js/recognition.js`（手書き認識 API 連携）
+### 5. `js/audio.js`（オーディオ制御）
 
-* Google Input Tools 手書き認識 API へ `ink` 座標データを POST 送信。
-* 認識された候補文字（最大5件）を配列で返却。
-
-### 6. `js/audio.js`（低遅延オーディオ管理）
-
-* 初回ユーザー操作時に `AudioContext` をアンロックし、全 MP3 を `decodeAudioData` でオンメモリバッファ化。
-* ハードウェア出力回路の起動ラグ・頭切れを排除した即時再生。
+* `ensureAudioUnlocked()` による都度 `ctx.resume()` ガード。Chromebookでの確実な音声出力を担保。
 
 ---
 
-## 3. データスキーマ定義 (`data/questions.json`)
+## 3. データスキーマ定義 (`data/grade5_questions.json`)
 
 ```json
-[
-  {
-    "type": "normal",
-    "sentenceHtml": "<span class=\"highlight-target\">さいしょ</span>に手をあらう。",
-    "targets": [
-      { "char": "最", "strokes": 12 },
-      { "char": "初", "strokes": 7 }
-    ]
-  },
-  {
-    "type": "okurigana",
-    "notice": "💡 おくりがなまで全部書いてね！",
-    "sentenceHtml": "人が急に<span class=\"highlight-target\">あらわれる</span>。",
-    "maxChars": 5,
-    "targets": [
-      { "char": "現", "strokes": 11 },
-      { "char": "れ", "strokes": 2 },
-      { "char": "る", "strokes": 1 }
-    ]
-  }
-]
+{
+  "grade": 5,
+  "title": "小学5年生",
+  "totalSets": 44,
+  "sets": [
+    {
+      "id": "1学期_01",
+      "title": "1学期 第01回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">さいしょ</span>に手をあらう。",
+          "targets": [
+            { "char": "最", "strokes": 12 },
+            { "char": "初", "strokes": 7 }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "<span class=\"highlight-target\">たしか</span>に軽い。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            { "char": "確", "strokes": 15 },
+            { "char": "か", "strokes": 3 }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 ```
-
-### スキーマ仕様
-
-| フィールド | 型 | 必須 | 説明 |
-| --- | --- | --- | --- |
-| `type` | string | ◯ | `"normal"`（通常問題）または `"okurigana"`（送り仮名問題） |
-| `sentenceHtml` | string | ◯ | 問題文。入力対象のひらがな語全体を `<span class="highlight-target">` で囲む |
-| `notice` | string | △ | 送り仮名問題時にカード上部に表示する案内文（例: `"💡 おくりがなまで全部書いてね！"`） |
-| `maxChars` | number | △ | 送り仮名問題時の最大入力可能文字数（通常は対象ひらがなの文字数） |
-| `targets` | array | ◯ | 正解文字オブジェクトの配列。各要素は `{ "char": string, "strokes": number }` |
 
 ---
 
 ## 4. 今後の開発・拡張 ToDo リスト
 
-* [ ] **学年・単元別セレクターの実装**:
-* `data/` 配下に学年・単元別の JSON を配置し、スタート画面で選択して切り替える UI の追加。
+* [ ] **学年の拡充**:
+* `data/grade1_questions.json` 〜 `data/grade6_questions.json` を順次追加し、メニューの学年セレクトと連動。
 
 
-* [ ] **児童識別・ログインフローの実装**:
-* クラス・出席番号・氏名を選択して学習を開始するスタート画面の追加。
+* [ ] **学習ログの自動集計（GAS / Googleスプレッドシート連携）**:
+* `js/logger.js` を有効化し、児童名、学年、単元、正誤結果、画数エラーログをクラウド送信。
 
 
-* [ ] **学習ログの自動集計（Googleスプレッドシート / GAS連携）**:
-* `js/logger.js` の `sendLog()` を実装し、児童名、問題、正誤結果、誤答時の認識文字・画数エラーを GAS Web API 経由でスプレッドシートに蓄積。
+* [ ] **進捗バッジ・クリアマークの記録**:
+* 単元ボタン（第01回〜第44回）にクリア済みの「💮」アイコンを表示する進捗記録機能。
 
 
-* [ ] **端末・インフラ検証**:
-* GIGAスクール端末（Chromebook / iPad）のフィルタリング環境（i-FILTER等）での GitHub Pages アクセスおよび Google Input Tools API 通信の疎通確認。
-
-
-
----
-
-## 5. ローカル実行手順
-
-本アプリは ES Modules および `fetch` API を使用しているため、ローカルで確認する際はローカルWebサーバーを経由して起動してください。
-
-```bash
-# Python による簡易ローカルサーバー起動例 (プロジェクトルートで実行)
-python -m http.server 8000
-
-```
-
-ブラウザで `http://localhost:8000` にアクセスして動作確認を行います。
 
 ```
