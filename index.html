@@ -12,9 +12,50 @@
 </head>
 <body>
 
+  <!-- ==================== ログインモーダル ==================== -->
+  <div id="login-modal" class="login-modal-overlay">
+    <div class="login-card">
+      <h2 class="login-title">🎒 だれが れんしゅうする？</h2>
+      <p class="login-desc">クラスと なまえを えらんで、４けたの パスワードをいれてね！</p>
+
+      <!-- 1. クラス選択 -->
+      <div class="login-section">
+        <label for="select-class" class="login-label">① クラス</label>
+        <select id="select-class" class="custom-select">
+          <option value="">よみこみ中...</option>
+        </select>
+      </div>
+
+      <!-- 2. 名前選択 -->
+      <div class="login-section">
+        <label for="select-user" class="login-label">② なまえ</label>
+        <select id="select-user" class="custom-select" disabled>
+          <option value="">クラスを えらんでね</option>
+        </select>
+      </div>
+
+      <!-- 3. 暗証番号入力 -->
+      <div class="login-section">
+        <label for="input-pin" class="login-label">③ パスワード（すうじ４けた）</label>
+        <input type="password" id="input-pin" class="custom-input" inputmode="numeric" maxlength="4" placeholder="例: 1234">
+      </div>
+
+      <div id="login-error-msg" class="login-error-msg" style="display: none;"></div>
+
+      <button type="button" id="btn-submit-login" class="btn-login-submit" disabled>ログインする ➔</button>
+    </div>
+  </div>
+
   <!-- ==================== メニュー（スタート）画面 ==================== -->
   <div id="menu-view" class="menu-view">
     <div class="menu-card">
+      
+      <!-- ログイン中ユーザー表示バー -->
+      <div id="user-info-bar" class="user-info-bar" style="display: none;">
+        <span class="user-welcome">👤 <span id="user-display-name">---</span> さん</span>
+        <button type="button" id="btn-logout" class="btn-logout-small">切り替える</button>
+      </div>
+
       <h1 class="menu-title">✏️ 漢字書き取りれんしゅう</h1>
       
       <!-- 1. 学年選択 -->

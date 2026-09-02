@@ -3,7 +3,7 @@ import { initAudioUnlock, ensureAudioUnlocked, playCorrectSound, playFanfareSoun
 import { CanvasController } from './canvas.js';
 import { recognizeChar } from './recognition.js';
 import { UIController } from './ui.js';
-import { sendLog } from './logger.js';
+import { fetchClassAndUsers, loginUser, saveProgressAndLogs } from './logger.js';
 
 class KanjiApp {
   constructor() {
@@ -18,6 +18,12 @@ class KanjiApp {
     // [DEBUG] 判定許容候補数の保持（デフォルト: 4）
     this.debugCandidateLimit = 4;
 
+    // ユーザー情報・進捗サマリー・セッションログ
+    this.currentUser = null;
+    this.clearedSets = [];
+    this.currentSessionLogs = [];
+    this.currentMistakes = [];
+
     this.ui = new UIController();
     this.canvasController = new CanvasController(
       document.getElementById('draw-canvas'),
@@ -29,28 +35,144 @@ class KanjiApp {
 
   async init() {
     initAudioUnlock();
-    this.loadSavedPreferences();
     this.bindEvents();
 
     try {
       const res = await fetch('data/grade5_questions.json');
       this.gradeData = await res.json();
-      this.setupMenuUI();
     } catch (e) {
       console.error('問題データの読み込みに失敗しました:', e);
       this.ui.setMessage('問題データの読み込みに失敗しました', 'mistake');
     }
+
+    // ログインフローの初期化
+    await this.initAuthFlow();
   }
 
-  loadSavedPreferences() {
+  /**
+   * 認証・ログインモーダル制御
+   */
+  async initAuthFlow() {
+    const modal = document.getElementById('login-modal');
+    const selectClass = document.getElementById('select-class');
+    const selectUser = document.getElementById('select-user');
+    const inputPin = document.getElementById('input-pin');
+    const btnSubmit = document.getElementById('btn-submit-login');
+    const errorMsg = document.getElementById('login-error-msg');
+
+    // 既存セッションの確認
     try {
-      const savedHand = localStorage.getItem('kanji_hand_mode');
-      if (savedHand === 'left') {
-        this.isLeftHanded = true;
-        const leftRadio = document.querySelector('input[name="hand-mode"][value="left"]');
-        if (leftRadio) leftRadio.checked = true;
+      const savedUserJson = localStorage.getItem('kanji_current_user');
+      const savedProgressJson = localStorage.getItem('kanji_user_progress');
+      if (savedUserJson && savedProgressJson) {
+        this.currentUser = JSON.parse(savedUserJson);
+        const progress = JSON.parse(savedProgressJson);
+        this.clearedSets = progress.clearedSets || [];
+        this.applyUserData();
+        modal.style.display = 'none';
+        this.setupMenuUI();
+        return;
       }
     } catch (e) {}
+
+    // GASからクラス・児童名簿を取得
+    const res = await fetchClassAndUsers();
+    if (!res.success) {
+      selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
+      return;
+    }
+
+    const { classes, users } = res;
+
+    selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
+    classes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      selectClass.appendChild(opt);
+    });
+
+    selectClass.addEventListener('change', () => {
+      const selectedClass = selectClass.value;
+      selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
+      inputPin.value = '';
+      btnSubmit.disabled = true;
+      errorMsg.style.display = 'none';
+
+      if (!selectedClass) {
+        selectUser.disabled = true;
+        return;
+      }
+
+      const filteredUsers = users.filter(u => u.className === selectedClass);
+      filteredUsers.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.userId;
+        opt.textContent = `${u.studentNo}ばん ${u.kanaName}`;
+        selectUser.appendChild(opt);
+      });
+      selectUser.disabled = false;
+    });
+
+    const checkFormReady = () => {
+      btnSubmit.disabled = !(selectUser.value && inputPin.value.length === 4);
+    };
+
+    selectUser.addEventListener('change', checkFormReady);
+    inputPin.addEventListener('input', checkFormReady);
+
+    btnSubmit.addEventListener('click', async () => {
+      ensureAudioUnlocked();
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'ログイン中...';
+      errorMsg.style.display = 'none';
+
+      const loginRes = await loginUser(selectUser.value, inputPin.value);
+
+      if (loginRes.success) {
+        this.currentUser = loginRes.user;
+        this.clearedSets = loginRes.progress.clearedSets || [];
+
+        // ローカルに保存
+        localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
+        localStorage.setItem('kanji_user_progress', JSON.stringify(loginRes.progress));
+
+        this.applyUserData();
+        modal.style.display = 'none';
+        this.setupMenuUI();
+      } else {
+        errorMsg.textContent = loginRes.message || 'パスワードがちがいます。';
+        errorMsg.style.display = 'block';
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'ログインする ➔';
+      }
+    });
+
+    modal.style.display = 'flex';
+  }
+
+  /**
+   * ログインユーザーの利き手や表示名を設定
+   */
+  applyUserData() {
+    if (!this.currentUser) return;
+
+    // ユーザー情報バー表示
+    document.getElementById('user-display-name').textContent = `${this.currentUser.className} ${this.currentUser.kanaName}`;
+    document.getElementById('user-info-bar').style.display = 'flex';
+
+    // 利き手設定を反映
+    const handMode = this.currentUser.handMode || 'right';
+    this.isLeftHanded = (handMode === 'left');
+    const radio = document.querySelector(`input[name="hand-mode"][value="${handMode}"]`);
+    if (radio) radio.checked = true;
+    this.ui.setHandedness(this.isLeftHanded);
+  }
+
+  logout() {
+    localStorage.removeItem('kanji_current_user');
+    localStorage.removeItem('kanji_user_progress');
+    location.reload();
   }
 
   savePreferences() {
@@ -60,6 +182,12 @@ class KanjiApp {
   }
 
   bindEvents() {
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      if (confirm('別のなまえで ログインしなおしますか？')) {
+        this.logout();
+      }
+    });
+
     document.getElementById('btn-reset').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.handleReset();
@@ -83,6 +211,7 @@ class KanjiApp {
     document.getElementById('btn-back-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.ui.showMenuView();
+      this.setupMenuUI();
     });
 
     document.getElementById('btn-undo').addEventListener('click', () => {
@@ -105,6 +234,7 @@ class KanjiApp {
     document.getElementById('btn-clear-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.ui.showMenuView();
+      this.setupMenuUI();
     });
 
     document.getElementById('btn-start').addEventListener('click', () => {
@@ -114,7 +244,7 @@ class KanjiApp {
       this.savePreferences();
       this.ui.setHandedness(this.isLeftHanded);
 
-      // [DEBUG] 検証用プルダウンから許容候補数を取得（要素が存在する場合のみ）
+      // [DEBUG] 検証用プルダウンから許容候補数を取得
       const debugSelect = document.getElementById('select-debug-candidates');
       if (debugSelect) {
         this.debugCandidateLimit = parseInt(debugSelect.value, 10) || 4;
@@ -144,6 +274,8 @@ class KanjiApp {
   }
 
   setupMenuUI() {
+    if (!this.gradeData) return;
+
     const termTabs = document.querySelectorAll('.term-tab');
     const container = document.getElementById('set-grid-container');
 
@@ -161,6 +293,14 @@ class KanjiApp {
         const numStr = setObj.id.split('_')[1];
         btn.textContent = `第${parseInt(numStr, 10)}回`;
 
+        // クリア済みの場合💮バッジを表示
+        if (this.clearedSets.includes(setObj.id)) {
+          const badge = document.createElement('span');
+          badge.className = 'set-badge-clear';
+          badge.textContent = '💮';
+          btn.appendChild(badge);
+        }
+
         btn.addEventListener('click', () => {
           this.selectedSetId = setObj.id;
           document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('selected'));
@@ -172,20 +312,25 @@ class KanjiApp {
     };
 
     termTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
+      tab.onclick = () => {
         termTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         renderGrid(tab.dataset.term);
-      });
+      };
     });
 
-    renderGrid('1');
+    const activeTab = document.querySelector('.term-tab.active') || termTabs[0];
+    renderGrid(activeTab ? activeTab.dataset.term : '1');
   }
 
   startSet(setId) {
     this.selectedSetId = setId;
     this.currentSet = this.gradeData.sets.find(s => s.id === setId);
     if (!this.currentSet) return;
+
+    // 単元開始時にセッションログ初期化
+    this.currentSessionLogs = [];
+    this.currentMistakes = [];
 
     this.ui.showPracticeView();
     this.loadQuestion(0);
@@ -198,6 +343,7 @@ class KanjiApp {
       this.startSet(nextSet.id);
     } else {
       this.ui.showMenuView();
+      this.setupMenuUI();
     }
   }
 
@@ -384,6 +530,7 @@ class KanjiApp {
 
       const charResults = [];
       const adviceMessages = [];
+      const questionLogDetail = { chars: [] };
 
       for (let i = 0; i < validInputs.length; i++) {
         const input = validInputs[i];
@@ -401,40 +548,54 @@ class KanjiApp {
             type: 'empty',
             msg: `${i + 1}文字目: 書かれていません`
           });
+          questionLogDetail.chars.push({ target: target.char, strokes: 0, recognized: '', error: 'empty' });
           continue;
         }
 
         const candidates = await recognizeChar(input.strokesData);
+        const recognized = candidates[0] || '';
 
-        // [DEBUG] 検証用：設定された候補数（デフォルト4）までに対象文字が含まれているか判定
+        // [DEBUG] 許容候補数内に対象文字が含まれているか照合
         const isCharMatched = candidates.slice(0, this.debugCandidateLimit).includes(target.char);
 
         if (!isCharMatched) {
           charResults.push(false);
+          this.currentMistakes.push(target.char);
           adviceMessages.push({
             index: i,
             type: 'char',
-            msg: `${i + 1}文字目: ちがう字を書いているかも？（認識: 「${candidates[0] || '？'}」）`
+            msg: `${i + 1}文字目: ちがう字を書いているかも？（認識: 「${recognized || '？'}」）`
           });
+          questionLogDetail.chars.push({ target: target.char, strokes: input.strokeCount, recognized, error: 'char_mismatch' });
           continue;
         }
 
         if (input.strokeCount !== target.strokes) {
           charResults.push(false);
+          this.currentMistakes.push(target.char);
           adviceMessages.push({
             index: i,
             type: 'stroke',
             msg: `${i + 1}文字目: 画数がちがうよ（目標: ${target.strokes}画 / 入力: ${input.strokeCount}画）`
           });
+          questionLogDetail.chars.push({ target: target.char, strokes: input.strokeCount, recognized, error: 'stroke_mismatch' });
           continue;
         }
 
         charResults.push(true);
+        questionLogDetail.chars.push({ target: target.char, strokes: input.strokeCount, recognized, isOk: true });
       }
 
       const isCountMatched = (validInputs.length === q.targets.length);
       const isAllCharsCorrect = charResults.every(r => r === true);
       const isAllSuccess = isCountMatched && isAllCharsCorrect;
+
+      // ログレコードの記録
+      this.currentSessionLogs.push({
+        qIndex: this.currentQIndex + 1,
+        isSuccess: isAllSuccess,
+        detail: questionLogDetail
+      });
 
       if (isAllSuccess) {
         playCorrectSound();
@@ -447,10 +608,26 @@ class KanjiApp {
         );
 
         const isFinalQuestion = (this.currentQIndex === this.currentSet.questions.length - 1);
-        setTimeout(() => {
+        setTimeout(async () => {
           if (isFinalQuestion) {
             playFanfareSound();
             this.ui.showAllClear();
+
+            // 全問クリア時: 進捗サマリー更新 & 💮バッジ追加
+            if (!this.clearedSets.includes(this.selectedSetId)) {
+              this.clearedSets.push(this.selectedSetId);
+            }
+
+            // クラウド（GAS）へ非同期保存
+            if (this.currentUser) {
+              await saveProgressAndLogs(
+                this.currentUser.userId,
+                this.selectedSetId,
+                true,
+                this.currentMistakes,
+                this.currentSessionLogs
+              );
+            }
           } else {
             this.currentQIndex++;
             this.loadQuestion(this.currentQIndex);
