@@ -8,23 +8,24 @@ export class UIController {
     this.questionNoticeEl = document.getElementById('question-notice');
     this.progressEl = document.getElementById('progress-text');
     this.statusEl = document.getElementById('status-message');
-    this.resultLabelEl = document.getElementById('result-label');
-    this.btnRestartAll = document.getElementById('btn-restart-all');
 
-    // 右ペイン要素
+    // 右ペイン要素（描画エリア）
     this.drawingContainer = document.getElementById('drawing-container');
-    this.resultComparisonArea = document.getElementById('result-comparison-area');
     this.charTabsEl = document.getElementById('char-tabs');
     this.strokeInfoEl = document.getElementById('stroke-info');
-    this.correctCardTitleEl = document.getElementById('correct-card-title');
-    this.correctCharsContainer = document.getElementById('correct-chars-container');
-    this.userCanvasesContainer = document.getElementById('user-canvases-container');
-
     this.btnUndo = document.getElementById('btn-undo');
     this.btnRedo = document.getElementById('btn-redo');
     this.btnPrev = document.getElementById('btn-prev');
     this.btnNext = document.getElementById('btn-next');
     this.btnCheck = document.getElementById('btn-check');
+
+    // 右ペイン要素（判定結果比較・アドバイス・やり直しボタン）
+    this.resultComparisonArea = document.getElementById('result-comparison-area');
+    this.correctCardTitleEl = document.getElementById('correct-card-title');
+    this.correctCharsContainer = document.getElementById('correct-chars-container');
+    this.userCanvasesContainer = document.getElementById('user-canvases-container');
+    this.resultLabelEl = document.getElementById('result-label');
+    this.btnRestartAll = document.getElementById('btn-restart-all');
   }
 
   setMessage(text, type = '') {
@@ -47,7 +48,7 @@ export class UIController {
     // 通常描画状態にリセット
     this.drawingContainer.style.display = 'flex';
     this.resultComparisonArea.style.display = 'none';
-    this.resultLabelEl.style.display = 'none';
+    this.resultLabelEl.textContent = '';
     this.btnRestartAll.style.display = 'none';
   }
 
@@ -99,10 +100,10 @@ export class UIController {
   }
 
   /**
-   * 判定結果画面の描画（右ペインにお手本／左ペイン下部にアドバイス）
+   * 判定結果画面の描画（右カラム内に比較カード ＋ アドバイスメッセージ ＋ やり直すボタン）
    */
   showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
-    // 1. あなたの答えの描画 (縮小Canvas)
+    // 1. 上段: あなたの答えの描画 (縮小Canvas)
     this.userCanvasesContainer.innerHTML = '';
     userInputs.forEach((input, index) => {
       const isCharOk = charResults[index];
@@ -116,8 +117,8 @@ export class UIController {
       wrapper.appendChild(badge);
 
       const miniCanvas = document.createElement('canvas');
-      miniCanvas.width = 68;
-      miniCanvas.height = 68;
+      miniCanvas.width = 64;
+      miniCanvas.height = 64;
       miniCanvas.className = 'user-mini-canvas';
       const mCtx = miniCanvas.getContext('2d');
       mCtx.lineWidth = 3.5;
@@ -129,9 +130,9 @@ export class UIController {
         input.strokesData.forEach(stroke => {
           if (stroke.length === 0) return;
           mCtx.beginPath();
-          mCtx.moveTo(stroke[0][0] * (68 / 260), stroke[0][1] * (68 / 260));
+          mCtx.moveTo(stroke[0][0] * (64 / 260), stroke[0][1] * (64 / 260));
           for (let i = 1; i < stroke.length; i++) {
-            mCtx.lineTo(stroke[i][0] * (68 / 260), stroke[i][1] * (68 / 260));
+            mCtx.lineTo(stroke[i][0] * (64 / 260), stroke[i][1] * (64 / 260));
           }
           mCtx.stroke();
         });
@@ -140,7 +141,7 @@ export class UIController {
       this.userCanvasesContainer.appendChild(wrapper);
     });
 
-    // 2. 正解のお手本の描画（KanjiVG SVG / ひらがなはフォント）
+    // 2. 下段: 正解のお手本の描画（KanjiVG SVG / ひらがなはフォント）
     this.correctCharsContainer.innerHTML = '';
 
     if (isAllSuccess) {
@@ -165,11 +166,9 @@ export class UIController {
       this.correctCharsContainer.appendChild(item);
     });
 
-    // 3. 左下のアドバイス & やり直すボタンの制御
-    this.statusEl.style.display = 'none';
+    // 3. 右カラム下部のアドバイスメッセージ & やり直すボタンの制御
     this.resultLabelEl.innerHTML = messageHtml;
     this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
-    this.resultLabelEl.style.display = 'block';
     this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
 
     // 4. ペイン表示切り替え
