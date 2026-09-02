@@ -3,31 +3,34 @@ import { KanjiVGPlayer } from './kanjivg.js';
 
 export class UIController {
   constructor() {
+    // 左ペイン要素
     this.questionTextEl = document.getElementById('question-text');
     this.questionNoticeEl = document.getElementById('question-notice');
     this.progressEl = document.getElementById('progress-text');
-    this.charTabsEl = document.getElementById('char-tabs');
-    this.strokeInfoEl = document.getElementById('stroke-info');
     this.statusEl = document.getElementById('status-message');
+    this.resultLabelEl = document.getElementById('result-label');
+    this.btnRestartAll = document.getElementById('btn-restart-all');
 
+    // 右ペイン要素
     this.drawingContainer = document.getElementById('drawing-container');
     this.resultComparisonArea = document.getElementById('result-comparison-area');
+    this.charTabsEl = document.getElementById('char-tabs');
+    this.strokeInfoEl = document.getElementById('stroke-info');
     this.correctCardTitleEl = document.getElementById('correct-card-title');
     this.correctCharsContainer = document.getElementById('correct-chars-container');
     this.userCanvasesContainer = document.getElementById('user-canvases-container');
-    this.resultLabelEl = document.getElementById('result-label');
 
     this.btnUndo = document.getElementById('btn-undo');
     this.btnRedo = document.getElementById('btn-redo');
     this.btnPrev = document.getElementById('btn-prev');
     this.btnNext = document.getElementById('btn-next');
     this.btnCheck = document.getElementById('btn-check');
-    this.btnRestartAll = document.getElementById('btn-restart-all');
   }
 
   setMessage(text, type = '') {
     this.statusEl.textContent = text;
     this.statusEl.className = 'status-msg ' + type;
+    this.statusEl.style.display = text ? 'block' : 'none';
   }
 
   updateQuestionHeader(qIndex, totalQuestions, sentenceHtml, noticeText) {
@@ -41,8 +44,11 @@ export class UIController {
       this.questionNoticeEl.style.display = 'none';
     }
 
+    // 通常描画状態にリセット
     this.drawingContainer.style.display = 'flex';
     this.resultComparisonArea.style.display = 'none';
+    this.resultLabelEl.style.display = 'none';
+    this.btnRestartAll.style.display = 'none';
   }
 
   renderTabs(totalCount, currentCharIndex, userInputs, onTabClick, isOkurigana) {
@@ -92,8 +98,11 @@ export class UIController {
     return /[\u4E00-\u9FAF\u3400-\u4DBF]/.test(char);
   }
 
+  /**
+   * 判定結果画面の描画（右ペインにお手本／左ペイン下部にアドバイス）
+   */
   showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
-    // 1. 上段: ユーザーの答えの描画 (80x80)
+    // 1. あなたの答えの描画 (縮小Canvas)
     this.userCanvasesContainer.innerHTML = '';
     userInputs.forEach((input, index) => {
       const isCharOk = charResults[index];
@@ -107,8 +116,8 @@ export class UIController {
       wrapper.appendChild(badge);
 
       const miniCanvas = document.createElement('canvas');
-      miniCanvas.width = 72;
-      miniCanvas.height = 72;
+      miniCanvas.width = 68;
+      miniCanvas.height = 68;
       miniCanvas.className = 'user-mini-canvas';
       const mCtx = miniCanvas.getContext('2d');
       mCtx.lineWidth = 3.5;
@@ -120,9 +129,9 @@ export class UIController {
         input.strokesData.forEach(stroke => {
           if (stroke.length === 0) return;
           mCtx.beginPath();
-          mCtx.moveTo(stroke[0][0] * (72 / 300), stroke[0][1] * (72 / 300));
+          mCtx.moveTo(stroke[0][0] * (68 / 260), stroke[0][1] * (68 / 260));
           for (let i = 1; i < stroke.length; i++) {
-            mCtx.lineTo(stroke[i][0] * (72 / 300), stroke[i][1] * (72 / 300));
+            mCtx.lineTo(stroke[i][0] * (68 / 260), stroke[i][1] * (68 / 260));
           }
           mCtx.stroke();
         });
@@ -131,7 +140,7 @@ export class UIController {
       this.userCanvasesContainer.appendChild(wrapper);
     });
 
-    // 2. 下段: 正解のお手本の描画（KanjiVG SVG / ひらがなはフォント）
+    // 2. 正解のお手本の描画（KanjiVG SVG / ひらがなはフォント）
     this.correctCharsContainer.innerHTML = '';
 
     if (isAllSuccess) {
@@ -156,12 +165,15 @@ export class UIController {
       this.correctCharsContainer.appendChild(item);
     });
 
+    // 3. 左下のアドバイス & やり直すボタンの制御
+    this.statusEl.style.display = 'none';
     this.resultLabelEl.innerHTML = messageHtml;
     this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
+    this.resultLabelEl.style.display = 'block';
     this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
 
+    // 4. ペイン表示切り替え
     this.drawingContainer.style.display = 'none';
-    this.setMessage('');
     this.resultComparisonArea.style.display = 'flex';
   }
 
@@ -169,7 +181,7 @@ export class UIController {
     this.resultComparisonArea.style.display = 'none';
     this.progressEl.textContent = '全問クリア！';
     this.questionNoticeEl.style.display = 'none';
-    this.questionTextEl.innerHTML = '🎉 はなまる満点！おめでとう！ 🏆';
+    this.questionTextEl.innerHTML = '🎉 はなまる満点！<br>おめでとう！ 🏆';
     this.setMessage('すべての問題をクリアしました！', 'success');
   }
 }
