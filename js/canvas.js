@@ -17,7 +17,7 @@ export class CanvasController {
   }
 
   _setupContext() {
-    this.ctx.lineWidth = 6;
+    this.ctx.lineWidth = 5.5;
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
     this.ctx.strokeStyle = '#222222';
