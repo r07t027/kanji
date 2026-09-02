@@ -11,7 +11,7 @@ export async function recognizeChar(strokes) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       requests: [{
-        writing_guide: { writing_area_width: 300, writing_area_height: 300 },
+        writing_guide: { writing_area_width: 260, writing_area_height: 260 },
         pre_context: '',
         max_num_results: 5,
         language: 'ja',
