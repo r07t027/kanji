@@ -15,6 +15,9 @@ class KanjiApp {
     this.userInputs = [];
     this.isLeftHanded = false;
 
+    // [DEBUG] 判定許容候補数の保持（デフォルト: 4）
+    this.debugCandidateLimit = 4;
+
     this.ui = new UIController();
     this.canvasController = new CanvasController(
       document.getElementById('draw-canvas'),
@@ -110,6 +113,13 @@ class KanjiApp {
       this.isLeftHanded = (handVal === 'left');
       this.savePreferences();
       this.ui.setHandedness(this.isLeftHanded);
+
+      // [DEBUG] 検証用プルダウンから許容候補数を取得（要素が存在する場合のみ）
+      const debugSelect = document.getElementById('select-debug-candidates');
+      if (debugSelect) {
+        this.debugCandidateLimit = parseInt(debugSelect.value, 10) || 4;
+      }
+
       this.startSet(this.selectedSetId);
     });
 
@@ -395,7 +405,9 @@ class KanjiApp {
         }
 
         const candidates = await recognizeChar(input.strokesData);
-        const isCharMatched = candidates.slice(0, 4).includes(target.char);
+
+        // [DEBUG] 検証用：設定された候補数（デフォルト4）までに対象文字が含まれているか判定
+        const isCharMatched = candidates.slice(0, this.debugCandidateLimit).includes(target.char);
 
         if (!isCharMatched) {
           charResults.push(false);

@@ -39,18 +39,11 @@
         <div id="set-grid-container" class="set-grid-container"></div>
       </div>
 
-      <!-- 3. 利き手選択 -->
+      <!-- 3. 利き手選択（ひだりきき: 左 / みぎきき: 右） -->
       <div class="menu-section">
         <label class="menu-label">3. きき手を えらぶ</label>
         <div class="hand-selector">
-          <label class="hand-option">
-            <input type="radio" name="hand-mode" value="right" checked>
-            <span class="hand-card">
-              <span class="hand-icon">✋</span>
-              <span class="hand-title">みぎきき</span>
-              <span class="hand-desc">左: 問題 / 右: 書く</span>
-            </span>
-          </label>
+          <!-- ひだりきき（左側に配置） -->
           <label class="hand-option">
             <input type="radio" name="hand-mode" value="left">
             <span class="hand-card">
@@ -59,8 +52,36 @@
               <span class="hand-desc">左: 書く / 右: 問題</span>
             </span>
           </label>
+          <!-- みぎきき（右側に配置・初期選択） -->
+          <label class="hand-option">
+            <input type="radio" name="hand-mode" value="right" checked>
+            <span class="hand-card">
+              <span class="hand-icon">✋</span>
+              <span class="hand-title">みぎきき</span>
+              <span class="hand-desc">左: 問題 / 右: 書く</span>
+            </span>
+          </label>
         </div>
       </div>
+
+      <!-- ========================================== -->
+      <!-- [DEBUG START] 候補数切り替え (動作確認後にブロックごと削除可能) -->
+      <!-- ========================================== -->
+      <div id="debug-candidate-section" class="menu-section" style="background: #fff8e1; border: 1.5px dashed #ffa000; padding: 10px 14px; border-radius: 12px; margin-top: 4px;">
+        <label for="select-debug-candidates" class="menu-label" style="color: #b78103; font-size: 0.85rem;">
+          ⚙️ 【検証用】OCR判定の許容候補順位
+        </label>
+        <select id="select-debug-candidates" class="custom-select" style="padding: 6px 10px; font-size: 0.9rem; background-color: #fff;">
+          <option value="1">第1候補のみ (最も厳しい)</option>
+          <option value="2">第2候補まで</option>
+          <option value="3">第3候補まで</option>
+          <option value="4" selected>第4候補まで (現在の通常設定)</option>
+          <option value="5">第5候補まで (最も甘い)</option>
+        </select>
+      </div>
+      <!-- ========================================== -->
+      <!-- [DEBUG END] -->
+      <!-- ========================================== -->
 
       <!-- スタートボタン -->
       <button id="btn-start" class="btn-start">🚀 書き取りにチャレンジ！</button>
