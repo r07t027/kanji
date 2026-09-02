@@ -12,12 +12,72 @@
 </head>
 <body>
 
-  <div class="app-layout">
-    <!-- 左カラム：タイトル・進捗・問題文・通常時案内メッセージ -->
-    <aside class="left-pane">
+  <!-- ==================== メニュー（スタート）画面 ==================== -->
+  <div id="menu-view" class="menu-view">
+    <div class="menu-card">
+      <h1 class="menu-title">✏️ 漢字書き取りれんしゅう</h1>
+      
+      <!-- 1. 学年選択 -->
+      <div class="menu-section">
+        <label class="menu-label">1. がくねんを えらぶ</label>
+        <select id="select-grade" class="custom-select">
+          <option value="5" selected>小学5年生</option>
+        </select>
+      </div>
+
+      <!-- 2. 単元選択 -->
+      <div class="menu-section">
+        <label class="menu-label">2. もんだいを えらぶ（全44回・各5問）</label>
+        
+        <!-- 学期切り替えタブ -->
+        <div class="term-tabs">
+          <button type="button" class="term-tab active" data-term="1">1学期 (24回)</button>
+          <button type="button" class="term-tab" data-term="2">2学期 (20回)</button>
+        </div>
+
+        <!-- 単元ボタン一覧（スクロール付きグリッド） -->
+        <div id="set-grid-container" class="set-grid-container"></div>
+      </div>
+
+      <!-- 3. 利き手選択 -->
+      <div class="menu-section">
+        <label class="menu-label">3. きき手を えらぶ</label>
+        <div class="hand-selector">
+          <label class="hand-option">
+            <input type="radio" name="hand-mode" value="right" checked>
+            <span class="hand-card">
+              <span class="hand-icon">✋</span>
+              <span class="hand-title">みぎきき</span>
+              <span class="hand-desc">左: 問題 / 右: 書く</span>
+            </span>
+          </label>
+          <label class="hand-option">
+            <input type="radio" name="hand-mode" value="left">
+            <span class="hand-card">
+              <span class="hand-icon">🤚</span>
+              <span class="hand-title">ひだりきき</span>
+              <span class="hand-desc">左: 書く / 右: 問題</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- スタートボタン -->
+      <button id="btn-start" class="btn-start">🚀 書き取りにチャレンジ！</button>
+    </div>
+  </div>
+
+  <!-- ==================== 練習アプリ画面 ==================== -->
+  <div id="practice-view" class="app-layout" style="display: none;">
+    <!-- 問題提示・ナビゲーションペイン（右利き時は左、左利き時は右） -->
+    <aside class="problem-pane">
       <div class="header-section">
-        <h1>漢字書き取りれんしゅう</h1>
-        <div class="progress-bar" id="progress-text">もんだい 1 / 10</div>
+        <div class="header-top-row">
+          <h1>漢字書き取りれんしゅう</h1>
+          <button id="btn-back-menu" class="btn-back-menu" title="メニューに戻る">🏠 もどる</button>
+        </div>
+        <div class="unit-title" id="unit-title-display">1学期 第01回</div>
+        <div class="progress-bar" id="progress-text">もんだい 1 / 5</div>
       </div>
 
       <!-- 問題カード -->
@@ -32,9 +92,9 @@
       </div>
     </aside>
 
-    <!-- 右カラム：手書き描画エリア または 判定結果カード ＋ アドバイスメッセージ＆やり直すボタン -->
-    <main class="right-pane">
-      <!-- 判定結果画面（正解・不正解共通：右カラム内にカード＋メッセージ＋ボタンを集約） -->
+    <!-- 描画・結果確認ペイン（右利き時は右、左利き時は左） -->
+    <main class="canvas-pane">
+      <!-- 判定結果画面（正解・不正解共通） -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
         <div class="cards-column">
           <!-- あなたの答えカード（上段） -->
@@ -83,6 +143,18 @@
           <button id="btn-prev" class="btn-prev" style="display: none;">前の文字へ</button>
           <button id="btn-next" class="btn-next">次の文字へ ➔</button>
           <button id="btn-check" class="btn-check" disabled>答え合わせ！</button>
+        </div>
+      </div>
+
+      <!-- 全問クリア画面（描画ペイン中央にダイナミック表示） -->
+      <div class="all-clear-area" id="all-clear-container" style="display: none;">
+        <div class="clear-badge">💮</div>
+        <div class="clear-title">はなまる満点！</div>
+        <div class="clear-subtitle">全5問クリア！よくがんばったね！</div>
+        <div class="clear-actions">
+          <button id="btn-clear-retry" class="btn-clear-action">もう一度この問題をとく</button>
+          <button id="btn-clear-next" class="btn-clear-action btn-next-set">つぎの回にすすむ ➔</button>
+          <button id="btn-clear-menu" class="btn-clear-action btn-back-home">メニューにもどる</button>
         </div>
       </div>
     </main>

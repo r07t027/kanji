@@ -8,7 +8,7 @@ const SOUND_FILES = {
   complete: 'assets/audio/complete.mp3'
 };
 
-function getAudioContext() {
+export function getAudioContext() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
@@ -23,6 +23,13 @@ async function loadSound(name, url) {
     audioBuffers[name] = await ctx.decodeAudioData(arrayBuffer);
   } catch (err) {
     console.warn(`音声ファイルの読み込み/デコードに失敗しました (${name}):`, err);
+  }
+}
+
+export function ensureAudioUnlocked() {
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume();
   }
 }
 
@@ -50,10 +57,12 @@ export function initAudioUnlock() {
 
     window.removeEventListener('pointerdown', unlock);
     window.removeEventListener('touchstart', unlock);
+    window.removeEventListener('keydown', unlock);
   };
 
   window.addEventListener('pointerdown', unlock);
   window.addEventListener('touchstart', unlock);
+  window.addEventListener('keydown', unlock);
 }
 
 function playBuffer(name) {

@@ -3,13 +3,18 @@ import { KanjiVGPlayer } from './kanjivg.js';
 
 export class UIController {
   constructor() {
-    // 左ペイン要素
+    // 画面ビュー
+    this.menuView = document.getElementById('menu-view');
+    this.practiceView = document.getElementById('practice-view');
+
+    // 問題提示ペイン要素
+    this.unitTitleDisplay = document.getElementById('unit-title-display');
     this.questionTextEl = document.getElementById('question-text');
     this.questionNoticeEl = document.getElementById('question-notice');
     this.progressEl = document.getElementById('progress-text');
     this.statusEl = document.getElementById('status-message');
 
-    // 右ペイン要素（描画エリア）
+    // 描画・結果確認ペイン要素
     this.drawingContainer = document.getElementById('drawing-container');
     this.charTabsEl = document.getElementById('char-tabs');
     this.strokeInfoEl = document.getElementById('stroke-info');
@@ -19,13 +24,34 @@ export class UIController {
     this.btnNext = document.getElementById('btn-next');
     this.btnCheck = document.getElementById('btn-check');
 
-    // 右ペイン要素（判定結果比較・アドバイス・やり直しボタン）
+    // 判定結果表示要素
     this.resultComparisonArea = document.getElementById('result-comparison-area');
     this.correctCardTitleEl = document.getElementById('correct-card-title');
     this.correctCharsContainer = document.getElementById('correct-chars-container');
     this.userCanvasesContainer = document.getElementById('user-canvases-container');
     this.resultLabelEl = document.getElementById('result-label');
     this.btnRestartAll = document.getElementById('btn-restart-all');
+
+    // 全問クリア画面要素（描画ペイン中央）
+    this.allClearContainer = document.getElementById('all-clear-container');
+  }
+
+  setHandedness(isLeftHanded) {
+    if (isLeftHanded) {
+      this.practiceView.classList.add('left-handed');
+    } else {
+      this.practiceView.classList.remove('left-handed');
+    }
+  }
+
+  showMenuView() {
+    this.practiceView.style.display = 'none';
+    this.menuView.style.display = 'flex';
+  }
+
+  showPracticeView() {
+    this.menuView.style.display = 'none';
+    this.practiceView.style.display = 'flex';
   }
 
   setMessage(text, type = '') {
@@ -34,7 +60,8 @@ export class UIController {
     this.statusEl.style.display = text ? 'block' : 'none';
   }
 
-  updateQuestionHeader(qIndex, totalQuestions, sentenceHtml, noticeText) {
+  updateQuestionHeader(unitTitle, qIndex, totalQuestions, sentenceHtml, noticeText) {
+    this.unitTitleDisplay.textContent = unitTitle;
     this.questionTextEl.innerHTML = sentenceHtml;
     this.progressEl.textContent = `もんだい ${qIndex + 1} / ${totalQuestions}`;
 
@@ -45,9 +72,9 @@ export class UIController {
       this.questionNoticeEl.style.display = 'none';
     }
 
-    // 通常描画状態にリセット
     this.drawingContainer.style.display = 'flex';
     this.resultComparisonArea.style.display = 'none';
+    this.allClearContainer.style.display = 'none';
     this.resultLabelEl.textContent = '';
     this.btnRestartAll.style.display = 'none';
   }
@@ -99,11 +126,7 @@ export class UIController {
     return /[\u4E00-\u9FAF\u3400-\u4DBF]/.test(char);
   }
 
-  /**
-   * 判定結果画面の描画（右カラム内に比較カード ＋ アドバイスメッセージ ＋ やり直すボタン）
-   */
   showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
-    // 1. 上段: あなたの答えの描画 (縮小Canvas)
     this.userCanvasesContainer.innerHTML = '';
     userInputs.forEach((input, index) => {
       const isCharOk = charResults[index];
@@ -141,7 +164,6 @@ export class UIController {
       this.userCanvasesContainer.appendChild(wrapper);
     });
 
-    // 2. 下段: 正解のお手本の描画（KanjiVG SVG / ひらがなはフォント）
     this.correctCharsContainer.innerHTML = '';
 
     if (isAllSuccess) {
@@ -166,21 +188,22 @@ export class UIController {
       this.correctCharsContainer.appendChild(item);
     });
 
-    // 3. 右カラム下部のアドバイスメッセージ & やり直すボタンの制御
     this.resultLabelEl.innerHTML = messageHtml;
     this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
     this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
 
-    // 4. ペイン表示切り替え
     this.drawingContainer.style.display = 'none';
     this.resultComparisonArea.style.display = 'flex';
   }
 
   showAllClear() {
+    this.drawingContainer.style.display = 'none';
     this.resultComparisonArea.style.display = 'none';
+    this.allClearContainer.style.display = 'flex';
+
     this.progressEl.textContent = '全問クリア！';
     this.questionNoticeEl.style.display = 'none';
-    this.questionTextEl.innerHTML = '🎉 はなまる満点！<br>おめでとう！ 🏆';
-    this.setMessage('すべての問題をクリアしました！', 'success');
+    this.questionTextEl.innerHTML = 'たいへんよく<br>できました！';
+    this.setMessage('満点クリアです！', 'success');
   }
 }
