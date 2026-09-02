@@ -13,7 +13,7 @@
 <body>
 
   <div class="app-layout">
-    <!-- 左カラム：タイトル・進捗・問題文・アドバイス・やり直すボタン -->
+    <!-- 左カラム：タイトル・進捗・問題文・通常時案内メッセージ -->
     <aside class="left-pane">
       <div class="header-section">
         <h1>漢字書き取りれんしゅう</h1>
@@ -26,17 +26,15 @@
         <div class="question-sentence" id="question-text"></div>
       </div>
 
-      <!-- 左側メッセージ・アドバイス・操作エリア -->
+      <!-- 左側通常メッセージエリア -->
       <div class="feedback-area">
         <div id="status-message" class="status-msg"></div>
-        <div id="result-label" class="result-label" style="display: none;"></div>
-        <button id="btn-restart-all" class="btn-restart-all" style="display: none;">やり直す</button>
       </div>
     </aside>
 
-    <!-- 右カラム：手書き描画エリア または 判定結果カード -->
+    <!-- 右カラム：手書き描画エリア または 判定結果カード ＋ アドバイスメッセージ＆やり直すボタン -->
     <main class="right-pane">
-      <!-- 判定結果画面（正解・不正解共通） -->
+      <!-- 判定結果画面（正解・不正解共通：右カラム内にカード＋メッセージ＋ボタンを集約） -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
         <div class="cards-column">
           <!-- あなたの答えカード（上段） -->
@@ -51,6 +49,10 @@
             <div class="correct-chars-container" id="correct-chars-container"></div>
           </div>
         </div>
+
+        <!-- 視線移動ゼロ：結果カードのすぐ下にアドバイスメッセージとやり直すボタンを配置 -->
+        <div id="result-label" class="result-label"></div>
+        <button id="btn-restart-all" class="btn-restart-all">やり直す</button>
       </div>
 
       <!-- 手書き描画メインエリア -->
