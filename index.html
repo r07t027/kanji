@@ -12,71 +12,79 @@
 </head>
 <body>
 
-  <h1>漢字書き取りれんしゅう</h1>
-  <div class="progress-bar" id="progress-text">もんだい 1 / 10</div>
-
-  <!-- 問題カード -->
-  <div class="question-card">
-    <div id="question-notice" class="question-notice" style="display: none;"></div>
-    <div class="question-sentence" id="question-text"></div>
-  </div>
-
-  <!-- 判定結果画面（正解・不正解共通） -->
-  <div class="result-comparison-area" id="result-comparison-area">
-    <div class="cards-column">
-      <!-- あなたの答えカード（上段） -->
-      <div class="compare-card user-card">
-        <div class="user-title">✏️ あなたの答え</div>
-        <div class="user-canvases-container" id="user-canvases-container"></div>
+  <div class="app-layout">
+    <!-- 左カラム：タイトル・進捗・問題文・アドバイス・やり直すボタン -->
+    <aside class="left-pane">
+      <div class="header-section">
+        <h1>漢字書き取りれんしゅう</h1>
+        <div class="progress-bar" id="progress-text">もんだい 1 / 10</div>
       </div>
 
-      <!-- 正解のお手本カード（下段・クリックで筆順再生） -->
-      <div class="compare-card correct-card">
-        <div class="correct-title" id="correct-card-title">💡 正解のお手本（教科書体）</div>
-        <div class="correct-chars-container" id="correct-chars-container"></div>
-      </div>
-    </div>
-
-    <!-- メッセージ欄（正解！ または 間違いのアドバイス） -->
-    <div id="result-label" class="result-label"></div>
-
-    <!-- やり直すボタン（不正解時のみ表示） -->
-    <button id="btn-restart-all" class="btn-restart-all">やり直す</button>
-  </div>
-
-  <!-- 手書き描画メインエリア（判定時は非表示） -->
-  <div class="main-container" id="drawing-container">
-    <div class="char-tabs" id="char-tabs"></div>
-
-    <!-- アンドゥ・キャンバス・リドゥを左右に配置するラッパー -->
-    <div class="canvas-row-wrapper">
-      <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>
-        <span class="history-icon">↶</span>
-        <span class="history-text">1画もどす</span>
-      </button>
-
-      <div class="box">
-        <canvas id="draw-canvas" width="300" height="300"></canvas>
+      <!-- 問題カード -->
+      <div class="question-card">
+        <div id="question-notice" class="question-notice" style="display: none;"></div>
+        <div class="question-sentence" id="question-text"></div>
       </div>
 
-      <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>
-        <span class="history-icon">↷</span>
-        <span class="history-text">1画すすむ</span>
-      </button>
-    </div>
+      <!-- 左側メッセージ・アドバイス・操作エリア -->
+      <div class="feedback-area">
+        <div id="status-message" class="status-msg"></div>
+        <div id="result-label" class="result-label" style="display: none;"></div>
+        <button id="btn-restart-all" class="btn-restart-all" style="display: none;">やり直す</button>
+      </div>
+    </aside>
 
-    <div class="info-panel" id="stroke-info">いまの画数: 0画</div>
+    <!-- 右カラム：手書き描画エリア または 判定結果カード -->
+    <main class="right-pane">
+      <!-- 判定結果画面（正解・不正解共通） -->
+      <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
+        <div class="cards-column">
+          <!-- あなたの答えカード（上段） -->
+          <div class="compare-card user-card">
+            <div class="user-title">✏️ あなたの答え</div>
+            <div class="user-canvases-container" id="user-canvases-container"></div>
+          </div>
 
-    <div class="controls">
-      <button id="btn-reset" class="btn-reset">この文字を消す</button>
-      <button id="btn-prev" class="btn-prev" style="display: none;">前の文字へ</button>
-      <button id="btn-next" class="btn-next">次の文字へ ➔</button>
-      <button id="btn-check" class="btn-check" disabled>答え合わせ！</button>
-    </div>
+          <!-- 正解のお手本カード（下段・クリックで筆順再生） -->
+          <div class="compare-card correct-card">
+            <div class="correct-title" id="correct-card-title">💡 正解のお手本（教科書体）</div>
+            <div class="correct-chars-container" id="correct-chars-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 手書き描画メインエリア -->
+      <div class="drawing-main-area" id="drawing-container">
+        <div class="char-tabs" id="char-tabs"></div>
+
+        <!-- アンドゥ・キャンバス・リドゥを左右に配置するラッパー -->
+        <div class="canvas-row-wrapper">
+          <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>
+            <span class="history-icon">↶</span>
+            <span class="history-text">1画もどす</span>
+          </button>
+
+          <div class="box">
+            <canvas id="draw-canvas" width="260" height="260"></canvas>
+          </div>
+
+          <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>
+            <span class="history-icon">↷</span>
+            <span class="history-text">1画すすむ</span>
+          </button>
+        </div>
+
+        <div class="info-panel" id="stroke-info">いまの画数: 0画</div>
+
+        <div class="controls">
+          <button id="btn-reset" class="btn-reset">この文字を消す</button>
+          <button id="btn-prev" class="btn-prev" style="display: none;">前の文字へ</button>
+          <button id="btn-next" class="btn-next">次の文字へ ➔</button>
+          <button id="btn-check" class="btn-check" disabled>答え合わせ！</button>
+        </div>
+      </div>
+    </main>
   </div>
-
-  <!-- 通常時の案内メッセージ -->
-  <div id="status-message" class="status-msg"></div>
 
   <!-- ES Modules形式でエントリーポイントを読み込み -->
   <script type="module" src="js/main.js"></script>
