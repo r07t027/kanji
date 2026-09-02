@@ -13,14 +13,21 @@ async function callApi(action, payload = {}) {
     const res = await fetch(GAS_API_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'text/plain;charset=utf-8' // GASのCORSプレフライト回避用
+        'Content-Type': 'text/plain;charset=utf-8'
       },
-      body: JSON.stringify({ action, payload })
+      body: JSON.stringify({ action, payload }),
+      redirect: 'follow' // GASの302リダイレクトを確実に追跡
     });
-    return await res.json();
+
+    if (!res.ok) {
+      throw new Error(`HTTP Error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data;
   } catch (err) {
     console.error(`GAS API Error (${action}):`, err);
-    return { success: false, message: '通信に失敗しました。' };
+    return { success: false, message: `通信エラー: ${err.message}` };
   }
 }
 
