@@ -1,6 +1,6 @@
 /**
  * logger.js
- * Google Apps Script (GAS) Web API 連携モジュール
+ * Google Apps Script (GAS) Web API 連携モジュール (事前先読み対応)
  */
 
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyaVMcWyIW9KXYQ6WvUm6MwKA2i4ZpykFZ5xrW6ehWomoy7Jkj4leCr3jKWZG5LcfGn/exec';
@@ -16,7 +16,7 @@ async function callApi(action, payload = {}) {
         'Content-Type': 'text/plain;charset=utf-8'
       },
       body: JSON.stringify({ action, payload }),
-      redirect: 'follow' // GASの302リダイレクトを確実に追跡
+      redirect: 'follow'
     });
 
     if (!res.ok) {
@@ -32,17 +32,25 @@ async function callApi(action, payload = {}) {
 }
 
 /**
- * ログイン画面用: クラス名・児童名簿リストの取得
+ * 静的JSONからクラス・児童名簿をミリ秒で取得（初回0秒描画）
  */
-export async function fetchClassAndUsers() {
-  return await callApi('getClassesAndUsers');
+export async function fetchClassAndUsersFromLocal() {
+  try {
+    const res = await fetch('data/users.json');
+    if (!res.ok) throw new Error('users.json not found');
+    const data = await res.json();
+    return { success: true, ...data };
+  } catch (e) {
+    console.error('users.jsonの読み込みに失敗しました:', e);
+    return { success: false, classes: [], users: [] };
+  }
 }
 
 /**
- * ログイン認証: PIN照合 & 進捗サマリーデータ取得
+ * 起動時に裏側でスプレッドシートの全データを事前先読み
  */
-export async function loginUser(userId, pin) {
-  return await callApi('login', { userId, pin });
+export function prefetchAllDataAsync() {
+  return callApi('prefetchAllData');
 }
 
 /**
