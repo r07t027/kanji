@@ -15,8 +15,8 @@ class KanjiApp {
     this.userInputs = [];
     this.isLeftHanded = false;
 
-    // [DEBUG] 判定許容候補数の保持（デフォルト: 4）
-    this.debugCandidateLimit = 4;
+    // OCR許容順位を「第2候補まで」に固定設定
+    this.candidateLimit = 2;
 
     // ユーザー情報・進捗サマリー・セッションログ
     this.currentUser = null;
@@ -24,7 +24,7 @@ class KanjiApp {
     this.currentSessionLogs = [];
     this.currentMistakes = [];
 
-    // 事前先読み（プリフェッチ）プロミス保持用
+    // 事前先読みプロミス
     this.prefetchPromise = null;
 
     this.ui = new UIController();
@@ -40,7 +40,7 @@ class KanjiApp {
     initAudioUnlock();
     this.bindEvents();
 
-    // 1. 起動と同時にバックグラウンドでスプレッドシートの先読みを開始（待機しない）
+    // 1. 起動と同時にバックグラウンドでスプレッドシートの先読みを開始
     this.prefetchPromise = prefetchAllDataAsync();
 
     // 2. 問題データの取得
@@ -67,7 +67,7 @@ class KanjiApp {
     const btnSubmit = document.getElementById('btn-submit-login');
     const errorMsg = document.getElementById('login-error-msg');
 
-    // ① 自動ログイン判定: 過去にログイン済みなら即座にメニューへ
+    // ① 自動ログイン判定
     try {
       const savedUserJson = localStorage.getItem('kanji_current_user');
       const savedProgressJson = localStorage.getItem('kanji_user_progress');
@@ -82,7 +82,7 @@ class KanjiApp {
       }
     } catch (e) {}
 
-    // ② 未ログイン時はローカル users.json から即座にプルダウンを生成（0.05秒）
+    // ② 未ログイン時はローカル users.json から即座に描画
     const res = await fetchClassAndUsersFromLocal();
     if (!res.success) {
       selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
@@ -116,7 +116,8 @@ class KanjiApp {
       filteredUsers.forEach(u => {
         const opt = document.createElement('option');
         opt.value = u.userId;
-        opt.textContent = `${u.studentNo}ばん ${u.kanaName}`;
+        // 番号を含めず、名前（ひらがな）のみを表示
+        opt.textContent = u.kanaName;
         selectUser.appendChild(opt);
       });
       selectUser.disabled = false;
@@ -129,7 +130,7 @@ class KanjiApp {
     selectUser.addEventListener('change', checkFormReady);
     inputPin.addEventListener('input', checkFormReady);
 
-    // ③ 「ログインする」ボタン押下時（先読みデータとメモリ上で即時照合）
+    // ③ ログインボタン押下時
     btnSubmit.addEventListener('click', async () => {
       ensureAudioUnlocked();
       btnSubmit.disabled = true;
@@ -139,7 +140,6 @@ class KanjiApp {
       const selectedUserId = selectUser.value;
       const enteredPin = inputPin.value.trim();
 
-      // 裏で走っていた先読み完了を待機（通常は操作中にすでに完了しているため0秒）
       const prefetchRes = await this.prefetchPromise;
 
       if (!prefetchRes || !prefetchRes.success) {
@@ -155,12 +155,10 @@ class KanjiApp {
       const matchedUser = authMap[selectedUserId];
 
       if (matchedUser && matchedUser.pin === enteredPin) {
-        // 認証成功！
         this.currentUser = matchedUser;
         const userProgress = progressMap[selectedUserId] || { clearedSets: [], weakChars: {} };
         this.clearedSets = userProgress.clearedSets || [];
 
-        // 次回以降の自動ログイン用にキャッシュ
         localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
         localStorage.setItem('kanji_user_progress', JSON.stringify(userProgress));
 
@@ -207,7 +205,7 @@ class KanjiApp {
 
   bindEvents() {
     document.getElementById('btn-logout').addEventListener('click', () => {
-      if (confirm('別のなまえで ログインしなおしますか？')) {
+      if (confirm('ログアウトして、別のなまえで ログインしなおしますか？')) {
         this.logout();
       }
     });
@@ -267,12 +265,6 @@ class KanjiApp {
       this.isLeftHanded = (handVal === 'left');
       this.savePreferences();
       this.ui.setHandedness(this.isLeftHanded);
-
-      const debugSelect = document.getElementById('select-debug-candidates');
-      if (debugSelect) {
-        this.debugCandidateLimit = parseInt(debugSelect.value, 10) || 4;
-      }
-
       this.startSet(this.selectedSetId);
     });
 
@@ -299,7 +291,7 @@ class KanjiApp {
   setupMenuUI() {
     if (!this.gradeData) return;
 
-    const termTabs = document.querySelectorAll('.term-tab');
+    const termTabs = document.querySelectorAll('.term-tab:not(.term-tab-disabled)');
     const container = document.getElementById('set-grid-container');
 
     const renderGrid = (termNum) => {
@@ -335,7 +327,7 @@ class KanjiApp {
 
     termTabs.forEach(tab => {
       tab.onclick = () => {
-        termTabs.forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         renderGrid(tab.dataset.term);
       };
@@ -576,7 +568,8 @@ class KanjiApp {
         const candidates = await recognizeChar(input.strokesData);
         const recognized = candidates[0] || '';
 
-        const isCharMatched = candidates.slice(0, this.debugCandidateLimit).includes(target.char);
+        // 第2候補までで判定
+        const isCharMatched = candidates.slice(0, this.candidateLimit).includes(target.char);
 
         if (!isCharMatched) {
           charResults.push(false);

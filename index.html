@@ -16,7 +16,7 @@
   <div id="login-modal" class="login-modal-overlay">
     <div class="login-card">
       <h2 class="login-title">🎒 だれが れんしゅうする？</h2>
-      <p class="login-desc">クラスと なまえを えらんで、４けたの パスワードをいれてね！</p>
+      <p class="login-desc">クラスと なまえを えらんで、パスワードを いれてね！</p>
 
       <!-- 1. クラス選択 -->
       <div class="login-section">
@@ -53,7 +53,7 @@
       <!-- ログイン中ユーザー表示バー -->
       <div id="user-info-bar" class="user-info-bar" style="display: none;">
         <span class="user-welcome">👤 <span id="user-display-name">---</span> さん</span>
-        <button type="button" id="btn-logout" class="btn-logout-small">切り替える</button>
+        <button type="button" id="btn-logout" class="btn-logout-small">ログアウト</button>
       </div>
 
       <h1 class="menu-title">✏️ 漢字書き取りれんしゅう</h1>
@@ -70,17 +70,18 @@
       <div class="menu-section">
         <label class="menu-label">2. もんだいを えらぶ（全44回・各5問）</label>
         
-        <!-- 学期切り替えタブ -->
+        <!-- 学期切り替えタブ（3学期を準備中として追加） -->
         <div class="term-tabs">
           <button type="button" class="term-tab active" data-term="1">1学期 (24回)</button>
           <button type="button" class="term-tab" data-term="2">2学期 (20回)</button>
+          <button type="button" class="term-tab term-tab-disabled" disabled title="準備中です">3学期 (準備中)</button>
         </div>
 
-        <!-- 単元ボタン一覧（スクロール付きグリッド） -->
+        <!-- 単元ボタン一覧（横8列グリッド） -->
         <div id="set-grid-container" class="set-grid-container"></div>
       </div>
 
-      <!-- 3. 利き手選択（ひだりきき: 左 / みぎきき: 右） -->
+      <!-- 3. 利き手選択（コンパクト1行デザイン） -->
       <div class="menu-section">
         <label class="menu-label">3. きき手を えらぶ</label>
         <div class="hand-selector">
@@ -90,7 +91,6 @@
             <span class="hand-card">
               <span class="hand-icon">🤚</span>
               <span class="hand-title">ひだりきき</span>
-              <span class="hand-desc">左: 書く / 右: 問題</span>
             </span>
           </label>
           <!-- みぎきき（右側に配置・初期選択） -->
@@ -99,30 +99,10 @@
             <span class="hand-card">
               <span class="hand-icon">✋</span>
               <span class="hand-title">みぎきき</span>
-              <span class="hand-desc">左: 問題 / 右: 書く</span>
             </span>
           </label>
         </div>
       </div>
-
-      <!-- ========================================== -->
-      <!-- [DEBUG START] 候補数切り替え (動作確認後にブロックごと削除可能) -->
-      <!-- ========================================== -->
-      <div id="debug-candidate-section" class="menu-section" style="background: #fff8e1; border: 1.5px dashed #ffa000; padding: 10px 14px; border-radius: 12px; margin-top: 4px;">
-        <label for="select-debug-candidates" class="menu-label" style="color: #b78103; font-size: 0.85rem;">
-          ⚙️ 【検証用】OCR判定の許容候補順位
-        </label>
-        <select id="select-debug-candidates" class="custom-select" style="padding: 6px 10px; font-size: 0.9rem; background-color: #fff;">
-          <option value="1">第1候補のみ (最も厳しい)</option>
-          <option value="2">第2候補まで</option>
-          <option value="3">第3候補まで</option>
-          <option value="4" selected>第4候補まで (現在の通常設定)</option>
-          <option value="5">第5候補まで (最も甘い)</option>
-        </select>
-      </div>
-      <!-- ========================================== -->
-      <!-- [DEBUG END] -->
-      <!-- ========================================== -->
 
       <!-- スタートボタン -->
       <button id="btn-start" class="btn-start">🚀 書き取りにチャレンジ！</button>
@@ -131,7 +111,7 @@
 
   <!-- ==================== 練習アプリ画面 ==================== -->
   <div id="practice-view" class="app-layout" style="display: none;">
-    <!-- 問題提示・ナビゲーションペイン（右利き時は左、左利き時は右） -->
+    <!-- 問題提示・ナビゲーションペイン -->
     <aside class="problem-pane">
       <div class="header-section">
         <div class="header-top-row">
@@ -148,31 +128,30 @@
         <div class="question-sentence" id="question-text"></div>
       </div>
 
-      <!-- 左側通常メッセージエリア -->
+      <!-- メッセージエリア -->
       <div class="feedback-area">
         <div id="status-message" class="status-msg"></div>
       </div>
     </aside>
 
-    <!-- 描画・結果確認ペイン（右利き時は右、左利き時は左） -->
+    <!-- 描画・結果確認ペイン -->
     <main class="canvas-pane">
-      <!-- 判定結果画面（正解・不正解共通） -->
+      <!-- 判定結果画面 -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
         <div class="cards-column">
-          <!-- あなたの答えカード（上段） -->
+          <!-- あなたの答えカード -->
           <div class="compare-card user-card">
             <div class="user-title">✏️ あなたの答え</div>
             <div class="user-canvases-container" id="user-canvases-container"></div>
           </div>
 
-          <!-- 正解のお手本カード（下段・クリックで筆順再生） -->
+          <!-- 正解のお手本カード -->
           <div class="compare-card correct-card">
             <div class="correct-title" id="correct-card-title">💡 正解のお手本（教科書体）</div>
             <div class="correct-chars-container" id="correct-chars-container"></div>
           </div>
         </div>
 
-        <!-- 視線移動ゼロ：結果カードのすぐ下にアドバイスメッセージとやり直すボタンを配置 -->
         <div id="result-label" class="result-label"></div>
         <button id="btn-restart-all" class="btn-restart-all">やり直す</button>
       </div>
@@ -181,7 +160,6 @@
       <div class="drawing-main-area" id="drawing-container">
         <div class="char-tabs" id="char-tabs"></div>
 
-        <!-- アンドゥ・キャンバス・リドゥを左右に配置するラッパー -->
         <div class="canvas-row-wrapper">
           <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>
             <span class="history-icon">↶</span>
@@ -208,7 +186,7 @@
         </div>
       </div>
 
-      <!-- 全問クリア画面（描画ペイン中央にダイナミック表示） -->
+      <!-- 全問クリア画面 -->
       <div class="all-clear-area" id="all-clear-container" style="display: none;">
         <div class="clear-badge">💮</div>
         <div class="clear-title">はなまる満点！</div>
@@ -222,7 +200,6 @@
     </main>
   </div>
 
-  <!-- ES Modules形式でエントリーポイントを読み込み -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
