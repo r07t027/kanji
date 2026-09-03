@@ -1,0 +1,8 @@
+{
+  "classes": ["5年1組", "5年2組"],
+  "users": [
+    { "userId": "u_501", "className": "5年1組", "studentNo": 1, "kanaName": "たろう" },
+    { "userId": "u_502", "className": "5年1組", "studentNo": 2, "kanaName": "はなこ" },
+    { "userId": "u_503", "className": "5年2組", "studentNo": 1, "kanaName": "そうた" }
+  ]
+}
