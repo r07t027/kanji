@@ -15,7 +15,7 @@ class KanjiApp {
     this.userInputs = [];
     this.isLeftHanded = false;
 
-    // OCR許容順位を「第2候補まで」に固定設定
+    // OCR判定は「第2候補まで」に固定設定
     this.candidateLimit = 2;
 
     // ユーザー情報・進捗サマリー・セッションログ
@@ -102,21 +102,22 @@ class KanjiApp {
 
     selectClass.addEventListener('change', () => {
       const selectedClass = selectClass.value;
-      selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
       inputPin.value = '';
       btnSubmit.disabled = true;
       errorMsg.style.display = 'none';
 
+      // クラスが未選択に戻った場合、「なまえを えらんでね」を表示してグレーアウト
       if (!selectedClass) {
+        selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
         selectUser.disabled = true;
         return;
       }
 
+      selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
       const filteredUsers = users.filter(u => u.className === selectedClass);
       filteredUsers.forEach(u => {
         const opt = document.createElement('option');
         opt.value = u.userId;
-        // 番号を含めず、名前（ひらがな）のみを表示
         opt.textContent = u.kanaName;
         selectUser.appendChild(opt);
       });
@@ -146,7 +147,7 @@ class KanjiApp {
         errorMsg.textContent = 'データの接続に失敗しました。もう一度お試しください。';
         errorMsg.style.display = 'block';
         btnSubmit.disabled = false;
-        btnSubmit.textContent = 'ログインする ➔';
+        btnSubmit.textContent = 'ログインする';
         this.prefetchPromise = prefetchAllDataAsync();
         return;
       }
@@ -169,7 +170,7 @@ class KanjiApp {
         errorMsg.textContent = 'パスワードがちがいます。';
         errorMsg.style.display = 'block';
         btnSubmit.disabled = false;
-        btnSubmit.textContent = 'ログインする ➔';
+        btnSubmit.textContent = 'ログインする';
       }
     });
 

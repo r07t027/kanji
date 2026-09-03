@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>漢字書き取りれんしゅう</title>
+  <title>書きトレ - 漢字書き取りれんしゅう</title>
   <!-- Google Fonts: Klee One, M PLUS Rounded 1c -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,8 +15,10 @@
   <!-- ==================== ログインモーダル ==================== -->
   <div id="login-modal" class="login-modal-overlay">
     <div class="login-card">
-      <h2 class="login-title">🎒 だれが れんしゅうする？</h2>
-      <p class="login-desc">クラスと なまえを えらんで、パスワードを いれてね！</p>
+      <!-- アプリロゴ画像 -->
+      <div class="login-logo-container">
+        <img src="assets/images/logo_01.png" alt="書きトレ 小学生の漢字練習アプリ" class="login-logo-img">
+      </div>
 
       <!-- 1. クラス選択 -->
       <div class="login-section">
@@ -26,11 +28,11 @@
         </select>
       </div>
 
-      <!-- 2. 名前選択 -->
+      <!-- 2. 名前選択（初期状態は「なまえを えらんでね」でグレーアウト） -->
       <div class="login-section">
         <label for="select-user" class="login-label">② なまえ</label>
         <select id="select-user" class="custom-select" disabled>
-          <option value="">クラスを えらんでね</option>
+          <option value="">なまえを えらんでね</option>
         </select>
       </div>
 
@@ -42,7 +44,7 @@
 
       <div id="login-error-msg" class="login-error-msg" style="display: none;"></div>
 
-      <button type="button" id="btn-submit-login" class="btn-login-submit" disabled>ログインする ➔</button>
+      <button type="button" id="btn-submit-login" class="btn-login-submit" disabled>ログインする</button>
     </div>
   </div>
 
@@ -56,7 +58,7 @@
         <button type="button" id="btn-logout" class="btn-logout-small">ログアウト</button>
       </div>
 
-      <h1 class="menu-title">✏️ 漢字書き取りれんしゅう</h1>
+      <h1 class="menu-title">✏️ 書きトレ（漢字書き取り）</h1>
       
       <!-- 1. 学年選択 -->
       <div class="menu-section">
@@ -115,7 +117,7 @@
     <aside class="problem-pane">
       <div class="header-section">
         <div class="header-top-row">
-          <h1>漢字書き取りれんしゅう</h1>
+          <h1>書きトレ</h1>
           <button id="btn-back-menu" class="btn-back-menu" title="メニューに戻る">🏠 もどる</button>
         </div>
         <div class="unit-title" id="unit-title-display">1学期 第01回</div>
