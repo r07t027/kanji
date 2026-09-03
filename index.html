@@ -15,7 +15,6 @@
   <!-- ==================== ログインモーダル ==================== -->
   <div id="login-modal" class="login-modal-overlay">
     <div class="login-card">
-      <!-- アプリロゴ画像 -->
       <div class="login-logo-container">
         <img src="assets/images/logo_01.png" alt="書きトレ 小学生の漢字練習アプリ" class="login-logo-img">
       </div>
@@ -28,7 +27,7 @@
         </select>
       </div>
 
-      <!-- 2. 名前選択（初期状態は「なまえを えらんでね」でグレーアウト） -->
+      <!-- 2. 名前選択 -->
       <div class="login-section">
         <label for="select-user" class="login-label">② なまえ</label>
         <select id="select-user" class="custom-select" disabled>
@@ -52,17 +51,20 @@
   <div id="menu-view" class="menu-view">
     <div class="menu-card">
       
-      <!-- ログイン中ユーザー表示バー -->
-      <div id="user-info-bar" class="user-info-bar" style="display: none;">
-        <span class="user-welcome">👤 <span id="user-display-name">---</span> さん</span>
-        <button type="button" id="btn-logout" class="btn-logout-small">ログアウト</button>
+      <!-- メニュー画面トップヘッダー（左: ロゴ / 右: ユーザーバー） -->
+      <div class="menu-header-row">
+        <div class="menu-logo-container">
+          <img src="assets/images/logo_01.png" alt="書きトレ" class="menu-logo-img">
+        </div>
+        <div id="user-info-bar" class="user-info-bar" style="display: none;">
+          <span class="user-welcome">👤 <span id="user-display-name">---</span> さん</span>
+          <button type="button" id="btn-logout" class="btn-logout-small">ログアウト</button>
+        </div>
       </div>
-
-      <h1 class="menu-title">✏️ 書きトレ（漢字書き取り）</h1>
       
       <!-- 1. 学年選択 -->
       <div class="menu-section">
-        <label class="menu-label">1. がくねんを えらぶ</label>
+        <label class="menu-label">1. どの がくねんの かんじ？</label>
         <select id="select-grade" class="custom-select">
           <option value="5" selected>小学5年生</option>
         </select>
@@ -70,12 +72,12 @@
 
       <!-- 2. 単元選択 -->
       <div class="menu-section">
-        <label class="menu-label">2. もんだいを えらぶ（全44回・各5問）</label>
+        <label class="menu-label">2. もんだいを えらぶ</label>
         
-        <!-- 学期切り替えタブ（3学期を準備中として追加） -->
+        <!-- 学期切り替えタブ -->
         <div class="term-tabs">
-          <button type="button" class="term-tab active" data-term="1">1学期 (24回)</button>
-          <button type="button" class="term-tab" data-term="2">2学期 (20回)</button>
+          <button type="button" class="term-tab active" data-term="1">1学期</button>
+          <button type="button" class="term-tab" data-term="2">2学期</button>
           <button type="button" class="term-tab term-tab-disabled" disabled title="準備中です">3学期 (準備中)</button>
         </div>
 
@@ -83,11 +85,10 @@
         <div id="set-grid-container" class="set-grid-container"></div>
       </div>
 
-      <!-- 3. 利き手選択（コンパクト1行デザイン） -->
+      <!-- 3. 利き手選択 -->
       <div class="menu-section">
         <label class="menu-label">3. きき手を えらぶ</label>
         <div class="hand-selector">
-          <!-- ひだりきき（左側に配置） -->
           <label class="hand-option">
             <input type="radio" name="hand-mode" value="left">
             <span class="hand-card">
@@ -95,7 +96,6 @@
               <span class="hand-title">ひだりきき</span>
             </span>
           </label>
-          <!-- みぎきき（右側に配置・初期選択） -->
           <label class="hand-option">
             <input type="radio" name="hand-mode" value="right" checked>
             <span class="hand-card">
@@ -106,8 +106,8 @@
         </div>
       </div>
 
-      <!-- スタートボタン -->
-      <button id="btn-start" class="btn-start">🚀 書き取りにチャレンジ！</button>
+      <!-- スタートボタン（アイコン除去） -->
+      <button id="btn-start" class="btn-start">書き取りにチャレンジ！</button>
     </div>
   </div>
 
@@ -120,7 +120,7 @@
           <h1>書きトレ</h1>
           <button id="btn-back-menu" class="btn-back-menu" title="メニューに戻る">🏠 もどる</button>
         </div>
-        <div class="unit-title" id="unit-title-display">1学期 第01回</div>
+        <div class="unit-title" id="unit-title-display">1学期 その1</div>
         <div class="progress-bar" id="progress-text">もんだい 1 / 5</div>
       </div>
 
@@ -141,13 +141,11 @@
       <!-- 判定結果画面 -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
         <div class="cards-column">
-          <!-- あなたの答えカード -->
           <div class="compare-card user-card">
             <div class="user-title">✏️ あなたの答え</div>
             <div class="user-canvases-container" id="user-canvases-container"></div>
           </div>
 
-          <!-- 正解のお手本カード -->
           <div class="compare-card correct-card">
             <div class="correct-title" id="correct-card-title">💡 正解のお手本（教科書体）</div>
             <div class="correct-chars-container" id="correct-chars-container"></div>

@@ -48,7 +48,6 @@ body {
   text-align: center;
 }
 
-/* ロゴ画像コンテナ（参考画像に合わせて幅・余白を調整） */
 .login-logo-container {
   width: 100%;
   display: flex;
@@ -58,8 +57,8 @@ body {
 }
 
 .login-logo-img {
-  width: 82%;            /* モーダルカード幅に対してバランスよく収まるサイズ */
-  max-width: 310px;      /* 大きすぎず小さすぎない上限サイズ */
+  width: 82%;
+  max-width: 310px;
   height: auto;
   object-fit: contain;
   display: block;
@@ -125,39 +124,6 @@ body {
   box-shadow: none;
 }
 
-/* ユーザー情報ヘッダー */
-.user-info-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #e3f2fd;
-  border: 1px solid #bbdefb;
-  border-radius: 10px;
-  padding: 6px 14px;
-  margin-bottom: 2px;
-}
-
-.user-welcome {
-  font-size: 0.92rem;
-  font-weight: bold;
-  color: #1565c0;
-}
-
-.btn-logout-small {
-  background: #fff;
-  color: #d32f2f;
-  border: 1px solid #ffcdd2;
-  font-size: 0.78rem;
-  font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-.btn-logout-small:hover {
-  background: #ffebee;
-}
-
 /* ========================================================
    メニュー画面 (スタート画面)
    ======================================================== */
@@ -184,11 +150,56 @@ body {
   overflow-y: auto;
 }
 
-.menu-title {
-  margin: 0;
-  text-align: center;
-  color: #2b5876;
-  font-size: 1.7rem;
+/* メニューヘッダー行（ロゴ ＋ ユーザー情報バー） */
+.menu-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 2px;
+}
+
+.menu-logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.menu-logo-img {
+  width: 155px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ユーザー情報ヘッダー */
+.user-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 12px;
+  padding: 6px 14px;
+}
+
+.user-welcome {
+  font-size: 0.92rem;
+  font-weight: bold;
+  color: #1565c0;
+}
+
+.btn-logout-small {
+  background: #fff;
+  color: #d32f2f;
+  border: 1px solid #ffcdd2;
+  font-size: 0.78rem;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.btn-logout-small:hover {
+  background: #ffebee;
 }
 
 .menu-section {
@@ -296,7 +307,7 @@ body {
   line-height: 1;
 }
 
-/* 利き手セレクター（1行・薄型デザイン） */
+/* 利き手セレクター */
 .hand-selector {
   display: flex;
   gap: 12px;

@@ -289,7 +289,7 @@ class KanjiApp {
     });
   }
 
-  setupMenuUI() {
+setupMenuUI() {
     if (!this.gradeData) return;
 
     const termTabs = document.querySelectorAll('.term-tab:not(.term-tab-disabled)');
@@ -307,7 +307,8 @@ class KanjiApp {
         if (setObj.id === this.selectedSetId) btn.classList.add('selected');
 
         const numStr = setObj.id.split('_')[1];
-        btn.textContent = `第${parseInt(numStr, 10)}回`;
+        // 「第1回」から「その1」に変更
+        btn.textContent = `その${parseInt(numStr, 10)}`;
 
         if (this.clearedSets.includes(setObj.id)) {
           const badge = document.createElement('span');
