@@ -39,29 +39,30 @@ body {
   background: #ffffff;
   width: 100%;
   max-width: 420px;
-  padding: 24px 28px;
+  padding: 24px 28px 28px;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   text-align: center;
 }
 
-/* ロゴ画像コンテナ */
+/* ロゴ画像コンテナ（参考画像に合わせて幅・余白を調整） */
 .login-logo-container {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-bottom: 4px;
+  padding: 4px 0 8px;
 }
 
 .login-logo-img {
-  width: 100%;
-  max-width: 260px;
+  width: 82%;            /* モーダルカード幅に対してバランスよく収まるサイズ */
+  max-width: 310px;      /* 大きすぎず小さすぎない上限サイズ */
   height: auto;
   object-fit: contain;
+  display: block;
 }
 
 .login-section {
