@@ -147,7 +147,6 @@ class KanjiApp {
         errorMsg.style.display = 'block';
         btnSubmit.disabled = false;
         btnSubmit.textContent = 'ログインする ➔';
-        // 再接続を試みる
         this.prefetchPromise = prefetchAllDataAsync();
         return;
       }
@@ -317,7 +316,6 @@ class KanjiApp {
         const numStr = setObj.id.split('_')[1];
         btn.textContent = `第${parseInt(numStr, 10)}回`;
 
-        // クリア済みの場合「💮」バッジを表示[cite: 1]
         if (this.clearedSets.includes(setObj.id)) {
           const badge = document.createElement('span');
           badge.className = 'set-badge-clear';
@@ -578,7 +576,6 @@ class KanjiApp {
         const candidates = await recognizeChar(input.strokesData);
         const recognized = candidates[0] || '';
 
-        // 許容候補数内に対象文字が含まれているか照合[cite: 6]
         const isCharMatched = candidates.slice(0, this.debugCandidateLimit).includes(target.char);
 
         if (!isCharMatched) {
@@ -639,7 +636,6 @@ class KanjiApp {
               this.clearedSets.push(this.selectedSetId);
             }
 
-            // クラウド（GAS）へ非同期保存
             if (this.currentUser) {
               await saveProgressAndLogs(
                 this.currentUser.userId,
