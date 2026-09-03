@@ -3,7 +3,7 @@ import { initAudioUnlock, ensureAudioUnlocked, playCorrectSound, playFanfareSoun
 import { CanvasController } from './canvas.js';
 import { recognizeChar } from './recognition.js';
 import { UIController } from './ui.js';
-import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, saveProgressAndLogs } from './logger.js';
+import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, saveProgressAndLogs, updateHandModeApi, updatePinApi } from './logger.js';
 
 class KanjiApp {
   constructor() {
@@ -15,16 +15,14 @@ class KanjiApp {
     this.userInputs = [];
     this.isLeftHanded = false;
 
-    // OCR判定は「第2候補まで」に固定設定
+    // OCR許容順位: 第2候補まで
     this.candidateLimit = 2;
 
-    // ユーザー情報・進捗サマリー・セッションログ
     this.currentUser = null;
     this.clearedSets = [];
     this.currentSessionLogs = [];
     this.currentMistakes = [];
 
-    // 事前先読みプロミス
     this.prefetchPromise = null;
 
     this.ui = new UIController();
@@ -40,7 +38,7 @@ class KanjiApp {
     initAudioUnlock();
     this.bindEvents();
 
-    // 1. 起動と同時にバックグラウンドでスプレッドシートの先読みを開始
+    // 1. 起動と同時にバックグラウンドで先読み開始
     this.prefetchPromise = prefetchAllDataAsync();
 
     // 2. 問題データの取得
@@ -57,7 +55,7 @@ class KanjiApp {
   }
 
   /**
-   * 認証・ログインモーダル制御（事前先読み＋ローカルキャッシュ対応）
+   * 認証・ログインモーダル制御
    */
   async initAuthFlow() {
     const modal = document.getElementById('login-modal');
@@ -67,7 +65,7 @@ class KanjiApp {
     const btnSubmit = document.getElementById('btn-submit-login');
     const errorMsg = document.getElementById('login-error-msg');
 
-    // ① 自動ログイン判定
+    // 自動ログイン判定
     try {
       const savedUserJson = localStorage.getItem('kanji_current_user');
       const savedProgressJson = localStorage.getItem('kanji_user_progress');
@@ -77,12 +75,12 @@ class KanjiApp {
         this.clearedSets = progress.clearedSets || [];
         this.applyUserData();
         modal.style.display = 'none';
+        this.checkHandModeSetup();
         this.setupMenuUI();
         return;
       }
     } catch (e) {}
 
-    // ② 未ログイン時はローカル users.json から即座に描画
     const res = await fetchClassAndUsersFromLocal();
     if (!res.success) {
       selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
@@ -106,7 +104,6 @@ class KanjiApp {
       btnSubmit.disabled = true;
       errorMsg.style.display = 'none';
 
-      // クラスが未選択に戻った場合、「なまえを えらんでね」を表示してグレーアウト
       if (!selectedClass) {
         selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
         selectUser.disabled = true;
@@ -131,7 +128,6 @@ class KanjiApp {
     selectUser.addEventListener('change', checkFormReady);
     inputPin.addEventListener('input', checkFormReady);
 
-    // ③ ログインボタン押下時
     btnSubmit.addEventListener('click', async () => {
       ensureAudioUnlocked();
       btnSubmit.disabled = true;
@@ -165,6 +161,7 @@ class KanjiApp {
 
         this.applyUserData();
         modal.style.display = 'none';
+        this.checkHandModeSetup();
         this.setupMenuUI();
       } else {
         errorMsg.textContent = 'パスワードがちがいます。';
@@ -177,19 +174,87 @@ class KanjiApp {
     modal.style.display = 'flex';
   }
 
+  /**
+   * 利き手が未設定の場合は初回モーダルを表示
+   */
+  checkHandModeSetup() {
+    if (!this.currentUser) return;
+    if (!this.currentUser.handMode || this.currentUser.handMode === '') {
+      this.openHandModal(true); // 初回（閉じるボタンなし）
+    }
+  }
+
   applyUserData() {
     if (!this.currentUser) return;
 
-    // ユーザー情報バー表示
     document.getElementById('user-display-name').textContent = `${this.currentUser.className} ${this.currentUser.kanaName}`;
     document.getElementById('user-info-bar').style.display = 'flex';
 
-    // 利き手設定を反映
     const handMode = this.currentUser.handMode || 'right';
     this.isLeftHanded = (handMode === 'left');
-    const radio = document.querySelector(`input[name="hand-mode"][value="${handMode}"]`);
-    if (radio) radio.checked = true;
     this.ui.setHandedness(this.isLeftHanded);
+  }
+
+  openHandModal(isInitial = false) {
+    const handModal = document.getElementById('hand-modal');
+    const btnClose = document.getElementById('btn-close-hand-modal');
+    btnClose.style.display = isInitial ? 'none' : 'block';
+
+    const currentHand = this.currentUser?.handMode || 'right';
+    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.hand === currentHand);
+    });
+
+    handModal.style.display = 'flex';
+  }
+
+  async saveHandMode(mode) {
+    this.isLeftHanded = (mode === 'left');
+    this.currentUser.handMode = mode;
+    this.ui.setHandedness(this.isLeftHanded);
+
+    localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
+    document.getElementById('hand-modal').style.display = 'none';
+
+    // クラウド（GAS）へ非同期保存
+    await updateHandModeApi(this.currentUser.userId, mode);
+  }
+
+  openPinModal() {
+    const pinModal = document.getElementById('pin-modal');
+    const inputNewPin = document.getElementById('input-new-pin');
+    const pinMsg = document.getElementById('pin-modal-msg');
+    const btnSave = document.getElementById('btn-save-pin');
+
+    inputNewPin.value = '';
+    pinMsg.style.display = 'none';
+    btnSave.disabled = true;
+    btnSave.textContent = '保存する';
+
+    inputNewPin.oninput = () => {
+      btnSave.disabled = (inputNewPin.value.trim().length !== 4);
+    };
+
+    btnSave.onclick = async () => {
+      const newPin = inputNewPin.value.trim();
+      btnSave.disabled = true;
+      btnSave.textContent = '保存中...';
+
+      const res = await updatePinApi(this.currentUser.userId, newPin);
+      if (res.success) {
+        this.currentUser.pin = newPin;
+        localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
+        pinModal.style.display = 'none';
+        alert('パスワードを変更しました！');
+      } else {
+        pinMsg.textContent = '変更に失敗しました。';
+        pinMsg.style.display = 'block';
+        btnSave.disabled = false;
+        btnSave.textContent = '保存する';
+      }
+    };
+
+    pinModal.style.display = 'flex';
   }
 
   logout() {
@@ -198,13 +263,24 @@ class KanjiApp {
     location.reload();
   }
 
-  savePreferences() {
-    try {
-      localStorage.setItem('kanji_hand_mode', this.isLeftHanded ? 'left' : 'right');
-    } catch (e) {}
-  }
-
   bindEvents() {
+    // ユーザーバーの各ボタン
+    document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
+    document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
+      document.getElementById('hand-modal').style.display = 'none';
+    });
+
+    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.saveHandMode(btn.dataset.hand);
+      });
+    });
+
+    document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
+    document.getElementById('btn-cancel-pin').addEventListener('click', () => {
+      document.getElementById('pin-modal').style.display = 'none';
+    });
+
     document.getElementById('btn-logout').addEventListener('click', () => {
       if (confirm('ログアウトして、別のなまえで ログインしなおしますか？')) {
         this.logout();
@@ -262,10 +338,6 @@ class KanjiApp {
 
     document.getElementById('btn-start').addEventListener('click', () => {
       ensureAudioUnlocked();
-      const handVal = document.querySelector('input[name="hand-mode"]:checked').value;
-      this.isLeftHanded = (handVal === 'left');
-      this.savePreferences();
-      this.ui.setHandedness(this.isLeftHanded);
       this.startSet(this.selectedSetId);
     });
 
@@ -289,7 +361,7 @@ class KanjiApp {
     });
   }
 
-setupMenuUI() {
+  setupMenuUI() {
     if (!this.gradeData) return;
 
     const termTabs = document.querySelectorAll('.term-tab:not(.term-tab-disabled)');
@@ -307,7 +379,7 @@ setupMenuUI() {
         if (setObj.id === this.selectedSetId) btn.classList.add('selected');
 
         const numStr = setObj.id.split('_')[1];
-        // 「第1回」から「その1」に変更
+        // 「その1」「その2」...の表記に統一
         btn.textContent = `その${parseInt(numStr, 10)}`;
 
         if (this.clearedSets.includes(setObj.id)) {
@@ -371,8 +443,12 @@ setupMenuUI() {
     const q = this.getCurrentQuestion();
     const isOkurigana = (q.type === 'okurigana');
 
+    const numStr = this.selectedSetId.split('_')[1];
+    const termNum = this.selectedSetId.split('_')[0];
+    const displayTitle = `${termNum} その${parseInt(numStr, 10)}`;
+
     this.ui.updateQuestionHeader(
-      this.currentSet.title,
+      displayTitle,
       qIndex,
       this.currentSet.questions.length,
       q.sentenceHtml,
@@ -570,7 +646,6 @@ setupMenuUI() {
         const candidates = await recognizeChar(input.strokesData);
         const recognized = candidates[0] || '';
 
-        // 第2候補までで判定
         const isCharMatched = candidates.slice(0, this.candidateLimit).includes(target.char);
 
         if (!isCharMatched) {

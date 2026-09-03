@@ -1,13 +1,10 @@
 /**
  * logger.js
- * Google Apps Script (GAS) Web API 連携モジュール (事前先読み対応)
+ * Google Apps Script (GAS) Web API 連携モジュール
  */
 
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyaVMcWyIW9KXYQ6WvUm6MwKA2i4ZpykFZ5xrW6ehWomoy7Jkj4leCr3jKWZG5LcfGn/exec';
 
-/**
- * 共通POSTリクエスト関数
- */
 async function callApi(action, payload = {}) {
   try {
     const res = await fetch(GAS_API_URL, {
@@ -31,9 +28,6 @@ async function callApi(action, payload = {}) {
   }
 }
 
-/**
- * 静的JSONからクラス・児童名簿をミリ秒で取得（初回0秒描画）
- */
 export async function fetchClassAndUsersFromLocal() {
   try {
     const res = await fetch('data/users.json');
@@ -46,16 +40,18 @@ export async function fetchClassAndUsersFromLocal() {
   }
 }
 
-/**
- * 起動時に裏側でスプレッドシートの全データを事前先読み
- */
 export function prefetchAllDataAsync() {
   return callApi('prefetchAllData');
 }
 
-/**
- * 学習結果の送信（進捗サマリー更新 ＋ 詳細ログ追記）
- */
+export async function updateHandModeApi(userId, handMode) {
+  return await callApi('updateHandMode', { userId, handMode });
+}
+
+export async function updatePinApi(userId, newPin) {
+  return await callApi('updatePin', { userId, newPin });
+}
+
 export async function saveProgressAndLogs(userId, setId, isSetCleared, mistakes, logRecords) {
   return await callApi('saveProgressAndLog', {
     userId,
