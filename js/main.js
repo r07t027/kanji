@@ -3,7 +3,7 @@ import { initAudioUnlock, ensureAudioUnlocked, playCorrectSound, playFanfareSoun
 import { CanvasController } from './canvas.js';
 import { recognizeChar } from './recognition.js';
 import { UIController } from './ui.js';
-import { fetchClassAndUsers, loginUser, saveProgressAndLogs } from './logger.js';
+import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, saveProgressAndLogs } from './logger.js';
 
 class KanjiApp {
   constructor() {
@@ -24,6 +24,9 @@ class KanjiApp {
     this.currentSessionLogs = [];
     this.currentMistakes = [];
 
+    // 事前先読み（プリフェッチ）プロミス保持用
+    this.prefetchPromise = null;
+
     this.ui = new UIController();
     this.canvasController = new CanvasController(
       document.getElementById('draw-canvas'),
@@ -37,6 +40,10 @@ class KanjiApp {
     initAudioUnlock();
     this.bindEvents();
 
+    // 1. 起動と同時にバックグラウンドでスプレッドシートの先読みを開始（待機しない）
+    this.prefetchPromise = prefetchAllDataAsync();
+
+    // 2. 問題データの取得
     try {
       const res = await fetch('data/grade5_questions.json');
       this.gradeData = await res.json();
@@ -45,12 +52,12 @@ class KanjiApp {
       this.ui.setMessage('問題データの読み込みに失敗しました', 'mistake');
     }
 
-    // ログインフローの初期化
+    // 3. 認証フローの開始
     await this.initAuthFlow();
   }
 
   /**
-   * 認証・ログインモーダル制御
+   * 認証・ログインモーダル制御（事前先読み＋ローカルキャッシュ対応）
    */
   async initAuthFlow() {
     const modal = document.getElementById('login-modal');
@@ -60,7 +67,7 @@ class KanjiApp {
     const btnSubmit = document.getElementById('btn-submit-login');
     const errorMsg = document.getElementById('login-error-msg');
 
-    // 既存セッションの確認
+    // ① 自動ログイン判定: 過去にログイン済みなら即座にメニューへ
     try {
       const savedUserJson = localStorage.getItem('kanji_current_user');
       const savedProgressJson = localStorage.getItem('kanji_user_progress');
@@ -75,10 +82,11 @@ class KanjiApp {
       }
     } catch (e) {}
 
-    // GASからクラス・児童名簿を取得
-    const res = await fetchClassAndUsers();
+    // ② 未ログイン時はローカル users.json から即座にプルダウンを生成（0.05秒）
+    const res = await fetchClassAndUsersFromLocal();
     if (!res.success) {
       selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
+      modal.style.display = 'flex';
       return;
     }
 
@@ -121,27 +129,47 @@ class KanjiApp {
     selectUser.addEventListener('change', checkFormReady);
     inputPin.addEventListener('input', checkFormReady);
 
+    // ③ 「ログインする」ボタン押下時（先読みデータとメモリ上で即時照合）
     btnSubmit.addEventListener('click', async () => {
       ensureAudioUnlocked();
       btnSubmit.disabled = true;
-      btnSubmit.textContent = 'ログイン中...';
+      btnSubmit.textContent = 'かくにん中...⏳';
       errorMsg.style.display = 'none';
 
-      const loginRes = await loginUser(selectUser.value, inputPin.value);
+      const selectedUserId = selectUser.value;
+      const enteredPin = inputPin.value.trim();
 
-      if (loginRes.success) {
-        this.currentUser = loginRes.user;
-        this.clearedSets = loginRes.progress.clearedSets || [];
+      // 裏で走っていた先読み完了を待機（通常は操作中にすでに完了しているため0秒）
+      const prefetchRes = await this.prefetchPromise;
 
-        // ローカルに保存
+      if (!prefetchRes || !prefetchRes.success) {
+        errorMsg.textContent = 'データの接続に失敗しました。もう一度お試しください。';
+        errorMsg.style.display = 'block';
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'ログインする ➔';
+        // 再接続を試みる
+        this.prefetchPromise = prefetchAllDataAsync();
+        return;
+      }
+
+      const { authMap, progressMap } = prefetchRes;
+      const matchedUser = authMap[selectedUserId];
+
+      if (matchedUser && matchedUser.pin === enteredPin) {
+        // 認証成功！
+        this.currentUser = matchedUser;
+        const userProgress = progressMap[selectedUserId] || { clearedSets: [], weakChars: {} };
+        this.clearedSets = userProgress.clearedSets || [];
+
+        // 次回以降の自動ログイン用にキャッシュ
         localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
-        localStorage.setItem('kanji_user_progress', JSON.stringify(loginRes.progress));
+        localStorage.setItem('kanji_user_progress', JSON.stringify(userProgress));
 
         this.applyUserData();
         modal.style.display = 'none';
         this.setupMenuUI();
       } else {
-        errorMsg.textContent = loginRes.message || 'パスワードがちがいます。';
+        errorMsg.textContent = 'パスワードがちがいます。';
         errorMsg.style.display = 'block';
         btnSubmit.disabled = false;
         btnSubmit.textContent = 'ログインする ➔';
@@ -151,9 +179,6 @@ class KanjiApp {
     modal.style.display = 'flex';
   }
 
-  /**
-   * ログインユーザーの利き手や表示名を設定
-   */
   applyUserData() {
     if (!this.currentUser) return;
 
@@ -244,7 +269,6 @@ class KanjiApp {
       this.savePreferences();
       this.ui.setHandedness(this.isLeftHanded);
 
-      // [DEBUG] 検証用プルダウンから許容候補数を取得
       const debugSelect = document.getElementById('select-debug-candidates');
       if (debugSelect) {
         this.debugCandidateLimit = parseInt(debugSelect.value, 10) || 4;
@@ -293,7 +317,7 @@ class KanjiApp {
         const numStr = setObj.id.split('_')[1];
         btn.textContent = `第${parseInt(numStr, 10)}回`;
 
-        // クリア済みの場合💮バッジを表示
+        // クリア済みの場合「💮」バッジを表示[cite: 1]
         if (this.clearedSets.includes(setObj.id)) {
           const badge = document.createElement('span');
           badge.className = 'set-badge-clear';
@@ -328,7 +352,6 @@ class KanjiApp {
     this.currentSet = this.gradeData.sets.find(s => s.id === setId);
     if (!this.currentSet) return;
 
-    // 単元開始時にセッションログ初期化
     this.currentSessionLogs = [];
     this.currentMistakes = [];
 
@@ -555,7 +578,7 @@ class KanjiApp {
         const candidates = await recognizeChar(input.strokesData);
         const recognized = candidates[0] || '';
 
-        // [DEBUG] 許容候補数内に対象文字が含まれているか照合
+        // 許容候補数内に対象文字が含まれているか照合[cite: 6]
         const isCharMatched = candidates.slice(0, this.debugCandidateLimit).includes(target.char);
 
         if (!isCharMatched) {
@@ -590,7 +613,6 @@ class KanjiApp {
       const isAllCharsCorrect = charResults.every(r => r === true);
       const isAllSuccess = isCountMatched && isAllCharsCorrect;
 
-      // ログレコードの記録
       this.currentSessionLogs.push({
         qIndex: this.currentQIndex + 1,
         isSuccess: isAllSuccess,
@@ -613,7 +635,6 @@ class KanjiApp {
             playFanfareSound();
             this.ui.showAllClear();
 
-            // 全問クリア時: 進捗サマリー更新 & 💮バッジ追加
             if (!this.clearedSets.includes(this.selectedSetId)) {
               this.clearedSets.push(this.selectedSetId);
             }
