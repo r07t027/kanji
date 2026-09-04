@@ -466,13 +466,14 @@ class KanjiApp {
       box.className = 'preview-char-box';
       box.id = `preview-box-${i}`;
 
-      const canvas = document.createElement('canvas');
-      canvas.width = 46;
-      canvas.height = 46;
-      canvas.className = 'preview-char-canvas';
-      box.appendChild(canvas);
+      const img = document.createElement('img');
+      img.className = 'preview-char-canvas';
+      img.style.width = '46px';
+      img.style.height = '46px';
+      img.style.objectFit = 'contain';
+      img.style.display = 'none';
+      box.appendChild(img);
 
-      // タップでその文字に切り替え可能
       box.addEventListener('click', () => {
         if (i !== this.currentCharIndex) {
           this.saveCurrentDrawing();
@@ -483,12 +484,11 @@ class KanjiApp {
       container.appendChild(box);
     }
 
-    // 枠を初期化・再構築した際に既存文字を復元描画
     this.redrawAllPreviews();
   }
 
   /**
-   * 全プレビュー枠の再描画（タブ切り替えや枠追加時に呼ぶ）
+   * 全プレビュー枠の再描画（文字切り替え・タブ移動時）
    */
   redrawAllPreviews() {
     const mainCanvas = document.getElementById('draw-canvas');
@@ -498,18 +498,23 @@ class KanjiApp {
       if (!box) continue;
 
       box.classList.toggle('active', i === this.currentCharIndex);
-      const canvas = box.querySelector('canvas');
-      if (!canvas) continue;
-
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const img = box.querySelector('img');
+      if (!img) continue;
 
       if (i === this.currentCharIndex) {
         if (this.canvasController.strokeCount > 0) {
-          ctx.drawImage(mainCanvas, 0, 0, canvas.width, canvas.height);
+          img.src = mainCanvas.toDataURL();
+          img.style.display = 'block';
+        } else {
+          img.src = '';
+          img.style.display = 'none';
         }
-      } else if (this.userInputs[i] && this.userInputs[i].strokeCount > 0) {
-        this.drawStrokesToMiniCanvas(ctx, this.userInputs[i].strokesData, canvas.width, mainCanvas.width);
+      } else if (this.userInputs[i] && this.userInputs[i].previewUrl) {
+        img.src = this.userInputs[i].previewUrl;
+        img.style.display = 'block';
+      } else {
+        img.src = '';
+        img.style.display = 'none';
       }
     }
   }
@@ -522,45 +527,33 @@ class KanjiApp {
     const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
     if (!currentBox) return;
 
-    const canvas = currentBox.querySelector('canvas');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const img = currentBox.querySelector('img');
+    if (!img) return;
 
     if (this.canvasController.strokeCount > 0) {
-      ctx.drawImage(mainCanvas, 0, 0, canvas.width, canvas.height);
+      img.src = mainCanvas.toDataURL();
+      img.style.display = 'block';
+    } else {
+      img.src = '';
+      img.style.display = 'none';
     }
   }
 
   /**
-   * Google Input Tools 形式のストローク配列 [ [xs, ys], ... ] をミニキャンバスに描画
+   * 現在の描画状態とプレビュー画像を保存
    */
-  drawStrokesToMiniCanvas(ctx, strokesData, miniWidth, mainWidth) {
-    if (!strokesData || strokesData.length === 0) return;
+  saveCurrentDrawing() {
+    const data = this.canvasController.getData();
+    const mainCanvas = document.getElementById('draw-canvas');
 
-    ctx.save();
-    const scale = miniWidth / mainWidth;
-    ctx.scale(scale, scale);
-    ctx.strokeStyle = '#2b5876';
-    ctx.lineWidth = 14;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    strokesData.forEach(stroke => {
-      const xs = stroke[0];
-      const ys = stroke[1];
-      if (xs && xs.length > 0 && ys && ys.length > 0) {
-        ctx.beginPath();
-        ctx.moveTo(xs[0], ys[0]);
-        for (let j = 1; j < xs.length; j++) {
-          ctx.lineTo(xs[j], ys[j]);
-        }
-        ctx.stroke();
-      }
-    });
-
-    ctx.restore();
+    if (data.strokeCount > 0) {
+      this.userInputs[this.currentCharIndex] = {
+        ...data,
+        previewUrl: mainCanvas.toDataURL()
+      };
+    } else {
+      this.userInputs[this.currentCharIndex] = null;
+    }
   }
 
   loadCharInput(cIndex) {
@@ -599,15 +592,6 @@ class KanjiApp {
     this.redrawAllPreviews();
 
     this.ui.setMessage(`${cIndex + 1}文字目を書いてね`);
-  }
-
-  saveCurrentDrawing() {
-    const data = this.canvasController.getData();
-    if (data.strokeCount > 0) {
-      this.userInputs[this.currentCharIndex] = data;
-    } else {
-      this.userInputs[this.currentCharIndex] = null;
-    }
   }
 
   onCanvasChange(strokeCount, strokesData, canUndo, canRedo) {
@@ -661,10 +645,10 @@ class KanjiApp {
 
     const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
     if (currentBox) {
-      const canvas = currentBox.querySelector('canvas');
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const img = currentBox.querySelector('img');
+      if (img) {
+        img.src = '';
+        img.style.display = 'none';
       }
     }
 
