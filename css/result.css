@@ -239,10 +239,13 @@ button.btn-restart-all {
 }
 
 .clear-mascot-avatar {
-  flex: 0 0 68px;
-  height: 68px;
+  flex: 0 0 88px;
+  height: 88px;
+  border-radius: 20px;
   background: #fff7ed;
   border: 2px solid #fed7aa;
+  padding: 6px;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
 }
 
 .clear-speech-bubble {

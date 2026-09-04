@@ -1,6 +1,24 @@
 // UI描画・DOM操作モジュール
 import { KanjiVGPlayer } from './kanjivg.js';
 
+// かきまる画像アセット定義
+const KAKIMARU_IMAGES = {
+  info: [
+    'assets/images/kakimaru_01.png',
+    'assets/images/kakimaru_02.png'
+  ],
+  success: [
+    'assets/images/kakimaru_03.png',
+    'assets/images/kakimaru_04.png',
+    'assets/images/kakimaru_05.png'
+  ],
+  mistake: [
+    'assets/images/kakimaru_06.png',
+    'assets/images/kakimaru_07.png',
+    'assets/images/kakimaru_08.png'
+  ]
+};
+
 export class UIController {
   constructor() {
     // 画面ビュー
@@ -14,6 +32,8 @@ export class UIController {
     this.questionNoticeEl = document.getElementById('question-notice');
     this.progressEl = document.getElementById('progress-text');
     this.statusEl = document.getElementById('status-message');
+    this.mascotImgEl = document.getElementById('mascot-img');
+    this.clearMascotImgEl = document.getElementById('clear-mascot-img');
 
     // 描画・結果確認ペイン要素
     this.drawingContainer = document.getElementById('drawing-container');
@@ -52,17 +72,47 @@ export class UIController {
     this.menuView.style.display = 'none';
     this.allClearView.style.display = 'none';
     this.practiceView.style.display = 'flex';
+    this.setMascotEmotion('info');
   }
 
   showAllClear() {
     this.practiceView.style.display = 'none';
     this.allClearView.style.display = 'flex';
+
+    // 全問クリア時はポジティブ群（03, 04, 05）から最高潮の表情をランダム選択
+    if (this.clearMascotImgEl) {
+      const list = KAKIMARU_IMAGES.success;
+      const src = list[Math.floor(Math.random() * list.length)];
+      this.clearMascotImgEl.src = src;
+    }
   }
 
-  setMessage(text, type = '') {
+  /**
+   * かきまるの表情をランダム切り替え
+   * @param {'info' | 'success' | 'mistake'} type
+   */
+  setMascotEmotion(type = 'info') {
+    if (!this.mascotImgEl) return;
+    const category = KAKIMARU_IMAGES[type] ? type : 'info';
+    const images = KAKIMARU_IMAGES[category];
+    const chosenSrc = images[Math.floor(Math.random() * images.length)];
+
+    this.mascotImgEl.src = chosenSrc;
+
+    // ちょこっと動くリアクションアニメーション
+    this.mascotImgEl.style.transform = 'scale(1.15)';
+    setTimeout(() => {
+      this.mascotImgEl.style.transform = 'scale(1)';
+    }, 200);
+  }
+
+  setMessage(text, type = 'info') {
     this.statusEl.textContent = text;
-    this.statusEl.className = 'status-msg ' + type;
+    this.statusEl.className = 'status-msg ' + (type !== 'info' ? type : '');
     this.statusEl.style.display = text ? 'block' : 'none';
+
+    // メッセージの感情種別に応じて表情を変更
+    this.setMascotEmotion(type);
   }
 
   updateQuestionHeader(unitTitle, qIndex, totalQuestions, sentenceHtml, noticeText) {
