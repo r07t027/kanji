@@ -303,11 +303,27 @@ canvas#draw-canvas {
   cursor: crosshair;
 }
 
+/* 画数情報パネル（2行表示） */
+
 .info-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 2.8rem;
+  margin: 2px 0;
+}
+
+.stroke-info-line {
   font-size: 0.95rem;
   font-weight: bold;
   color: #475569;
-  min-height: 1.3rem;
+  line-height: 1.3;
+}
+
+#target-stroke-info {
+  color: #1e40af; /* 目標画数は少し濃い青 */
 }
 
 /* 操作ボタングループ（前の文字へ / この文字を消す / 次の文字へ） */
@@ -424,9 +440,16 @@ button.btn-next:hover:not(:disabled) {
   height: 46px;
 }
 
+/* 最下部アクションボタングループ（こたえあわせ ＆ パス） */
+.submit-action-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
 /* 答え合わせボタン */
 button.btn-check-main {
-  width: 100%;
+  flex: 3;
   background: linear-gradient(135deg, #16a34a, #22c55e);
   font-size: 1.1rem;
   padding: 10px 16px;
@@ -448,4 +471,22 @@ button.btn-check-main:disabled {
   background: #cbd5e1;
   box-shadow: none;
   cursor: not-allowed;
+}
+
+button.btn-pass-sub {
+  flex: 1;
+  background-color: #94a3b8;
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.15s;
+}
+
+button.btn-pass-sub:hover {
+  background-color: #64748b;
+  transform: translateY(-1.5px);
 }

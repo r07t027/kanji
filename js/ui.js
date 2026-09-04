@@ -19,6 +19,8 @@ const KAKIMARU_IMAGES = {
   ]
 };
 
+const CIRCLED_NUMBERS = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+
 export class UIController {
   constructor() {
     // 画面ビュー
@@ -38,12 +40,14 @@ export class UIController {
     // 描画・結果確認ペイン要素
     this.drawingContainer = document.getElementById('drawing-container');
     this.charTabsEl = document.getElementById('char-tabs');
-    this.strokeInfoEl = document.getElementById('stroke-info');
+    this.targetStrokeInfoEl = document.getElementById('target-stroke-info');
+    this.currentStrokeInfoEl = document.getElementById('current-stroke-info');
     this.btnUndo = document.getElementById('btn-undo');
     this.btnRedo = document.getElementById('btn-redo');
     this.btnPrev = document.getElementById('btn-prev');
     this.btnNext = document.getElementById('btn-next');
     this.btnCheck = document.getElementById('btn-check');
+    this.btnPass = document.getElementById('btn-pass');
 
     // 判定結果表示要素
     this.resultComparisonArea = document.getElementById('result-comparison-area');
@@ -79,7 +83,6 @@ export class UIController {
     this.practiceView.style.display = 'none';
     this.allClearView.style.display = 'flex';
 
-    // 全問クリア時はポジティブ群（03, 04, 05）から最高潮の表情をランダム選択
     if (this.clearMascotImgEl) {
       const list = KAKIMARU_IMAGES.success;
       const src = list[Math.floor(Math.random() * list.length)];
@@ -87,10 +90,6 @@ export class UIController {
     }
   }
 
-  /**
-   * かきまるの表情をランダム切り替え
-   * @param {'info' | 'success' | 'mistake'} type
-   */
   setMascotEmotion(type = 'info') {
     if (!this.mascotImgEl) return;
     const category = KAKIMARU_IMAGES[type] ? type : 'info';
@@ -99,7 +98,6 @@ export class UIController {
 
     this.mascotImgEl.src = chosenSrc;
 
-    // ちょこっと動くリアクションアニメーション
     this.mascotImgEl.style.transform = 'scale(1.15)';
     setTimeout(() => {
       this.mascotImgEl.style.transform = 'scale(1)';
@@ -110,15 +108,20 @@ export class UIController {
     this.statusEl.textContent = text;
     this.statusEl.className = 'status-msg ' + (type !== 'info' ? type : '');
     this.statusEl.style.display = text ? 'block' : 'none';
-
-    // メッセージの感情種別に応じて表情を変更
     this.setMascotEmotion(type);
   }
 
-  updateQuestionHeader(unitTitle, qIndex, totalQuestions, sentenceHtml, noticeText) {
+  updateQuestionHeader(unitTitle, qIndex, sentenceHtml, noticeText) {
     this.unitTitleDisplay.textContent = unitTitle;
-    this.questionTextEl.innerHTML = sentenceHtml;
-    this.progressEl.textContent = `もんだい ${qIndex + 1} / ${totalQuestions}`;
+
+    // 「もんだい 1/5」は削除し非表示
+    if (this.progressEl) {
+      this.progressEl.style.display = 'none';
+    }
+
+    // 問題の前に丸数字を付与（例: ①りんごがいっこある。）
+    const numPrefix = CIRCLED_NUMBERS[qIndex] || `${qIndex + 1}. `;
+    this.questionTextEl.innerHTML = `${numPrefix}${sentenceHtml}`;
 
     if (noticeText) {
       this.questionNoticeEl.textContent = noticeText;
@@ -141,18 +144,22 @@ export class UIController {
       tab.className = 'char-tab';
       if (i === currentCharIndex) tab.classList.add('active');
       if (userInputs[i] && userInputs[i].strokeCount > 0) tab.classList.add('done');
-      tab.textContent = `${i + 1}文字目`;
+      // 「1もじめ」「2もじめ」と表記
+      tab.textContent = `${i + 1}もじめ`;
 
       tab.addEventListener('click', () => onTabClick(i));
       this.charTabsEl.appendChild(tab);
     }
   }
 
+  // 画数状況表示（2行表記）
   updateStrokeInfo(currentCount, targetCount, isOkurigana, currentCharIndex) {
     if (isOkurigana && currentCharIndex > 0) {
-      this.strokeInfoEl.textContent = '';
+      this.targetStrokeInfoEl.textContent = '';
+      this.currentStrokeInfoEl.textContent = `いまの かくすう：${currentCount}かく`;
     } else {
-      this.strokeInfoEl.textContent = `いまの画数: ${currentCount}画 (目標: ${targetCount}画)`;
+      this.targetStrokeInfoEl.textContent = `このじは ${targetCount}かく です。`;
+      this.currentStrokeInfoEl.textContent = `いまの かくすう：${currentCount}かく`;
     }
   }
 
@@ -162,15 +169,12 @@ export class UIController {
   }
 
   updateNavButtons(currentIndex, totalChars, isOkurigana, maxChars = 4) {
-    const btnPrev = document.getElementById('btn-prev');
-    const btnNext = document.getElementById('btn-next');
-
-    btnPrev.disabled = (currentIndex === 0);
+    this.btnPrev.disabled = (currentIndex === 0);
 
     if (isOkurigana) {
-      btnNext.disabled = (currentIndex >= maxChars - 1);
+      this.btnNext.disabled = (currentIndex >= maxChars - 1);
     } else {
-      btnNext.disabled = (currentIndex >= totalChars - 1);
+      this.btnNext.disabled = (currentIndex >= totalChars - 1);
     }
   }
 
@@ -223,9 +227,9 @@ export class UIController {
     this.correctCharsContainer.innerHTML = '';
 
     if (isAllSuccess) {
-      this.correctCardTitleEl.textContent = '💡 正解のお手本（教科書体）';
+      this.correctCardTitleEl.textContent = 'せいかいの おてほん';
     } else {
-      this.correctCardTitleEl.textContent = '🎬 正解のお手本（タッチ・クリックで筆順再生）';
+      this.correctCardTitleEl.textContent = 'せいかいの おてほん（タッチで 筆順をみる）';
     }
 
     targetChars.forEach(char => {

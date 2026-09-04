@@ -157,24 +157,24 @@
       </div>
     </aside>
 
-    <!-- 右カラム（描画・結果確認ペイン） -->
+<!-- 右カラム -->
     <main class="canvas-pane">
       <!-- 判定結果画面（上下比較カード） -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
         <div class="cards-column">
           <div class="compare-card user-card">
-            <div class="user-title">✏️ あなたの答え</div>
+            <div class="user-title">あなたの こたえ</div>
             <div class="user-canvases-container" id="user-canvases-container"></div>
           </div>
 
           <div class="compare-card correct-card">
-            <div class="correct-title" id="correct-card-title">💡 正解のお手本（教科書体）</div>
+            <div class="correct-title" id="correct-card-title">せいかいの おてほん</div>
             <div class="correct-chars-container" id="correct-chars-container"></div>
           </div>
         </div>
 
         <div id="result-label" class="result-label"></div>
-        <button id="btn-restart-all" class="btn-restart-all">やり直す</button>
+        <button id="btn-restart-all" class="btn-restart-all">もういちど</button>
       </div>
 
       <!-- 手書き描画メインエリア -->
@@ -182,31 +182,36 @@
         <div class="char-tabs" id="char-tabs"></div>
 
         <div class="canvas-row-wrapper">
-          <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>1画もどす</button>
-
+          <button id="btn-undo" class="btn-history" title="1かくもどる (Ctrl+Z)" disabled>1かくもどる</button>
           <div class="box">
             <canvas id="draw-canvas" width="260" height="260"></canvas>
           </div>
-
-          <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>1画すすむ</button>
+          <button id="btn-redo" class="btn-history" title="1かくすすむ (Ctrl+Y)" disabled>1かくすすむ</button>
         </div>
 
-        <div class="info-panel" id="stroke-info">いまの画数: 0画</div>
+        <!-- 2行表記の画数パネル -->
+        <div class="info-panel" id="stroke-info">
+          <div id="target-stroke-info" class="stroke-info-line">このじは ０かく です。</div>
+          <div id="current-stroke-info" class="stroke-info-line">いまの かくすう：０かく</div>
+        </div>
 
         <!-- 描画操作ボタン -->
         <div class="controls">
-          <button id="btn-prev" class="btn-prev" disabled>前の文字へ</button>
-          <button id="btn-reset" class="btn-reset" disabled>この文字を消す</button>
-          <button id="btn-next" class="btn-next">次の文字へ</button>
+          <button id="btn-prev" class="btn-prev" disabled>まえのもじへ</button>
+          <button id="btn-reset" class="btn-reset" disabled>かきなおす</button>
+          <button id="btn-next" class="btn-next">つぎのもじへ</button>
         </div>
 
-        <!-- プレビュー ＆ 答え合わせボタン -->
+        <!-- プレビュー ＆ 「こたえあわせ」「パス」ボタン -->
         <div class="bottom-action-panel">
           <div class="realtime-preview-row">
-            <span class="realtime-preview-label">書いた文字：</span>
+            <span class="realtime-preview-label">かいたもじ</span>
             <div id="realtime-preview-container" class="realtime-preview-container"></div>
           </div>
-          <button id="btn-check" class="btn-check-main" disabled>答え合わせ！</button>
+          <div class="submit-action-row">
+            <button id="btn-check" class="btn-check-main" disabled>こたえあわせ</button>
+            <button id="btn-pass" class="btn-pass-sub">パス</button>
+          </div>
         </div>
       </div>
     </main>

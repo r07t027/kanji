@@ -10,42 +10,42 @@ import { AuthManager } from './auth.js';
 import { MenuManager } from './menu.js';
 import { AnswerValidator } from './validator.js';
 
-// かきまるのセリフ集
+// かきまるのセリフ集（ひらがな・カタカナ・和語・わかち書き・絵文字なし・末尾句点）
 const KAKIMARU_MESSAGES = {
   // 通常・漢字用の案内 ＆ アドバイス
   inputAdvices: [
-    (num) => `${num}文字目を書いてね！1画1画 ていねいに書こう`,
-    (num) => `${num}文字目を書いてね！目標の画数ぴったりを目指そう✨`,
-    (num) => `${num}文字目を書いてね！ゆっくりバランスよく書こう`,
-    (num) => `${num}文字目を書いてね！とめ・はね を意識してみてね！`,
-    (num) => `${num}文字目を書いてね！マスの中央におさめよう`
+    (num) => `${num}もじめを かいてね！１かく１かく ていねいに かこう。`,
+    (num) => `${num}もじめを かいてね！マスの まんなかに おさめよう。`,
+    (num) => `${num}もじめを かいてね！もくひょうの かくすう ぴったりを めざそう。`,
+    (num) => `${num}もじめを かいてね！ゆっくり バランスよく かこう。`,
+    (num) => `${num}もじめを かいてね！とめ・はね を いしき してみよう。`
   ],
   // 送り仮名（ひらがな 2文字目以降）専用アドバイス
   okuriganaAdvices: [
-    (num) => `${num}文字目の送り仮名をひらがなで書いてね！`,
-    (num) => `書き終わったら「答え合わせ！」を押してね！`,
-    (num) => `送り仮名はここまでかな？よく確かめてみよう`,
-    (num) => `正しく送り仮名が書けたら「答え合わせ！」を押そう！`,
-    (num) => `送り仮名の文字数に気をつけてね！`
+    (num) => `${num}もじめの おくりがなを ひらがなで かいてね。`,
+    (num) => `かきおわったら「こたえあわせ」を おしてね。`,
+    (num) => `おくりがなは ここまでかな？よく たしかめてみよう。`,
+    (num) => `ただしく かけたら「こたえあわせ」を おそう。`,
+    (num) => `おくりがなの もじすうに きをつけてね。`
   ],
   // 書き直し時
   retryAdvices: [
-    '書き直して再チャレンジ！落ち着いて書こう',
-    '大丈夫！形をよく思い出してみてね',
-    'お手本の形をイメージして書いてみよう！'
+    'かきなおして さいチャレンジ！おちついて かこう。',
+    'だいじょうぶ！かたちを よく おもいだしてみてね。',
+    'おてほんの かたちを イメージして かいてみよう。'
   ],
   // 正解時の賞賛
   praise: [
-    'すごい！大正解！👏',
-    'ばっちり！その調子！✨',
-    'きれいな字で書けたね！💮',
-    'さすが！かっこいい字だよ！🌟'
+    'すごい！大せいかい。',
+    'ばっちり！そのちょうし。',
+    'きれいな じで かけたね。',
+    'さすが！かっこいい じだよ。'
   ],
   // 不正解時の励まし
   mistake: [
-    'おしい！お手本を見直してみてね！',
-    'もう一息！筆順や画数を確かめてみよう',
-    '大丈夫、次はきっと書けるよ！'
+    'おしい！おてほんを みなおしてみてね。',
+    'もうひといき！かくすうを たしかめてみよう。',
+    'だいじょうぶ、つぎは きっと かけるよ。'
   ]
 };
 
@@ -103,7 +103,7 @@ class KanjiApp {
       this.menu.setData(this.gradeData, this.auth.getClearedSets());
     } catch (e) {
       console.error('問題データの読み込みに失敗しました:', e);
-      this.ui.setMessage('問題データの読み込みに失敗しました', 'mistake');
+      this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
     }
 
     await this.auth.initAuthFlow();
@@ -129,6 +129,10 @@ class KanjiApp {
     document.getElementById('btn-check').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.handleCheck();
+    });
+    document.getElementById('btn-pass').addEventListener('click', () => {
+      ensureAudioUnlocked();
+      this.handlePass();
     });
     document.getElementById('btn-back-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
@@ -222,13 +226,13 @@ class KanjiApp {
     const isOkurigana = (q.type === 'okurigana');
     const setId = this.menu.getSelectedSetId();
     const numStr = setId.split('_')[1];
-    const termNum = setId.split('_')[0];
-    const displayTitle = `${termNum} その${parseInt(numStr, 10)}`;
+    const termNum = setId.split('_')[0].replace('学期', '');
+    // 「1がっき その1」表記
+    const displayTitle = `${termNum}がっき その${parseInt(numStr, 10)}`;
 
     this.ui.updateQuestionHeader(
       displayTitle,
       qIndex,
-      this.currentSet.questions.length,
       q.sentenceHtml,
       q.notice
     );
@@ -371,7 +375,7 @@ class KanjiApp {
     this.checkButtonState();
     this.redrawAllPreviews();
 
-    // 【セリフ分岐】送り仮名の2文字目以降は専用メッセージを使用
+    // 送り仮名の2文字目以降は専用アドバイス
     if (isOkurigana && cIndex > 0) {
       const adviceGen = getRandomItem(KAKIMARU_MESSAGES.okuriganaAdvices);
       this.ui.setMessage(adviceGen(cIndex + 1), 'info');
@@ -466,7 +470,7 @@ class KanjiApp {
 
   handleRestartAll() {
     this.loadQuestion(this.currentQIndex);
-    this.ui.setMessage('1文字目からもう一度書いてみよう！落ち着いてね', 'info');
+    this.ui.setMessage('1もじめから もういちど かいてみよう。おちついてね。', 'info');
   }
 
   handlePrev() {
@@ -481,7 +485,7 @@ class KanjiApp {
     const isOkurigana = (q.type === 'okurigana');
 
     if (this.canvasController.strokeCount === 0) {
-      this.ui.setMessage('文字を書いてから次へ進んでね！✏️', 'mistake');
+      this.ui.setMessage('もじを かいてから つぎへ すすもうね。', 'mistake');
       return;
     }
     this.saveCurrentDrawing();
@@ -499,6 +503,32 @@ class KanjiApp {
     }
   }
 
+  // 「パス」ボタン押下時の処理
+  handlePass() {
+    const q = this.getCurrentQuestion();
+    if (!q) return;
+
+    if (!confirm('このもんだいを パスして おてほんを みますか？')) {
+      return;
+    }
+
+    playMistakeSound();
+    this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
+
+    // 苦手文字として登録
+    q.targets.forEach(t => this.currentMistakes.push(t.char));
+
+    const falseResults = new Array(q.targets.length).fill(false);
+    this.ui.showResultView(
+      false,
+      'パスしました。おてほんを かくにんしよう。',
+      q.targets.map(t => t.char),
+      this.userInputs,
+      falseResults
+    );
+    this.ui.updateCheckButtonState(true);
+  }
+
   async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();
@@ -507,7 +537,7 @@ class KanjiApp {
     const btnCheck = document.getElementById('btn-check');
     btnCheck.disabled = true;
     const originalBtnText = btnCheck.textContent;
-    btnCheck.textContent = '判定中...⏳';
+    btnCheck.textContent = 'かくにん中...';
 
     try {
       const {
@@ -535,7 +565,7 @@ class KanjiApp {
 
         this.ui.showResultView(
           true,
-          '🎉 正解！',
+          'せいかい！',
           q.targets.map(t => t.char),
           validInputs,
           charResults
@@ -582,7 +612,7 @@ class KanjiApp {
     } catch (err) {
       console.error('判定処理エラー:', err);
       btnCheck.textContent = originalBtnText;
-      this.ui.setMessage('判定中に通信エラーが発生しました', 'mistake');
+      this.ui.setMessage('つうしんエラーが はっせいしました。', 'mistake');
       this.ui.updateCheckButtonState(true);
     }
   }
