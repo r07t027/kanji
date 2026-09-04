@@ -1,0 +1,180 @@
+/* ========================================================
+   右カラム（描画ペイン ＆ キャンバス ＆ 画数）
+   ======================================================== */
+.canvas-pane {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  position: relative;
+}
+
+.drawing-main-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.char-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.char-tab {
+  padding: 5px 14px;
+  border-radius: 10px;
+  background: #eef2f5;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #78909c;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.char-tab.active {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #1976d2;
+}
+
+.char-tab.done {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.canvas-row-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+button.btn-history {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 48px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+button.btn-history:hover:not(:disabled) {
+  background-color: #e2e8f0;
+  border-color: #94a3b8;
+  color: #1e293b;
+  transform: translateY(-2px);
+}
+
+button.btn-history:disabled {
+  background-color: #f8fafc;
+  color: #cbd5e1;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* キャンバス枠（位置基準） */
+.box {
+  width: 250px;
+  height: 250px;
+  border: 3px dashed #b0c4de;
+  border-radius: 12px;
+  background: #fafafa;
+  position: relative;
+  touch-action: none;
+}
+
+.box::before, .box::after {
+  content: '';
+  position: absolute;
+  background-color: #e0e6ed;
+  pointer-events: none;
+}
+.box::before { top: 0; bottom: 0; left: 50%; width: 1px; }
+.box::after { left: 0; right: 0; top: 50%; height: 1px; }
+
+canvas#draw-canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 9px;
+  cursor: crosshair;
+}
+
+/* キャンバス右下のフローティング消しゴムボタン */
+.btn-canvas-eraser {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #fdba74;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.btn-canvas-eraser .eraser-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.btn-canvas-eraser:hover:not(:disabled) {
+  background: #fff7ed;
+  border-color: #f97316;
+  transform: scale(1.1);
+}
+
+.btn-canvas-eraser:disabled {
+  opacity: 0.3;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 画数情報パネル（2行表示） */
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 2.8rem;
+  margin: 2px 0;
+}
+
+.stroke-info-line {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #475569;
+  line-height: 1.3;
+}
+
+#target-stroke-info {
+  color: #1e40af;
+}
