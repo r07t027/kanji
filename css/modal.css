@@ -1,0 +1,189 @@
+/* ========================================================
+   モーダル共通
+   ======================================================== */
+.login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(18, 38, 58, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.login-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px 28px 28px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+.small-modal-card {
+  max-width: 360px;
+  padding: 24px;
+  gap: 12px;
+}
+
+.modal-sub-title {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #2b5876;
+}
+
+.modal-sub-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #78909c;
+}
+
+.login-logo-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0 8px;
+}
+
+.login-logo-img {
+  width: 82%;
+  max-width: 300px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.login-section {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 6px;
+}
+
+.login-label {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: #4a708b;
+}
+
+.custom-input {
+  padding: 10px 14px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 6px;
+  text-align: center;
+  color: #333;
+  border: 2px solid #cfd8dc;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  outline: none;
+}
+
+.custom-input:focus {
+  border-color: #1976d2;
+  background-color: #fff;
+}
+
+.login-error-msg {
+  color: #d32f2f;
+  font-size: 0.88rem;
+  font-weight: bold;
+  min-height: 1.2rem;
+}
+
+.btn-login-submit {
+  background: linear-gradient(135deg, #1976d2, #2196f3);
+  font-size: 1.15rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.btn-login-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+.btn-login-submit:disabled {
+  background: #cfd8dc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.hand-modal-selector {
+  display: flex;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.btn-hand-choice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  background: #f8fafc;
+  border: 2px solid #cfd8dc;
+  border-radius: 14px;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-hand-choice:hover {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  transform: translateY(-2px);
+}
+
+.btn-hand-choice.active {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  box-shadow: 0 3px 10px rgba(46, 125, 50, 0.2);
+}
+
+.hand-choice-icon {
+  font-size: 2rem;
+}
+
+.hand-choice-text {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.modal-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.btn-modal-cancel {
+  background: #eceff1;
+  color: #546e7a;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-modal-cancel:hover {
+  background: #cfd8dc;
+}
