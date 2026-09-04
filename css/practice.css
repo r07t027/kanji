@@ -304,17 +304,17 @@ canvas#draw-canvas {
   cursor: crosshair;
 }
 
-/* キャンバス右下のフローティング消しゴムボタン */
+/* キャンバス右下のフローティング消しゴムボタン（ギリギリ外側にオフセット配置） */
 .btn-canvas-eraser {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
-  width: 38px;
-  height: 38px;
+  right: -8px;
+  bottom: -8px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #ffffff;
   border: 2px solid #fdba74;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -325,7 +325,7 @@ canvas#draw-canvas {
 }
 
 .btn-canvas-eraser .eraser-icon {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   line-height: 1;
 }
 
@@ -336,7 +336,7 @@ canvas#draw-canvas {
 }
 
 .btn-canvas-eraser:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   background: #f1f5f9;
   border-color: #cbd5e1;
   box-shadow: none;
