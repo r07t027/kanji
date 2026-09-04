@@ -447,14 +447,17 @@ class KanjiApp {
     }
   }
 
-  async handleCheck() {
+async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();
-    this.ui.updateCheckButtonState(false);
-    this.ui.setMessage('判定中...✍️');
+    const btnCheck = document.getElementById('btn-check');
+
+    // ボタン側で通信待ちを表現（マスコットには何も喋らせない）
+    btnCheck.disabled = true;
+    const originalBtnText = btnCheck.textContent;
+    btnCheck.textContent = '判定中...⏳';
 
     try {
-      // validator モジュールで判定を実行
       const {
         isAllSuccess,
         charResults,
@@ -471,8 +474,20 @@ class KanjiApp {
         detail: questionLogDetail
       });
 
+      btnCheck.textContent = originalBtnText;
+
       if (isAllSuccess) {
         playCorrectSound();
+
+        // 正解した瞬間にキャラクターが直接褒める
+        const praiseMessages = [
+          'すごい！大正解！👏',
+          'ばっちり！その調子！✨',
+          'きれいな字で書けたね！💮'
+        ];
+        const randomPraise = praiseMessages[Math.floor(Math.random() * praiseMessages.length)];
+        this.ui.setMessage(randomPraise, 'success');
+
         this.ui.showResultView(
           true,
           '🎉 正解！',
@@ -485,7 +500,7 @@ class KanjiApp {
         setTimeout(async () => {
           if (isFinalQuestion) {
             playFanfareSound();
-            this.ui.showAllClear();
+            this.ui.showAllClear(); // 全画面クリアへ移行
 
             const currentSetId = this.menu.getSelectedSetId();
             this.auth.addClearedSet(currentSetId);
@@ -508,6 +523,9 @@ class KanjiApp {
         }, 3000);
       } else {
         playMistakeSound();
+        // 不正解時は励ます言葉
+        this.ui.setMessage('おしい！お手本を見直してみてね！', 'mistake');
+        
         this.ui.showResultView(
           false,
           feedbackHtml,
@@ -519,6 +537,7 @@ class KanjiApp {
       }
     } catch (err) {
       console.error('判定処理エラー:', err);
+      btnCheck.textContent = originalBtnText;
       this.ui.setMessage('判定中に通信エラーが発生しました', 'mistake');
       this.ui.updateCheckButtonState(true);
     }

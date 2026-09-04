@@ -2,10 +2,10 @@
 import { KanjiVGPlayer } from './kanjivg.js';
 
 export class UIController {
-  constructor() {
-    // 画面ビュー
+constructor() {
     this.menuView = document.getElementById('menu-view');
     this.practiceView = document.getElementById('practice-view');
+    this.allClearView = document.getElementById('all-clear-view'); // 追記
 
     // 問題提示ペイン要素
     this.unitTitleDisplay = document.getElementById('unit-title-display');
@@ -14,7 +14,7 @@ export class UIController {
     this.progressEl = document.getElementById('progress-text');
     this.statusEl = document.getElementById('status-message');
 
-    // 描画・結果確認ペイン要素
+    // 描画ペイン要素
     this.drawingContainer = document.getElementById('drawing-container');
     this.charTabsEl = document.getElementById('char-tabs');
     this.strokeInfoEl = document.getElementById('stroke-info');
@@ -24,16 +24,30 @@ export class UIController {
     this.btnNext = document.getElementById('btn-next');
     this.btnCheck = document.getElementById('btn-check');
 
-    // 判定結果表示要素
+    // 判定結果要素
     this.resultComparisonArea = document.getElementById('result-comparison-area');
     this.correctCardTitleEl = document.getElementById('correct-card-title');
     this.correctCharsContainer = document.getElementById('correct-chars-container');
     this.userCanvasesContainer = document.getElementById('user-canvases-container');
     this.resultLabelEl = document.getElementById('result-label');
     this.btnRestartAll = document.getElementById('btn-restart-all');
+  }
 
-    // 全問クリア画面要素（描画ペイン中央）
-    this.allClearContainer = document.getElementById('all-clear-container');
+  showMenuView() {
+    this.practiceView.style.display = 'none';
+    this.allClearView.style.display = 'none';
+    this.menuView.style.display = 'flex';
+  }
+
+  showPracticeView() {
+    this.menuView.style.display = 'none';
+    this.allClearView.style.display = 'none';
+    this.practiceView.style.display = 'flex';
+  }
+
+  showAllClear() {
+    this.practiceView.style.display = 'none';
+    this.allClearView.style.display = 'flex';
   }
 
   setHandedness(isLeftHanded) {

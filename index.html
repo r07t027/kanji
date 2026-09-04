@@ -129,9 +129,9 @@
     </div>
   </div>
 
-  <!-- ==================== 練習アプリ画面 ==================== -->
+<!-- ==================== 練習アプリ画面 ==================== -->
   <div id="practice-view" class="app-layout" style="display: none;">
-    <!-- 左カラム -->
+    <!-- 左カラム（問題ペイン） -->
     <aside class="problem-pane">
       <div class="header-section">
         <div class="header-top-row">
@@ -157,7 +157,7 @@
       </div>
     </aside>
 
-    <!-- 右カラム -->
+    <!-- 右カラム（描画ペイン） -->
     <main class="canvas-pane">
       <!-- 判定結果画面（上下比較カード） -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
@@ -183,24 +183,22 @@
 
         <div class="canvas-row-wrapper">
           <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>1画もどす</button>
-
           <div class="box">
             <canvas id="draw-canvas" width="260" height="260"></canvas>
           </div>
-
           <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>1画すすむ</button>
         </div>
 
         <div class="info-panel" id="stroke-info">いまの画数: 0画</div>
 
-        <!-- 描画操作ボタン（消す・前へ・次へ） -->
+        <!-- 描画操作ボタン -->
         <div class="controls">
           <button id="btn-prev" class="btn-prev" disabled>前の文字へ</button>
           <button id="btn-reset" class="btn-reset" disabled>この文字を消す</button>
           <button id="btn-next" class="btn-next">次の文字へ</button>
         </div>
 
-        <!-- リアルタイム手書きプレビュー ＆ 独立した答え合わせボタン -->
+        <!-- プレビュー ＆ 答え合わせボタン -->
         <div class="bottom-action-panel">
           <div class="realtime-preview-row">
             <span class="realtime-preview-label">書いた文字：</span>
@@ -209,19 +207,33 @@
           <button id="btn-check" class="btn-check-main" disabled>答え合わせ！</button>
         </div>
       </div>
+    </main>
+  </div>
 
-      <!-- 全問クリア画面 -->
-      <div class="all-clear-area" id="all-clear-container" style="display: none;">
-        <div class="clear-badge">💮</div>
-        <div class="clear-title">はなまる満点！</div>
-        <div class="clear-subtitle">全5問クリア！よくがんばったね！</div>
-        <div class="clear-actions">
-          <button id="btn-clear-retry" class="btn-clear-action">もう一度この問題をとく</button>
-          <button id="btn-clear-next" class="btn-clear-action btn-next-set">つぎの回にすすむ</button>
-          <button id="btn-clear-menu" class="btn-clear-action btn-back-home">メニューにもどる</button>
+  <!-- ==================== 全問クリア画面（1画面フルスクリーン） ==================== -->
+  <div id="all-clear-view" class="all-clear-view" style="display: none;">
+    <div class="all-clear-card">
+      <div class="clear-badge">💮</div>
+      <div class="clear-title">はなまる満点！</div>
+
+      <!-- マスコットが賞賛の言葉を発話 -->
+      <div class="clear-mascot-row">
+        <div class="mascot-avatar-box clear-mascot-avatar">
+          <div class="mascot-placeholder">✏️</div>
+        </div>
+        <div class="speech-bubble clear-speech-bubble">
+          <div class="status-msg clear-status-msg">
+            全5問クリア！さいごまで よくがんばったね！💮
+          </div>
         </div>
       </div>
-    </main>
+
+      <div class="clear-actions">
+        <button id="btn-clear-retry" class="btn-clear-action">もう一度この問題をとく</button>
+        <button id="btn-clear-next" class="btn-clear-action btn-next-set">つぎの回にすすむ</button>
+        <button id="btn-clear-menu" class="btn-clear-action btn-back-home">メニューにもどる</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="js/main.js"></script>
