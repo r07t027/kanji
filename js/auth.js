@@ -165,7 +165,12 @@ export class AuthManager {
   applyUserData() {
     if (!this.currentUser) return;
 
-    document.getElementById('user-display-name').textContent = `${this.currentUser.className} ${this.currentUser.kanaName}`;
+    // 「5年1組」などを「5ねん 1くみ」にひらがな化・スペース挿入
+    const formattedClass = (this.currentUser.className || '')
+      .replace(/(\d+)年/, '$1ねん ')
+      .replace(/(\d+)組/, '$1くみ');
+
+    document.getElementById('user-display-name').textContent = `${formattedClass} ${this.currentUser.kanaName}`;
     document.getElementById('user-info-bar').style.display = 'flex';
 
     const handMode = this.currentUser.handMode || 'right';
