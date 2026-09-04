@@ -79,6 +79,9 @@ export class AuthManager {
     const { classes, users } = res;
 
     selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
+    selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
+    selectUser.disabled = true; // クラス未選択時は確実に非活性
+
     classes.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c;
@@ -216,7 +219,7 @@ export class AuthManager {
     inputNewPin.value = '';
     pinMsg.style.display = 'none';
     btnSave.disabled = true;
-    btnSave.textContent = '保存する';
+    btnSave.textContent = 'ほぞんする';
 
     inputNewPin.oninput = () => {
       btnSave.disabled = (inputNewPin.value.trim().length !== 4);
@@ -225,19 +228,19 @@ export class AuthManager {
     btnSave.onclick = async () => {
       const newPin = inputNewPin.value.trim();
       btnSave.disabled = true;
-      btnSave.textContent = '保存中...';
+      btnSave.textContent = 'ほぞんちゅう...';
 
       const res = await updatePinApi(this.currentUser.userId, newPin);
       if (res.success) {
         this.currentUser.pin = newPin;
         localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
         pinModal.style.display = 'none';
-        alert('パスワードを変更しました！');
+        alert('パスワードを へんこうしました！');
       } else {
-        pinMsg.textContent = '変更に失敗しました。';
+        pinMsg.textContent = 'へんこう できませんでした。';
         pinMsg.style.display = 'block';
         btnSave.disabled = false;
-        btnSave.textContent = '保存する';
+        btnSave.textContent = 'ほぞんする';
       }
     };
 
@@ -268,7 +271,7 @@ export class AuthManager {
     });
 
     document.getElementById('btn-logout').addEventListener('click', () => {
-      if (confirm('ログアウトして、別のなまえで ログインしなおしますか？')) {
+      if (confirm('ログアウトしますか？')) {
         this.logout();
       }
     });
