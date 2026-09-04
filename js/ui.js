@@ -77,6 +77,15 @@ export class UIController {
     this.menuView.style.display = 'none';
     this.allClearView.style.display = 'none';
     this.practiceView.style.display = 'flex';
+    
+    // 【重要】描画エリアを確実に再表示し、判定結果エリアを隠す
+    if (this.drawingContainer) {
+      this.drawingContainer.style.display = 'flex';
+    }
+    if (this.resultComparisonArea) {
+      this.resultComparisonArea.style.display = 'none';
+    }
+    
     this.setMascotEmotion('info');
   }
 
@@ -133,8 +142,13 @@ export class UIController {
       this.questionNoticeEl.style.display = 'none';
     }
 
-    this.drawingContainer.style.display = 'flex';
-    this.resultComparisonArea.style.display = 'none';
+    // 【重要】毎問ごとに描画コンテナを確実に表示
+    if (this.drawingContainer) {
+      this.drawingContainer.style.display = 'flex';
+    }
+    if (this.resultComparisonArea) {
+      this.resultComparisonArea.style.display = 'none';
+    }
     this.resultLabelEl.textContent = '';
     this.btnRestartAll.style.display = 'none';
   }
