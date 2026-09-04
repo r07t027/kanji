@@ -9,56 +9,8 @@ import { prefetchAllDataAsync, saveProgressAndLogs } from './logger.js';
 import { AuthManager } from './auth.js';
 import { MenuManager } from './menu.js';
 import { AnswerValidator } from './validator.js';
-
-// かきまるのセリフ集
-const KAKIMARU_MESSAGES = {
-  inputAdvices: [
-    (num) => `${num}もじめを かいてね！１かく１かく ていねいに かこう。`,
-    (num) => `${num}もじめを かいてね！マスの まんなかに おさめよう。`,
-    (num) => `${num}もじめを かいてね！もくひょうの かくすう ぴったりを めざそう。`,
-    (num) => `${num}もじめを かいてね！ゆっくり バランスよく かこう。`,
-    (num) => `${num}もじめを かいてね！とめ・はね を いしき してみよう。`
-  ],
-  okuriganaAdvices: [
-    (num) => `${num}もじめの おくりがなを ひらがなで かいてね。`,
-    (num) => `かきおわったら「こたえあわせ」を おしてね。`,
-    (num) => `おくりがなは ここまでかな？よく たしかめてみよう。`,
-    (num) => `ただしく かけたら「こたえあわせ」を おそう。`,
-    (num) => `おくりがなの もじすうに きをつけてね。`
-  ],
-  retryAdvices: [
-    'かきなおして さいチャレンジ！おちついて かこう。',
-    'だいじょうぶ！かたちを よく おもいだしてみてね。',
-    'おてほんの かたちを イメージして かいてみよう。'
-  ],
-  praise: [
-    'すごい！大せいかい。',
-    'ばっちり！そのちょうし。',
-    'きれいな じで かけたね。',
-    'さすが！かっこいい じだよ。'
-  ],
-  mistake: [
-    'おしい！おてほんを みなおしてみてね。',
-    'もうひといき！かくすうを たしかめてみよう。',
-    'だいじょうぶ、つぎは きっと かけるよ。'
-  ]
-};
-
-function getRandomItem(array) {
-  return array[Math.floor(Math.random() * array.length)];
-}
-
-// 完全に独立したシャッフル配列を生成する関数
-function shuffleArray(array) {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = shuffled[i];
-    shuffled[i] = shuffled[j];
-    shuffled[j] = temp;
-  }
-  return shuffled;
-}
+import { shuffleArray } from './utils.js';
+import { getInputAdvice, getRetryAdvice, getPraiseMessage, getMistakeMessage } from './messages.js';
 
 class KanjiApp {
   constructor() {
@@ -203,9 +155,7 @@ class KanjiApp {
     this.currentSet = this.gradeData.sets.find(s => s.id === setId);
     if (!this.currentSet || !this.currentSet.questions) return;
 
-    // 毎回必ず全5問をランダムシャッフル
     this.currentQuestions = shuffleArray(this.currentSet.questions);
-
     this.currentSessionLogs = [];
     this.currentMistakes = [];
 
@@ -392,13 +342,8 @@ class KanjiApp {
     this.checkButtonState();
     this.redrawAllPreviews();
 
-    if (isOkurigana && cIndex > 0) {
-      const adviceGen = getRandomItem(KAKIMARU_MESSAGES.okuriganaAdvices);
-      this.ui.setMessage(adviceGen(cIndex + 1), 'info');
-    } else {
-      const adviceGen = getRandomItem(KAKIMARU_MESSAGES.inputAdvices);
-      this.ui.setMessage(adviceGen(cIndex + 1), 'info');
-    }
+    // 外出しした関数からセリフを設定
+    this.ui.setMessage(getInputAdvice(cIndex + 1, isOkurigana), 'info');
   }
 
   onCanvasChange(strokeCount, strokesData, canUndo, canRedo) {
@@ -481,7 +426,7 @@ class KanjiApp {
     );
     this.checkButtonState();
 
-    this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.retryAdvices), 'info');
+    this.ui.setMessage(getRetryAdvice(), 'info');
   }
 
   handleRestartAll() {
@@ -574,8 +519,7 @@ class KanjiApp {
 
       if (isAllSuccess) {
         playCorrectSound();
-
-        this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.praise), 'success');
+        this.ui.setMessage(getPraiseMessage(), 'success');
 
         this.ui.showResultView(
           true,
@@ -612,7 +556,7 @@ class KanjiApp {
         }, 3000);
       } else {
         playMistakeSound();
-        this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.mistake), 'mistake');
+        this.ui.setMessage(getMistakeMessage(), 'mistake');
         
         this.ui.showResultView(
           false,

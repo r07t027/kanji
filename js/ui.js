@@ -1,25 +1,9 @@
-// UI描画・DOM操作モジュール
-import { KanjiVGPlayer } from './kanjivg.js';
-
-// かきまる画像アセット定義
-const KAKIMARU_IMAGES = {
-  info: [
-    'assets/images/kakimaru_01.png',
-    'assets/images/kakimaru_02.png'
-  ],
-  success: [
-    'assets/images/kakimaru_03.png',
-    'assets/images/kakimaru_04.png',
-    'assets/images/kakimaru_05.png'
-  ],
-  mistake: [
-    'assets/images/kakimaru_06.png',
-    'assets/images/kakimaru_07.png',
-    'assets/images/kakimaru_08.png'
-  ]
-};
-
-const CIRCLED_NUMBERS = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+/**
+ * ui.js
+ * 画面DOM描画・マスコット表情連動・プレビュー表示制御モジュール
+ */
+import { KAKIMARU_IMAGES, CIRCLED_NUMBERS } from './constants.js';
+import { ResultViewController } from './resultView.js';
 
 export class UIController {
   constructor() {
@@ -37,7 +21,7 @@ export class UIController {
     this.mascotImgEl = document.getElementById('mascot-img');
     this.clearMascotImgEl = document.getElementById('clear-mascot-img');
 
-    // 描画・結果確認ペイン要素
+    // 描画ペイン要素
     this.drawingContainer = document.getElementById('drawing-container');
     this.charTabsEl = document.getElementById('char-tabs');
     this.targetStrokeInfoEl = document.getElementById('target-stroke-info');
@@ -49,14 +33,11 @@ export class UIController {
     this.btnCheck = document.getElementById('btn-check');
     this.btnPass = document.getElementById('btn-pass');
 
-    // 判定結果表示要素
-    this.resultComparisonArea = document.getElementById('result-comparison-area');
-    this.correctCardTitleEl = document.getElementById('correct-card-title');
-    this.correctCharsContainer = document.getElementById('correct-chars-container');
-    this.correctHintTextEl = document.getElementById('correct-hint-text');
-    this.userCanvasesContainer = document.getElementById('user-canvases-container');
-    this.resultLabelEl = document.getElementById('result-label');
-    this.btnRestartAll = document.getElementById('btn-restart-all');
+    // プレビューコンテナ
+    this.previewContainer = document.getElementById('realtime-preview-container');
+
+    // 判定結果画面コントローラー
+    this.resultView = new ResultViewController();
   }
 
   setHandedness(isLeftHanded) {
@@ -77,14 +58,11 @@ export class UIController {
     this.menuView.style.display = 'none';
     this.allClearView.style.display = 'none';
     this.practiceView.style.display = 'flex';
-    
+
     if (this.drawingContainer) {
       this.drawingContainer.style.display = 'flex';
     }
-    if (this.resultComparisonArea) {
-      this.resultComparisonArea.style.display = 'none';
-    }
-    
+    this.resultView.hide();
     this.setMascotEmotion('info');
   }
 
@@ -92,9 +70,8 @@ export class UIController {
     this.practiceView.style.display = 'none';
     this.allClearView.style.display = 'flex';
 
-    // 全問クリア時は常に「kakimaru_09.png」を固定表示
     if (this.clearMascotImgEl) {
-      this.clearMascotImgEl.src = 'assets/images/kakimaru_09.png';
+      this.clearMascotImgEl.src = KAKIMARU_IMAGES.clear;
     }
   }
 
@@ -105,7 +82,6 @@ export class UIController {
     const chosenSrc = images[Math.floor(Math.random() * images.length)];
 
     this.mascotImgEl.src = chosenSrc;
-
     this.mascotImgEl.style.transform = 'scale(1.15)';
     setTimeout(() => {
       this.mascotImgEl.style.transform = 'scale(1)';
@@ -143,16 +119,11 @@ export class UIController {
     if (this.drawingContainer) {
       this.drawingContainer.style.display = 'flex';
     }
-    if (this.resultComparisonArea) {
-      this.resultComparisonArea.style.display = 'none';
-    }
-    this.resultLabelEl.textContent = '';
-    this.btnRestartAll.style.display = 'none';
+    this.resultView.hide();
   }
 
   renderTabs(totalCount, currentCharIndex, userInputs, onTabClick, isOkurigana) {
     this.charTabsEl.innerHTML = '';
-    
     for (let i = 0; i < totalCount; i++) {
       const tab = document.createElement('div');
       tab.className = 'char-tab';
@@ -182,7 +153,6 @@ export class UIController {
 
   updateNavButtons(currentIndex, totalChars, isOkurigana, maxChars = 4) {
     this.btnPrev.disabled = (currentIndex === 0);
-
     if (isOkurigana) {
       this.btnNext.disabled = (currentIndex >= maxChars - 1);
     } else {
@@ -194,77 +164,77 @@ export class UIController {
     this.btnCheck.disabled = !canCheck;
   }
 
-  isKanji(char) {
-    return /[\u4E00-\u9FAF\u3400-\u4DBF]/.test(char);
+  // ==================== リアルタイムプレビュー管理 ====================
+  initPreviews(charCount, onSelectChar) {
+    if (!this.previewContainer) return;
+    this.previewContainer.innerHTML = '';
+
+    for (let i = 0; i < charCount; i++) {
+      const box = document.createElement('div');
+      box.className = 'preview-char-box';
+      box.id = `preview-box-${i}`;
+
+      const img = document.createElement('img');
+      img.className = 'preview-char-canvas';
+      img.style.width = '46px';
+      img.style.height = '46px';
+      img.style.objectFit = 'contain';
+      img.style.display = 'none';
+      box.appendChild(img);
+
+      box.addEventListener('click', () => onSelectChar(i));
+      this.previewContainer.appendChild(box);
+    }
   }
 
-  showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
-    this.userCanvasesContainer.innerHTML = '';
-    userInputs.forEach((input, index) => {
-      const isCharOk = charResults[index];
+  updateAllPreviews(userInputs, activeIndex, currentDataUrl) {
+    for (let i = 0; i < userInputs.length; i++) {
+      const box = document.getElementById(`preview-box-${i}`);
+      if (!box) continue;
 
-      const wrapper = document.createElement('div');
-      wrapper.className = `user-char-wrapper ${isCharOk ? 'is-correct' : 'is-wrong'}`;
+      box.classList.toggle('active', i === activeIndex);
+      const img = box.querySelector('img');
+      if (!img) continue;
 
-      const badge = document.createElement('div');
-      badge.className = `judge-badge ${isCharOk ? 'badge-ok' : 'badge-ng'}`;
-      badge.textContent = isCharOk ? '◯' : '✕';
-      wrapper.appendChild(badge);
-
-      const miniCanvas = document.createElement('canvas');
-      miniCanvas.width = 64;
-      miniCanvas.height = 64;
-      miniCanvas.className = 'user-mini-canvas';
-      const mCtx = miniCanvas.getContext('2d');
-      mCtx.lineWidth = 3.5;
-      mCtx.lineCap = 'round';
-      mCtx.lineJoin = 'round';
-      mCtx.strokeStyle = isCharOk ? '#2e7d32' : '#d32f2f';
-
-      if (input && input.strokesData) {
-        input.strokesData.forEach(stroke => {
-          if (stroke.length === 0) return;
-          mCtx.beginPath();
-          mCtx.moveTo(stroke[0][0] * (64 / 260), stroke[0][1] * (64 / 260));
-          for (let i = 1; i < stroke.length; i++) {
-            mCtx.lineTo(stroke[i][0] * (64 / 260), stroke[i][1] * (64 / 260));
-          }
-          mCtx.stroke();
-        });
-      }
-      wrapper.appendChild(miniCanvas);
-      this.userCanvasesContainer.appendChild(wrapper);
-    });
-
-    this.correctCharsContainer.innerHTML = '';
-    this.correctCardTitleEl.textContent = 'せいかいの おてほん';
-
-    if (this.correctHintTextEl) {
-      const hasKanji = targetChars.some(c => this.isKanji(c));
-      this.correctHintTextEl.style.display = (!isAllSuccess && hasKanji) ? 'block' : 'none';
-    }
-
-    targetChars.forEach(char => {
-      const item = document.createElement('div');
-      item.className = 'correct-char-item';
-
-      if (this.isKanji(char)) {
-        new KanjiVGPlayer(item, char, !isAllSuccess);
+      if (i === activeIndex) {
+        if (currentDataUrl) {
+          img.src = currentDataUrl;
+          img.style.display = 'block';
+        } else {
+          img.src = '';
+          img.style.display = 'none';
+        }
+      } else if (userInputs[i] && userInputs[i].previewUrl) {
+        img.src = userInputs[i].previewUrl;
+        img.style.display = 'block';
       } else {
-        const textSpan = document.createElement('span');
-        textSpan.className = 'correct-kana-text';
-        textSpan.textContent = char;
-        item.appendChild(textSpan);
+        img.src = '';
+        img.style.display = 'none';
       }
+    }
+  }
 
-      this.correctCharsContainer.appendChild(item);
-    });
+  syncActivePreview(activeIndex, dataUrl) {
+    const currentBox = document.getElementById(`preview-box-${activeIndex}`);
+    if (!currentBox) return;
 
-    this.resultLabelEl.innerHTML = messageHtml;
-    this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
-    this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
+    const img = currentBox.querySelector('img');
+    if (!img) return;
 
-    this.drawingContainer.style.display = 'none';
-    this.resultComparisonArea.style.display = 'flex';
+    if (dataUrl) {
+      img.src = dataUrl;
+      img.style.display = 'block';
+    } else {
+      img.src = '';
+      img.style.display = 'none';
+    }
+  }
+
+  // ==================== 結果画面表示 ====================
+  showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
+    if (this.drawingContainer) {
+      this.drawingContainer.style.display = 'none';
+    }
+    this.resultView.render(isAllSuccess, messageHtml, targetChars, userInputs, charResults);
   }
 }
