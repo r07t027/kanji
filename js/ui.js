@@ -114,17 +114,20 @@ export class UIController {
   updateQuestionHeader(unitTitle, qIndex, sentenceHtml, noticeText) {
     this.unitTitleDisplay.textContent = unitTitle;
 
-    // 「もんだい 1/5」は削除し非表示
     if (this.progressEl) {
       this.progressEl.style.display = 'none';
     }
 
-    // 問題の前に丸数字を付与（例: ①りんごがいっこある。）
     const numPrefix = CIRCLED_NUMBERS[qIndex] || `${qIndex + 1}. `;
     this.questionTextEl.innerHTML = `${numPrefix}${sentenceHtml}`;
 
     if (noticeText) {
-      this.questionNoticeEl.textContent = noticeText;
+      // 漢字を含まないひらがな表記に正規化
+      let formattedNotice = noticeText;
+      if (formattedNotice.includes('おくりがな') || formattedNotice.includes('送り仮名')) {
+        formattedNotice = 'おくりがなまで ぜんぶ かいてね！';
+      }
+      this.questionNoticeEl.textContent = formattedNotice;
       this.questionNoticeEl.style.display = 'inline-block';
     } else {
       this.questionNoticeEl.style.display = 'none';
@@ -144,7 +147,6 @@ export class UIController {
       tab.className = 'char-tab';
       if (i === currentCharIndex) tab.classList.add('active');
       if (userInputs[i] && userInputs[i].strokeCount > 0) tab.classList.add('done');
-      // 「1もじめ」「2もじめ」と表記
       tab.textContent = `${i + 1}もじめ`;
 
       tab.addEventListener('click', () => onTabClick(i));
@@ -152,11 +154,12 @@ export class UIController {
     }
   }
 
-  // 画数状況表示（2行表記）
+  // 画数状況表示（送り仮名の2文字目以降は完全非表示）
   updateStrokeInfo(currentCount, targetCount, isOkurigana, currentCharIndex) {
     if (isOkurigana && currentCharIndex > 0) {
+      // 2文字目以降のひらがなは画数を一切出さない
       this.targetStrokeInfoEl.textContent = '';
-      this.currentStrokeInfoEl.textContent = `いまの かくすう：${currentCount}かく`;
+      this.currentStrokeInfoEl.textContent = '';
     } else {
       this.targetStrokeInfoEl.textContent = `このじは ${targetCount}かく です。`;
       this.currentStrokeInfoEl.textContent = `いまの かくすう：${currentCount}かく`;

@@ -53,10 +53,21 @@ function getRandomItem(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
 
+// 配列シャッフル関数（Fisher-Yates）
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 class KanjiApp {
   constructor() {
     this.gradeData = null;
     this.currentSet = null;
+    this.currentQuestions = []; // シャッフルされた5問を保持
     this.currentQIndex = 0;
     this.currentCharIndex = 0;
     this.userInputs = [];
@@ -188,11 +199,15 @@ class KanjiApp {
     });
   }
 
+  // 単元開始時に問題を毎回シャッフル
   startSet(setId) {
     if (!this.gradeData || !this.gradeData.sets) return;
     this.menu.setSelectedSetId(setId);
     this.currentSet = this.gradeData.sets.find(s => s.id === setId);
     if (!this.currentSet) return;
+
+    // 5問の出題順をランダム化
+    this.currentQuestions = shuffleArray(this.currentSet.questions);
 
     this.currentSessionLogs = [];
     this.currentMistakes = [];
@@ -214,8 +229,8 @@ class KanjiApp {
   }
 
   getCurrentQuestion() {
-    if (!this.currentSet || !this.currentSet.questions) return null;
-    return this.currentSet.questions[this.currentQIndex];
+    if (!this.currentQuestions || !this.currentQuestions[this.currentQIndex]) return null;
+    return this.currentQuestions[this.currentQIndex];
   }
 
   loadQuestion(qIndex) {
@@ -227,7 +242,6 @@ class KanjiApp {
     const setId = this.menu.getSelectedSetId();
     const numStr = setId.split('_')[1];
     const termNum = setId.split('_')[0].replace('学期', '');
-    // 「1がっき その1」表記
     const displayTitle = `${termNum}がっき その${parseInt(numStr, 10)}`;
 
     this.ui.updateQuestionHeader(
@@ -375,7 +389,6 @@ class KanjiApp {
     this.checkButtonState();
     this.redrawAllPreviews();
 
-    // 送り仮名の2文字目以降は専用アドバイス
     if (isOkurigana && cIndex > 0) {
       const adviceGen = getRandomItem(KAKIMARU_MESSAGES.okuriganaAdvices);
       this.ui.setMessage(adviceGen(cIndex + 1), 'info');
@@ -503,7 +516,6 @@ class KanjiApp {
     }
   }
 
-  // 「パス」ボタン押下時の処理
   handlePass() {
     const q = this.getCurrentQuestion();
     if (!q) return;
@@ -515,7 +527,6 @@ class KanjiApp {
     playMistakeSound();
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
 
-    // 苦手文字として登録
     q.targets.forEach(t => this.currentMistakes.push(t.char));
 
     const falseResults = new Array(q.targets.length).fill(false);
@@ -571,7 +582,7 @@ class KanjiApp {
           charResults
         );
 
-        const isFinalQuestion = (this.currentQIndex === this.currentSet.questions.length - 1);
+        const isFinalQuestion = (this.currentQIndex === this.currentQuestions.length - 1);
         setTimeout(async () => {
           if (isFinalQuestion) {
             playFanfareSound();

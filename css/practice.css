@@ -304,7 +304,6 @@ canvas#draw-canvas {
 }
 
 /* 画数情報パネル（2行表示） */
-
 .info-panel {
   display: flex;
   flex-direction: column;
@@ -323,10 +322,10 @@ canvas#draw-canvas {
 }
 
 #target-stroke-info {
-  color: #1e40af; /* 目標画数は少し濃い青 */
+  color: #1e40af; /* 目標画数は濃い青 */
 }
 
-/* 操作ボタングループ（前の文字へ / この文字を消す / 次の文字へ） */
+/* 操作ボタングループ（まえのもじへ / かきなおす / つぎのもじへ） */
 .controls {
   display: flex;
   gap: 10px;
@@ -348,27 +347,23 @@ canvas#draw-canvas {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-button.btn-prev {
-  background-color: #0288d1;
+/* 「まえのもじへ」「つぎのもじへ」の色をロイヤルブルーに統一 */
+button.btn-prev,
+button.btn-next {
+  background-color: #1976d2;
 }
-button.btn-prev:hover:not(:disabled) {
-  background-color: #0277bd;
+button.btn-prev:hover:not(:disabled),
+button.btn-next:hover:not(:disabled) {
+  background-color: #1565c0;
   transform: translateY(-1px);
 }
 
+/* かきなおす（注意・消去のオレンジ） */
 button.btn-reset {
   background-color: #f57c00;
 }
 button.btn-reset:hover:not(:disabled) {
   background-color: #ef6c00;
-  transform: translateY(-1px);
-}
-
-button.btn-next {
-  background-color: #1976d2;
-}
-button.btn-next:hover:not(:disabled) {
-  background-color: #1565c0;
   transform: translateY(-1px);
 }
 
@@ -380,7 +375,7 @@ button.btn-next:hover:not(:disabled) {
   transform: none !important;
 }
 
-/* リアルタイムプレビュー ＆ 独立した答え合わせボタン */
+/* 下部アクションパネル */
 .bottom-action-panel {
   display: flex;
   flex-direction: column;
@@ -447,7 +442,7 @@ button.btn-next:hover:not(:disabled) {
   width: 100%;
 }
 
-/* 答え合わせボタン */
+/* こたえあわせボタン（グリーン） */
 button.btn-check-main {
   flex: 3;
   background: linear-gradient(135deg, #16a34a, #22c55e);
@@ -473,9 +468,10 @@ button.btn-check-main:disabled {
   cursor: not-allowed;
 }
 
+/* パスボタン（有彩色パープル） */
 button.btn-pass-sub {
   flex: 1;
-  background-color: #94a3b8;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
   font-size: 0.95rem;
   padding: 10px 12px;
   border: none;
@@ -483,10 +479,11 @@ button.btn-pass-sub {
   color: white;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.15s;
+  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
+  transition: transform 0.15s, opacity 0.15s;
 }
 
 button.btn-pass-sub:hover {
-  background-color: #64748b;
   transform: translateY(-1.5px);
+  opacity: 0.95;
 }
