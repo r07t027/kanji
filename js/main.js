@@ -10,6 +10,37 @@ import { AuthManager } from './auth.js';
 import { MenuManager } from './menu.js';
 import { AnswerValidator } from './validator.js';
 
+// かきまるのセリフ集
+const KAKIMARU_MESSAGES = {
+  inputAdvices: [
+    (num) => `${num}文字目を書いてね！1画1画 ていねいに書こう`,
+    (num) => `${num}文字目を書いてね！目標の画数ぴったりを目指そう✨`,
+    (num) => `${num}文字目を書いてね！ゆっくりバランスよく書こう`,
+    (num) => `${num}文字目を書いてね！とめ・はね を意識してみてね！`,
+    (num) => `${num}文字目を書いてね！マスの中央におさめよう`
+  ],
+  retryAdvices: [
+    '書き直して再チャレンジ！落ち着いて書こう',
+    '大丈夫！形をよく思い出してみてね',
+    'お手本の形をイメージして書いてみよう！'
+  ],
+  praise: [
+    'すごい！大正解！👏',
+    'ばっちり！その調子！✨',
+    'きれいな字で書けたね！💮',
+    'さすが！かっこいい字だよ！🌟'
+  ],
+  mistake: [
+    'おしい！お手本を見直してみてね！',
+    'もう一息！筆順や画数を確かめてみよう',
+    '大丈夫、次はきっと書けるよ！'
+  ]
+};
+
+function getRandomItem(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
 class KanjiApp {
   constructor() {
     this.gradeData = null;
@@ -190,7 +221,6 @@ class KanjiApp {
       q.notice
     );
 
-    // 文字数分の入力配列を初期化
     if (isOkurigana) {
       this.userInputs = [null];
     } else {
@@ -329,7 +359,9 @@ class KanjiApp {
     this.checkButtonState();
     this.redrawAllPreviews();
 
-    this.ui.setMessage(`${cIndex + 1}文字目を書いてね`);
+    // ランダムアドバイスの発話
+    const adviceGen = getRandomItem(KAKIMARU_MESSAGES.inputAdvices);
+    this.ui.setMessage(adviceGen(cIndex + 1), 'info');
   }
 
   onCanvasChange(strokeCount, strokesData, canUndo, canRedo) {
@@ -411,12 +443,14 @@ class KanjiApp {
       isOkurigana
     );
     this.checkButtonState();
-    this.ui.setMessage('書き直してみてね');
+
+    // 書き直し用メッセージ
+    this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.retryAdvices), 'info');
   }
 
   handleRestartAll() {
     this.loadQuestion(this.currentQIndex);
-    this.ui.setMessage('1文字目からもう一度書いてみよう！');
+    this.ui.setMessage('1文字目からもう一度書いてみよう！落ち着いてね', 'info');
   }
 
   handlePrev() {
@@ -431,7 +465,7 @@ class KanjiApp {
     const isOkurigana = (q.type === 'okurigana');
 
     if (this.canvasController.strokeCount === 0) {
-      this.ui.setMessage('文字を書いてから次へ進んでね！', 'mistake');
+      this.ui.setMessage('文字を書いてから次へ進んでね！✏️', 'mistake');
       return;
     }
     this.saveCurrentDrawing();
@@ -481,13 +515,8 @@ class KanjiApp {
       if (isAllSuccess) {
         playCorrectSound();
 
-        const praiseMessages = [
-          'すごい！大正解！👏',
-          'ばっちり！その調子！✨',
-          'きれいな字で書けたね！💮'
-        ];
-        const randomPraise = praiseMessages[Math.floor(Math.random() * praiseMessages.length)];
-        this.ui.setMessage(randomPraise, 'success');
+        // 正解時の賞賛メッセージをランダム抽出
+        this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.praise), 'success');
 
         this.ui.showResultView(
           true,
@@ -524,7 +553,8 @@ class KanjiApp {
         }, 3000);
       } else {
         playMistakeSound();
-        this.ui.setMessage('おしい！お手本を見直してみてね！', 'mistake');
+        // 不正解時の励ましメッセージ
+        this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.mistake), 'mistake');
         
         this.ui.showResultView(
           false,
