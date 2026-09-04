@@ -1,9 +1,11 @@
 /**
  * auth.js
- * ユーザー認証、セッション管理、設定モーダル（利き手・PIN）制御モジュール
+ * ユーザー認証、ログイン画面制御、セッション管理モジュール
  */
 import { ensureAudioUnlocked } from './audio.js';
-import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, updateHandModeApi, updatePinApi } from './logger.js';
+import { fetchClassAndUsersFromLocal, prefetchAllDataAsync } from './logger.js';
+import { Storage } from './storage.js';
+import { SettingsModalController } from './modals.js';
 
 export class AuthManager {
   constructor(options = {}) {
@@ -14,7 +16,13 @@ export class AuthManager {
     this.onUserAuthenticated = options.onUserAuthenticated || (() => {});
     this.onHandModeChanged = options.onHandModeChanged || (() => {});
 
-    this._bindModalEvents();
+    // モーダルコントローラーの初期化
+    this.settingsModal = new SettingsModalController({
+      getCurrentUser: () => this.currentUser,
+      onHandModeChanged: (isLeft) => this.onHandModeChanged(isLeft)
+    });
+
+    this._bindHeaderEvents();
   }
 
   setPrefetchPromise(promise) {
@@ -30,16 +38,7 @@ export class AuthManager {
   }
 
   addClearedSet(setId) {
-    if (!this.clearedSets.includes(setId)) {
-      this.clearedSets.push(setId);
-      try {
-        const saved = JSON.parse(localStorage.getItem('kanji_user_progress') || '{}');
-        saved.clearedSets = this.clearedSets;
-        localStorage.setItem('kanji_user_progress', JSON.stringify(saved));
-      } catch (e) {
-        console.warn('進捗のローカル保存に失敗しました:', e);
-      }
-    }
+    this.clearedSets = Storage.saveClearedSet(setId);
   }
 
   async initAuthFlow() {
@@ -51,21 +50,16 @@ export class AuthManager {
     const errorMsg = document.getElementById('login-error-msg');
 
     // 1. ローカルキャッシュからの自動復元チェック
-    try {
-      const savedUserJson = localStorage.getItem('kanji_current_user');
-      const savedProgressJson = localStorage.getItem('kanji_user_progress');
-      if (savedUserJson && savedProgressJson) {
-        this.currentUser = JSON.parse(savedUserJson);
-        const progress = JSON.parse(savedProgressJson);
-        this.clearedSets = progress.clearedSets || [];
-        this.applyUserData();
-        modal.style.display = 'none';
-        this.checkHandModeSetup();
-        this.onUserAuthenticated(this.currentUser, this.clearedSets);
-        return;
-      }
-    } catch (e) {
-      console.warn('キャッシュの復元に失敗しました:', e);
+    const savedUser = Storage.getCurrentUser();
+    const savedProgress = Storage.getProgress();
+    if (savedUser && savedProgress) {
+      this.currentUser = savedUser;
+      this.clearedSets = savedProgress.clearedSets || [];
+      this.applyUserData();
+      modal.style.display = 'none';
+      this.checkHandModeSetup();
+      this.onUserAuthenticated(this.currentUser, this.clearedSets);
+      return;
     }
 
     // 2. ローカル静的名簿の読み込み
@@ -77,10 +71,9 @@ export class AuthManager {
     }
 
     const { classes, users } = res;
-
     selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
     selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
-    selectUser.disabled = true; // クラス未選択時は確実に非活性
+    selectUser.disabled = true;
 
     classes.forEach(c => {
       const opt = document.createElement('option');
@@ -127,7 +120,6 @@ export class AuthManager {
 
       const selectedUserId = selectUser.value;
       const enteredPin = inputPin.value.trim();
-
       const prefetchRes = await this.prefetchPromise;
 
       if (!prefetchRes || !prefetchRes.success) {
@@ -147,8 +139,8 @@ export class AuthManager {
         const userProgress = progressMap[selectedUserId] || { clearedSets: [], weakChars: {} };
         this.clearedSets = userProgress.clearedSets || [];
 
-        localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
-        localStorage.setItem('kanji_user_progress', JSON.stringify(userProgress));
+        Storage.setCurrentUser(this.currentUser);
+        Storage.setProgress(userProgress);
 
         this.applyUserData();
         modal.style.display = 'none';
@@ -168,7 +160,6 @@ export class AuthManager {
   applyUserData() {
     if (!this.currentUser) return;
 
-    // 「5年1組」などを「5ねん 1くみ」にひらがな化・スペース挿入
     const formattedClass = (this.currentUser.className || '')
       .replace(/(\d+)年/, '$1ねん ')
       .replace(/(\d+)組/, '$1くみ');
@@ -183,93 +174,22 @@ export class AuthManager {
   checkHandModeSetup() {
     if (!this.currentUser) return;
     if (!this.currentUser.handMode || this.currentUser.handMode === '') {
-      this.openHandModal(true);
+      this.settingsModal.openHandModal(true);
     }
   }
 
-  openHandModal(isInitial = false) {
-    const handModal = document.getElementById('hand-modal');
-    const btnClose = document.getElementById('btn-close-hand-modal');
-    btnClose.style.display = isInitial ? 'none' : 'block';
-
-    const currentHand = this.currentUser?.handMode || 'right';
-    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.hand === currentHand);
-    });
-
-    handModal.style.display = 'flex';
-  }
-
-  async saveHandMode(mode) {
-    if (!this.currentUser) return;
-    this.currentUser.handMode = mode;
-    this.onHandModeChanged(mode === 'left');
-
-    localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
-    document.getElementById('hand-modal').style.display = 'none';
-    await updateHandModeApi(this.currentUser.userId, mode);
-  }
-
-  openPinModal() {
-    const pinModal = document.getElementById('pin-modal');
-    const inputNewPin = document.getElementById('input-new-pin');
-    const pinMsg = document.getElementById('pin-modal-msg');
-    const btnSave = document.getElementById('btn-save-pin');
-
-    inputNewPin.value = '';
-    pinMsg.style.display = 'none';
-    btnSave.disabled = true;
-    btnSave.textContent = 'ほぞんする';
-
-    inputNewPin.oninput = () => {
-      btnSave.disabled = (inputNewPin.value.trim().length !== 4);
-    };
-
-    btnSave.onclick = async () => {
-      const newPin = inputNewPin.value.trim();
-      btnSave.disabled = true;
-      btnSave.textContent = 'ほぞんちゅう...';
-
-      const res = await updatePinApi(this.currentUser.userId, newPin);
-      if (res.success) {
-        this.currentUser.pin = newPin;
-        localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
-        pinModal.style.display = 'none';
-        alert('パスワードを へんこうしました！');
-      } else {
-        pinMsg.textContent = 'へんこう できませんでした。';
-        pinMsg.style.display = 'block';
-        btnSave.disabled = false;
-        btnSave.textContent = 'ほぞんする';
-      }
-    };
-
-    pinModal.style.display = 'flex';
-  }
-
   logout() {
-    localStorage.removeItem('kanji_current_user');
-    localStorage.removeItem('kanji_user_progress');
+    Storage.clearSession();
     location.reload();
   }
 
-  _bindModalEvents() {
-    document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
-    document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
-      document.getElementById('hand-modal').style.display = 'none';
+  _bindHeaderEvents() {
+    document.getElementById('btn-open-hand-modal').addEventListener('click', () => {
+      this.settingsModal.openHandModal(false);
     });
-
-    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.saveHandMode(btn.dataset.hand);
-      });
+    document.getElementById('btn-open-pin-modal').addEventListener('click', () => {
+      this.settingsModal.openPinModal();
     });
-
-    document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
-    document.getElementById('btn-cancel-pin').addEventListener('click', () => {
-      document.getElementById('pin-modal').style.display = 'none';
-    });
-
     document.getElementById('btn-logout').addEventListener('click', () => {
       if (confirm('ログアウトしますか？')) {
         this.logout();
