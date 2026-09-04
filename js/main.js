@@ -15,7 +15,7 @@ class KanjiApp {
     this.userInputs = [];
     this.isLeftHanded = false;
 
-    // OCR許容順位: 第2候補まで
+    // OCR判定は第2候補まで
     this.candidateLimit = 2;
 
     this.currentUser = null;
@@ -54,9 +54,6 @@ class KanjiApp {
     await this.initAuthFlow();
   }
 
-  /**
-   * 認証・ログインモーダル制御
-   */
   async initAuthFlow() {
     const modal = document.getElementById('login-modal');
     const selectClass = document.getElementById('select-class');
@@ -65,7 +62,6 @@ class KanjiApp {
     const btnSubmit = document.getElementById('btn-submit-login');
     const errorMsg = document.getElementById('login-error-msg');
 
-    // 自動ログイン判定
     try {
       const savedUserJson = localStorage.getItem('kanji_current_user');
       const savedProgressJson = localStorage.getItem('kanji_user_progress');
@@ -174,13 +170,10 @@ class KanjiApp {
     modal.style.display = 'flex';
   }
 
-  /**
-   * 利き手が未設定の場合は初回モーダルを表示
-   */
   checkHandModeSetup() {
     if (!this.currentUser) return;
     if (!this.currentUser.handMode || this.currentUser.handMode === '') {
-      this.openHandModal(true); // 初回（閉じるボタンなし）
+      this.openHandModal(true);
     }
   }
 
@@ -215,8 +208,6 @@ class KanjiApp {
 
     localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
     document.getElementById('hand-modal').style.display = 'none';
-
-    // クラウド（GAS）へ非同期保存
     await updateHandModeApi(this.currentUser.userId, mode);
   }
 
@@ -264,7 +255,6 @@ class KanjiApp {
   }
 
   bindEvents() {
-    // ユーザーバーの各ボタン
     document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
     document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
       document.getElementById('hand-modal').style.display = 'none';
@@ -379,7 +369,6 @@ class KanjiApp {
         if (setObj.id === this.selectedSetId) btn.classList.add('selected');
 
         const numStr = setObj.id.split('_')[1];
-        // 「その1」「その2」...の表記に統一
         btn.textContent = `その${parseInt(numStr, 10)}`;
 
         if (this.clearedSets.includes(setObj.id)) {
@@ -461,7 +450,87 @@ class KanjiApp {
       this.userInputs = new Array(q.targets.length).fill(null);
     }
 
+    this.setupRealtimePreviews();
     this.loadCharInput(0);
+  }
+
+  /**
+   * リアルタイムプレビュー枠のセットアップ
+   */
+  setupRealtimePreviews() {
+    const container = document.getElementById('realtime-preview-container');
+    container.innerHTML = '';
+
+    for (let i = 0; i < this.userInputs.length; i++) {
+      const box = document.createElement('div');
+      box.className = 'preview-char-box';
+      box.id = `preview-box-${i}`;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 46;
+      canvas.height = 46;
+      canvas.className = 'preview-char-canvas';
+      box.appendChild(canvas);
+
+      // タップでその文字に切り替え可能
+      box.addEventListener('click', () => {
+        if (i !== this.currentCharIndex) {
+          this.saveCurrentDrawing();
+          this.loadCharInput(i);
+        }
+      });
+
+      container.appendChild(box);
+    }
+  }
+
+  /**
+   * リアルタイムプレビューの筆跡同期描画
+   */
+  syncRealtimePreviews() {
+    for (let i = 0; i < this.userInputs.length; i++) {
+      const box = document.getElementById(`preview-box-${i}`);
+      if (!box) continue;
+
+      box.classList.toggle('active', i === this.currentCharIndex);
+      const canvas = box.querySelector('canvas');
+      if (!canvas) continue;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let strokes = [];
+      if (i === this.currentCharIndex) {
+        strokes = this.canvasController.getData().strokesData || [];
+      } else if (this.userInputs[i]) {
+        strokes = this.userInputs[i].strokesData || [];
+      }
+
+      if (strokes.length > 0) {
+        ctx.save();
+        // メインキャンバス(260px)からミニキャンバス(46px)への縮小スケール
+        const scale = canvas.width / 260;
+        ctx.scale(scale, scale);
+        ctx.strokeStyle = '#2b5876';
+        ctx.lineWidth = 14;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        strokes.forEach(stroke => {
+          const xs = stroke[0];
+          const ys = stroke[1];
+          if (xs && xs.length > 0) {
+            ctx.beginPath();
+            ctx.moveTo(xs[0], ys[0]);
+            for (let j = 1; j < xs.length; j++) {
+              ctx.lineTo(xs[j], ys[j]);
+            }
+            ctx.stroke();
+          }
+        });
+        ctx.restore();
+      }
+    }
   }
 
   loadCharInput(cIndex) {
@@ -497,6 +566,7 @@ class KanjiApp {
     this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars);
     this.ui.updateHistoryButtons(this.canvasController.canUndo(), this.canvasController.canRedo());
     this.checkButtonState();
+    this.syncRealtimePreviews();
 
     this.ui.setMessage(`${cIndex + 1}文字目を書いてね`);
   }
@@ -529,6 +599,7 @@ class KanjiApp {
       isOkurigana
     );
     this.checkButtonState();
+    this.syncRealtimePreviews();
   }
 
   checkButtonState() {
@@ -571,6 +642,7 @@ class KanjiApp {
       isOkurigana
     );
     this.checkButtonState();
+    this.syncRealtimePreviews();
     this.ui.setMessage('書き直してみてね');
   }
 
@@ -597,6 +669,7 @@ class KanjiApp {
     if (isOkurigana) {
       if (this.currentCharIndex === this.userInputs.length - 1 && this.userInputs.length < q.maxChars) {
         this.userInputs.push(null);
+        this.setupRealtimePreviews();
       }
       this.loadCharInput(this.currentCharIndex + 1);
     } else {

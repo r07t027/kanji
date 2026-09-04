@@ -125,7 +125,7 @@
 
   <!-- ==================== 練習アプリ画面 ==================== -->
   <div id="practice-view" class="app-layout" style="display: none;">
-    <!-- 左カラム（幅広化 ＆ 左寄せ問題文 ＆ マスコット吹き出し） -->
+    <!-- 左カラム -->
     <aside class="problem-pane">
       <div class="header-section">
         <div class="header-top-row">
@@ -136,16 +136,13 @@
         <div class="progress-bar" id="progress-text">もんだい 1 / 5</div>
       </div>
 
-      <!-- 問題カード（左寄せ） -->
       <div class="question-card">
         <div id="question-notice" class="question-notice" style="display: none;"></div>
         <div class="question-sentence" id="question-text"></div>
       </div>
 
-      <!-- マスコットキャラクター ＆ 吹き出しエリア -->
       <div class="mascot-feedback-container">
         <div class="mascot-avatar-box">
-          <!-- 将来キャラクター画像に差し替え可能 -->
           <div class="mascot-placeholder">✏️</div>
         </div>
         <div class="speech-bubble">
@@ -154,8 +151,9 @@
       </div>
     </aside>
 
-    <!-- 右カラム（描画・結果確認） -->
+    <!-- 右カラム -->
     <main class="canvas-pane">
+      <!-- 判定結果画面（上下比較カード） -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
         <div class="cards-column">
           <div class="compare-card user-card">
@@ -173,34 +171,40 @@
         <button id="btn-restart-all" class="btn-restart-all">やり直す</button>
       </div>
 
+      <!-- 手書き描画メインエリア -->
       <div class="drawing-main-area" id="drawing-container">
         <div class="char-tabs" id="char-tabs"></div>
 
-        <!-- 矢印を廃止し、1行表示にしたもどす・すすむボタン -->
         <div class="canvas-row-wrapper">
-          <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>
-            1画もどす
-          </button>
+          <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>1画もどす</button>
 
           <div class="box">
             <canvas id="draw-canvas" width="260" height="260"></canvas>
           </div>
 
-          <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>
-            1画すすむ
-          </button>
+          <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>1画すすむ</button>
         </div>
 
         <div class="info-panel" id="stroke-info">いまの画数: 0画</div>
 
+        <!-- 描画操作ボタン（消す・前へ・次へ） -->
         <div class="controls">
           <button id="btn-reset" class="btn-reset">この文字を消す</button>
           <button id="btn-prev" class="btn-prev" style="display: none;">前の文字へ</button>
           <button id="btn-next" class="btn-next">次の文字へ</button>
-          <button id="btn-check" class="btn-check" disabled>答え合わせ！</button>
+        </div>
+
+        <!-- リアルタイム手書きプレビュー ＆ 独立した答え合わせボタン -->
+        <div class="bottom-action-panel">
+          <div class="realtime-preview-row">
+            <span class="realtime-preview-label">書いた文字：</span>
+            <div id="realtime-preview-container" class="realtime-preview-container"></div>
+          </div>
+          <button id="btn-check" class="btn-check-main" disabled>答え合わせ！</button>
         </div>
       </div>
 
+      <!-- 全問クリア画面 -->
       <div class="all-clear-area" id="all-clear-container" style="display: none;">
         <div class="clear-badge">💮</div>
         <div class="clear-title">はなまる満点！</div>
