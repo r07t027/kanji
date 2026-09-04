@@ -1,31 +1,49 @@
-// アプリケーション統合・エントリーポイント
+/**
+ * main.js
+ * アプリケーション統合・エントリーポイント
+ */
 import { initAudioUnlock, ensureAudioUnlocked, playCorrectSound, playFanfareSound, playMistakeSound } from './audio.js';
 import { CanvasController } from './canvas.js';
-import { recognizeChar } from './recognition.js';
 import { UIController } from './ui.js';
-import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, saveProgressAndLogs, updateHandModeApi, updatePinApi } from './logger.js';
+import { prefetchAllDataAsync, saveProgressAndLogs } from './logger.js';
+import { AuthManager } from './auth.js';
+import { MenuManager } from './menu.js';
+import { AnswerValidator } from './validator.js';
 
 class KanjiApp {
   constructor() {
     this.gradeData = null;
-    this.selectedSetId = '1学期_01';
     this.currentSet = null;
     this.currentQIndex = 0;
     this.currentCharIndex = 0;
     this.userInputs = [];
-    this.isLeftHanded = false;
 
-    // OCR許容順位: 第2候補まで
-    this.candidateLimit = 2;
-
-    this.currentUser = null;
-    this.clearedSets = [];
     this.currentSessionLogs = [];
     this.currentMistakes = [];
 
-    this.prefetchPromise = null;
-
     this.ui = new UIController();
+    this.validator = new AnswerValidator(2);
+
+    // 1. 起動時即座に先読み開始
+    const prefetchPromise = prefetchAllDataAsync();
+
+    // 2. モジュール初期化
+    this.auth = new AuthManager({
+      prefetchPromise,
+      onUserAuthenticated: (user, clearedSets) => {
+        this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+      },
+      onHandModeChanged: (isLeftHanded) => {
+        this.ui.setHandedness(isLeftHanded);
+      }
+    });
+
+    this.menu = new MenuManager({
+      onSetSelected: (setId) => {
+        // 単元選択変更時のハンドラ
+      }
+    });
+
     this.canvasController = new CanvasController(
       document.getElementById('draw-canvas'),
       (strokeCount, strokesData, canUndo, canRedo) => this.onCanvasChange(strokeCount, strokesData, canUndo, canRedo)
@@ -38,245 +56,22 @@ class KanjiApp {
     initAudioUnlock();
     this.bindEvents();
 
-    // 1. 起動と同時にバックグラウンドで先読み開始
-    this.prefetchPromise = prefetchAllDataAsync();
-
-    // 2. 問題データの取得
+    // 問題データのロード
     try {
       const res = await fetch('data/grade5_questions.json');
       this.gradeData = await res.json();
+      this.menu.setData(this.gradeData, this.auth.getClearedSets());
     } catch (e) {
       console.error('問題データの読み込みに失敗しました:', e);
       this.ui.setMessage('問題データの読み込みに失敗しました', 'mistake');
     }
 
-    // 3. 認証フローの開始
-    await this.initAuthFlow();
-  }
-
-  async initAuthFlow() {
-    const modal = document.getElementById('login-modal');
-    const selectClass = document.getElementById('select-class');
-    const selectUser = document.getElementById('select-user');
-    const inputPin = document.getElementById('input-pin');
-    const btnSubmit = document.getElementById('btn-submit-login');
-    const errorMsg = document.getElementById('login-error-msg');
-
-    try {
-      const savedUserJson = localStorage.getItem('kanji_current_user');
-      const savedProgressJson = localStorage.getItem('kanji_user_progress');
-      if (savedUserJson && savedProgressJson) {
-        this.currentUser = JSON.parse(savedUserJson);
-        const progress = JSON.parse(savedProgressJson);
-        this.clearedSets = progress.clearedSets || [];
-        this.applyUserData();
-        modal.style.display = 'none';
-        this.checkHandModeSetup();
-        this.setupMenuUI();
-        return;
-      }
-    } catch (e) {}
-
-    const res = await fetchClassAndUsersFromLocal();
-    if (!res.success) {
-      selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
-      modal.style.display = 'flex';
-      return;
-    }
-
-    const { classes, users } = res;
-
-    selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
-    classes.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
-      opt.textContent = c;
-      selectClass.appendChild(opt);
-    });
-
-    selectClass.addEventListener('change', () => {
-      const selectedClass = selectClass.value;
-      inputPin.value = '';
-      btnSubmit.disabled = true;
-      errorMsg.style.display = 'none';
-
-      if (!selectedClass) {
-        selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
-        selectUser.disabled = true;
-        return;
-      }
-
-      selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
-      const filteredUsers = users.filter(u => u.className === selectedClass);
-      filteredUsers.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u.userId;
-        opt.textContent = u.kanaName;
-        selectUser.appendChild(opt);
-      });
-      selectUser.disabled = false;
-    });
-
-    const checkFormReady = () => {
-      btnSubmit.disabled = !(selectUser.value && inputPin.value.length === 4);
-    };
-
-    selectUser.addEventListener('change', checkFormReady);
-    inputPin.addEventListener('input', checkFormReady);
-
-    btnSubmit.addEventListener('click', async () => {
-      ensureAudioUnlocked();
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = 'かくにん中...⏳';
-      errorMsg.style.display = 'none';
-
-      const selectedUserId = selectUser.value;
-      const enteredPin = inputPin.value.trim();
-
-      const prefetchRes = await this.prefetchPromise;
-
-      if (!prefetchRes || !prefetchRes.success) {
-        errorMsg.textContent = 'データの接続に失敗しました。もう一度お試しください。';
-        errorMsg.style.display = 'block';
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'ログインする';
-        this.prefetchPromise = prefetchAllDataAsync();
-        return;
-      }
-
-      const { authMap, progressMap } = prefetchRes;
-      const matchedUser = authMap[selectedUserId];
-
-      if (matchedUser && matchedUser.pin === enteredPin) {
-        this.currentUser = matchedUser;
-        const userProgress = progressMap[selectedUserId] || { clearedSets: [], weakChars: {} };
-        this.clearedSets = userProgress.clearedSets || [];
-
-        localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
-        localStorage.setItem('kanji_user_progress', JSON.stringify(userProgress));
-
-        this.applyUserData();
-        modal.style.display = 'none';
-        this.checkHandModeSetup();
-        this.setupMenuUI();
-      } else {
-        errorMsg.textContent = 'パスワードがちがいます。';
-        errorMsg.style.display = 'block';
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'ログインする';
-      }
-    });
-
-    modal.style.display = 'flex';
-  }
-
-  checkHandModeSetup() {
-    if (!this.currentUser) return;
-    if (!this.currentUser.handMode || this.currentUser.handMode === '') {
-      this.openHandModal(true);
-    }
-  }
-
-  applyUserData() {
-    if (!this.currentUser) return;
-
-    document.getElementById('user-display-name').textContent = `${this.currentUser.className} ${this.currentUser.kanaName}`;
-    document.getElementById('user-info-bar').style.display = 'flex';
-
-    const handMode = this.currentUser.handMode || 'right';
-    this.isLeftHanded = (handMode === 'left');
-    this.ui.setHandedness(this.isLeftHanded);
-  }
-
-  openHandModal(isInitial = false) {
-    const handModal = document.getElementById('hand-modal');
-    const btnClose = document.getElementById('btn-close-hand-modal');
-    btnClose.style.display = isInitial ? 'none' : 'block';
-
-    const currentHand = this.currentUser?.handMode || 'right';
-    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.hand === currentHand);
-    });
-
-    handModal.style.display = 'flex';
-  }
-
-  async saveHandMode(mode) {
-    this.isLeftHanded = (mode === 'left');
-    this.currentUser.handMode = mode;
-    this.ui.setHandedness(this.isLeftHanded);
-
-    localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
-    document.getElementById('hand-modal').style.display = 'none';
-    await updateHandModeApi(this.currentUser.userId, mode);
-  }
-
-  openPinModal() {
-    const pinModal = document.getElementById('pin-modal');
-    const inputNewPin = document.getElementById('input-new-pin');
-    const pinMsg = document.getElementById('pin-modal-msg');
-    const btnSave = document.getElementById('btn-save-pin');
-
-    inputNewPin.value = '';
-    pinMsg.style.display = 'none';
-    btnSave.disabled = true;
-    btnSave.textContent = '保存する';
-
-    inputNewPin.oninput = () => {
-      btnSave.disabled = (inputNewPin.value.trim().length !== 4);
-    };
-
-    btnSave.onclick = async () => {
-      const newPin = inputNewPin.value.trim();
-      btnSave.disabled = true;
-      btnSave.textContent = '保存中...';
-
-      const res = await updatePinApi(this.currentUser.userId, newPin);
-      if (res.success) {
-        this.currentUser.pin = newPin;
-        localStorage.setItem('kanji_current_user', JSON.stringify(this.currentUser));
-        pinModal.style.display = 'none';
-        alert('パスワードを変更しました！');
-      } else {
-        pinMsg.textContent = '変更に失敗しました。';
-        pinMsg.style.display = 'block';
-        btnSave.disabled = false;
-        btnSave.textContent = '保存する';
-      }
-    };
-
-    pinModal.style.display = 'flex';
-  }
-
-  logout() {
-    localStorage.removeItem('kanji_current_user');
-    localStorage.removeItem('kanji_user_progress');
-    location.reload();
+    // 認証フロー開始
+    await this.auth.initAuthFlow();
   }
 
   bindEvents() {
-    document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
-    document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
-      document.getElementById('hand-modal').style.display = 'none';
-    });
-
-    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.saveHandMode(btn.dataset.hand);
-      });
-    });
-
-    document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
-    document.getElementById('btn-cancel-pin').addEventListener('click', () => {
-      document.getElementById('pin-modal').style.display = 'none';
-    });
-
-    document.getElementById('btn-logout').addEventListener('click', () => {
-      if (confirm('ログアウトして、別のなまえで ログインしなおしますか？')) {
-        this.logout();
-      }
-    });
-
+    // 描画・操作ボタン
     document.getElementById('btn-reset').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.handleReset();
@@ -300,9 +95,10 @@ class KanjiApp {
     document.getElementById('btn-back-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.ui.showMenuView();
-      this.setupMenuUI();
+      this.menu.render();
     });
 
+    // 履歴（アンドゥ・リドゥ）
     document.getElementById('btn-undo').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.canvasController.undo();
@@ -312,9 +108,10 @@ class KanjiApp {
       this.canvasController.redo();
     });
 
+    // 全問クリア画面
     document.getElementById('btn-clear-retry').addEventListener('click', () => {
       ensureAudioUnlocked();
-      this.startSet(this.selectedSetId);
+      this.startSet(this.menu.getSelectedSetId());
     });
     document.getElementById('btn-clear-next').addEventListener('click', () => {
       ensureAudioUnlocked();
@@ -323,14 +120,16 @@ class KanjiApp {
     document.getElementById('btn-clear-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.ui.showMenuView();
-      this.setupMenuUI();
+      this.menu.render();
     });
 
+    // メニュースタートボタン
     document.getElementById('btn-start').addEventListener('click', () => {
       ensureAudioUnlocked();
-      this.startSet(this.selectedSetId);
+      this.startSet(this.menu.getSelectedSetId());
     });
 
+    // ショートカットキー (Ctrl+Z / Ctrl+Y)
     window.addEventListener('keydown', (e) => {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const isModifier = isMac ? e.metaKey : e.ctrlKey;
@@ -351,57 +150,9 @@ class KanjiApp {
     });
   }
 
-  setupMenuUI() {
-    if (!this.gradeData) return;
-
-    const termTabs = document.querySelectorAll('.term-tab:not(.term-tab-disabled)');
-    const container = document.getElementById('set-grid-container');
-
-    const renderGrid = (termNum) => {
-      container.innerHTML = '';
-      const prefix = `${termNum}学期_`;
-      const setsInTerm = this.gradeData.sets.filter(s => s.id.startsWith(prefix));
-
-      setsInTerm.forEach(setObj => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'set-btn';
-        if (setObj.id === this.selectedSetId) btn.classList.add('selected');
-
-        const numStr = setObj.id.split('_')[1];
-        btn.textContent = `その${parseInt(numStr, 10)}`;
-
-        if (this.clearedSets.includes(setObj.id)) {
-          const badge = document.createElement('span');
-          badge.className = 'set-badge-clear';
-          badge.textContent = '💮';
-          btn.appendChild(badge);
-        }
-
-        btn.addEventListener('click', () => {
-          this.selectedSetId = setObj.id;
-          document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-        });
-
-        container.appendChild(btn);
-      });
-    };
-
-    termTabs.forEach(tab => {
-      tab.onclick = () => {
-        document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        renderGrid(tab.dataset.term);
-      };
-    });
-
-    const activeTab = document.querySelector('.term-tab.active') || termTabs[0];
-    renderGrid(activeTab ? activeTab.dataset.term : '1');
-  }
-
   startSet(setId) {
-    this.selectedSetId = setId;
+    if (!this.gradeData) return;
+    this.menu.setSelectedSetId(setId);
     this.currentSet = this.gradeData.sets.find(s => s.id === setId);
     if (!this.currentSet) return;
 
@@ -413,13 +164,14 @@ class KanjiApp {
   }
 
   startNextSet() {
-    const currentIndex = this.gradeData.sets.findIndex(s => s.id === this.selectedSetId);
+    const currentId = this.menu.getSelectedSetId();
+    const currentIndex = this.gradeData.sets.findIndex(s => s.id === currentId);
     if (currentIndex >= 0 && currentIndex < this.gradeData.sets.length - 1) {
       const nextSet = this.gradeData.sets[currentIndex + 1];
       this.startSet(nextSet.id);
     } else {
       this.ui.showMenuView();
-      this.setupMenuUI();
+      this.menu.render();
     }
   }
 
@@ -432,8 +184,8 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     const isOkurigana = (q.type === 'okurigana');
 
-    const numStr = this.selectedSetId.split('_')[1];
-    const termNum = this.selectedSetId.split('_')[0];
+    const numStr = this.menu.getSelectedSetId().split('_')[1];
+    const termNum = this.menu.getSelectedSetId().split('_')[0];
     const displayTitle = `${termNum} その${parseInt(numStr, 10)}`;
 
     this.ui.updateQuestionHeader(
@@ -454,9 +206,6 @@ class KanjiApp {
     this.loadCharInput(0);
   }
 
-  /**
-   * リアルタイムプレビュー枠のセットアップ
-   */
   setupRealtimePreviews() {
     const container = document.getElementById('realtime-preview-container');
     container.innerHTML = '';
@@ -487,9 +236,6 @@ class KanjiApp {
     this.redrawAllPreviews();
   }
 
-  /**
-   * 全プレビュー枠の再描画（文字切り替え・タブ移動時）
-   */
   redrawAllPreviews() {
     const mainCanvas = document.getElementById('draw-canvas');
 
@@ -519,9 +265,6 @@ class KanjiApp {
     }
   }
 
-  /**
-   * リアルタイム同期（描画中の1画ごとの反映）
-   */
   syncRealtimePreviews() {
     const mainCanvas = document.getElementById('draw-canvas');
     const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
@@ -539,9 +282,6 @@ class KanjiApp {
     }
   }
 
-  /**
-   * 現在の描画状態とプレビュー画像を保存
-   */
   saveCurrentDrawing() {
     const data = this.canvasController.getData();
     const mainCanvas = document.getElementById('draw-canvas');
@@ -621,13 +361,11 @@ class KanjiApp {
     const isOkurigana = (q.type === 'okurigana');
     const currentFilled = this.canvasController.strokeCount > 0;
 
-    // 「この文字を消す」ボタンのグレーアウト制御（1画も書いていなければ押せない）
     const btnReset = document.getElementById('btn-reset');
     if (btnReset) {
       btnReset.disabled = !currentFilled;
     }
 
-    // 「答え合わせ！」ボタンのグレーアウト制御
     if (isOkurigana) {
       const anyFilled = this.userInputs.some((input, idx) => {
         if (idx === this.currentCharIndex) return currentFilled;
@@ -712,79 +450,21 @@ class KanjiApp {
   async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();
-    const isOkurigana = (q.type === 'okurigana');
     this.ui.updateCheckButtonState(false);
     this.ui.setMessage('判定中...✍️');
 
     try {
-      let validInputs = isOkurigana ? [...this.userInputs] : this.userInputs;
-      if (isOkurigana) {
-        while (validInputs.length > 0 && validInputs[validInputs.length - 1] === null) {
-          validInputs.pop();
-        }
-      }
+      // validator モジュールで判定を実行
+      const {
+        isAllSuccess,
+        charResults,
+        validInputs,
+        feedbackHtml,
+        mistakenChars,
+        questionLogDetail
+      } = await this.validator.validateQuestion(q, this.userInputs);
 
-      const charResults = [];
-      const adviceMessages = [];
-      const questionLogDetail = { chars: [] };
-
-      for (let i = 0; i < validInputs.length; i++) {
-        const input = validInputs[i];
-        const target = (i < q.targets.length) ? q.targets[i] : null;
-
-        if (!target) {
-          charResults.push(false);
-          continue;
-        }
-
-        if (!input || input.strokeCount === 0) {
-          charResults.push(false);
-          adviceMessages.push({
-            index: i,
-            type: 'empty',
-            msg: `${i + 1}文字目: 書かれていません`
-          });
-          questionLogDetail.chars.push({ target: target.char, strokes: 0, recognized: '', error: 'empty' });
-          continue;
-        }
-
-        const candidates = await recognizeChar(input.strokesData);
-        const recognized = candidates[0] || '';
-
-        const isCharMatched = candidates.slice(0, this.candidateLimit).includes(target.char);
-
-        if (!isCharMatched) {
-          charResults.push(false);
-          this.currentMistakes.push(target.char);
-          adviceMessages.push({
-            index: i,
-            type: 'char',
-            msg: `${i + 1}文字目: ちがう字を書いているかも？（認識: 「${recognized || '？'}」）`
-          });
-          questionLogDetail.chars.push({ target: target.char, strokes: input.strokeCount, recognized, error: 'char_mismatch' });
-          continue;
-        }
-
-        if (input.strokeCount !== target.strokes) {
-          charResults.push(false);
-          this.currentMistakes.push(target.char);
-          adviceMessages.push({
-            index: i,
-            type: 'stroke',
-            msg: `${i + 1}文字目: 画数がちがうよ（目標: ${target.strokes}画 / 入力: ${input.strokeCount}画）`
-          });
-          questionLogDetail.chars.push({ target: target.char, strokes: input.strokeCount, recognized, error: 'stroke_mismatch' });
-          continue;
-        }
-
-        charResults.push(true);
-        questionLogDetail.chars.push({ target: target.char, strokes: input.strokeCount, recognized, isOk: true });
-      }
-
-      const isCountMatched = (validInputs.length === q.targets.length);
-      const isAllCharsCorrect = charResults.every(r => r === true);
-      const isAllSuccess = isCountMatched && isAllCharsCorrect;
-
+      this.currentMistakes.push(...mistakenChars);
       this.currentSessionLogs.push({
         qIndex: this.currentQIndex + 1,
         isSuccess: isAllSuccess,
@@ -807,14 +487,15 @@ class KanjiApp {
             playFanfareSound();
             this.ui.showAllClear();
 
-            if (!this.clearedSets.includes(this.selectedSetId)) {
-              this.clearedSets.push(this.selectedSetId);
-            }
+            const currentSetId = this.menu.getSelectedSetId();
+            this.auth.addClearedSet(currentSetId);
+            this.menu.updateClearedSets(this.auth.getClearedSets());
 
-            if (this.currentUser) {
+            const currentUser = this.auth.getCurrentUser();
+            if (currentUser) {
               await saveProgressAndLogs(
-                this.currentUser.userId,
-                this.selectedSetId,
+                currentUser.userId,
+                currentSetId,
                 true,
                 this.currentMistakes,
                 this.currentSessionLogs
@@ -827,20 +508,6 @@ class KanjiApp {
         }, 3000);
       } else {
         playMistakeSound();
-
-        let feedbackHtml = '';
-
-        if (isOkurigana) {
-          const firstCharError = adviceMessages.find(a => a.index === 0);
-          if (firstCharError) {
-            feedbackHtml = firstCharError.msg;
-          } else {
-            feedbackHtml = 'おしい！ 送り仮名がちがうよ。';
-          }
-        } else {
-          feedbackHtml = adviceMessages.map(a => a.msg).join('<br>');
-        }
-
         this.ui.showResultView(
           false,
           feedbackHtml,
@@ -850,9 +517,8 @@ class KanjiApp {
         );
         this.ui.updateCheckButtonState(true);
       }
-
     } catch (err) {
-      console.error(err);
+      console.error('判定処理エラー:', err);
       this.ui.setMessage('判定中に通信エラーが発生しました', 'mistake');
       this.ui.updateCheckButtonState(true);
     }
