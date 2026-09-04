@@ -106,10 +106,8 @@
           ]
         },
         {
-          "type": "okurigana",
+          "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">よつば</span>の植物。",
-          "notice": "💡 おくりがなまで全部書いてね！",
-          "maxChars": 3,
           "targets": [
             {
               "char": "四",
