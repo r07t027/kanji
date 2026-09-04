@@ -488,10 +488,13 @@ class KanjiApp {
    * リアルタイムプレビューの筆跡同期描画
    */
   syncRealtimePreviews() {
+    const mainCanvas = document.getElementById('draw-canvas');
+
     for (let i = 0; i < this.userInputs.length; i++) {
       const box = document.getElementById(`preview-box-${i}`);
       if (!box) continue;
 
+      // 現在選択中の文字枠をハイライト
       box.classList.toggle('active', i === this.currentCharIndex);
       const canvas = box.querySelector('canvas');
       if (!canvas) continue;
@@ -499,17 +502,16 @@ class KanjiApp {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      let strokes = [];
       if (i === this.currentCharIndex) {
-        strokes = this.canvasController.getData().strokesData || [];
-      } else if (this.userInputs[i]) {
-        strokes = this.userInputs[i].strokesData || [];
-      }
-
-      if (strokes.length > 0) {
+        // いま書いている文字: メインキャンバスをそのまま縮小コピー（完全一致＆超高速）
+        if (this.canvasController.strokeCount > 0) {
+          ctx.drawImage(mainCanvas, 0, 0, canvas.width, canvas.height);
+        }
+      } else if (this.userInputs[i] && this.userInputs[i].strokeCount > 0) {
+        // 他の文字: 保存されているストロークデータから正しく復元描画
+        const strokes = this.userInputs[i].strokesData || [];
         ctx.save();
-        // メインキャンバス(260px)からミニキャンバス(46px)への縮小スケール
-        const scale = canvas.width / 260;
+        const scale = canvas.width / mainCanvas.width;
         ctx.scale(scale, scale);
         ctx.strokeStyle = '#2b5876';
         ctx.lineWidth = 14;
@@ -517,13 +519,12 @@ class KanjiApp {
         ctx.lineJoin = 'round';
 
         strokes.forEach(stroke => {
-          const xs = stroke[0];
-          const ys = stroke[1];
-          if (xs && xs.length > 0) {
+          const points = stroke.points || [];
+          if (points.length > 0) {
             ctx.beginPath();
-            ctx.moveTo(xs[0], ys[0]);
-            for (let j = 1; j < xs.length; j++) {
-              ctx.lineTo(xs[j], ys[j]);
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let j = 1; j < points.length; j++) {
+              ctx.lineTo(points[j].x, points[j].y);
             }
             ctx.stroke();
           }
