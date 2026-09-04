@@ -85,7 +85,6 @@
   <div id="menu-view" class="menu-view">
     <div class="menu-card">
       
-      <!-- トップヘッダー: 左にロゴ / 右にユーザー情報＆操作ボタン群 -->
       <div class="menu-header-row">
         <div class="menu-logo-container">
           <img src="assets/images/logo_01.png" alt="書きトレ" class="menu-logo-img">
@@ -101,7 +100,6 @@
         </div>
       </div>
       
-      <!-- 1. 学年選択 -->
       <div class="menu-section">
         <label class="menu-label">1. どの がくねんの かんじ？</label>
         <select id="select-grade" class="custom-select">
@@ -109,7 +107,6 @@
         </select>
       </div>
 
-      <!-- 2. 単元選択 -->
       <div class="menu-section">
         <label class="menu-label">2. もんだいを えらぶ</label>
         
@@ -119,37 +116,45 @@
           <button type="button" class="term-tab term-tab-disabled" disabled title="準備中です">3学期 (準備中)</button>
         </div>
 
-        <!-- 単元ボタン一覧（横8列グリッド） -->
         <div id="set-grid-container" class="set-grid-container"></div>
       </div>
 
-      <!-- スタートボタン -->
       <button id="btn-start" class="btn-start">書き取りにチャレンジ！</button>
     </div>
   </div>
 
   <!-- ==================== 練習アプリ画面 ==================== -->
   <div id="practice-view" class="app-layout" style="display: none;">
+    <!-- 左カラム（幅広化 ＆ 左寄せ問題文 ＆ マスコット吹き出し） -->
     <aside class="problem-pane">
       <div class="header-section">
         <div class="header-top-row">
-          <h1>書きトレ</h1>
-          <button id="btn-back-menu" class="btn-back-menu" title="メニューに戻る">🏠 もどる</button>
+          <img src="assets/images/logo_01.png" alt="書きトレ" class="practice-header-logo">
+          <button id="btn-back-menu" class="btn-back-menu" title="メニューに戻る">もどる</button>
         </div>
         <div class="unit-title" id="unit-title-display">1学期 その1</div>
         <div class="progress-bar" id="progress-text">もんだい 1 / 5</div>
       </div>
 
+      <!-- 問題カード（左寄せ） -->
       <div class="question-card">
         <div id="question-notice" class="question-notice" style="display: none;"></div>
         <div class="question-sentence" id="question-text"></div>
       </div>
 
-      <div class="feedback-area">
-        <div id="status-message" class="status-msg"></div>
+      <!-- マスコットキャラクター ＆ 吹き出しエリア -->
+      <div class="mascot-feedback-container">
+        <div class="mascot-avatar-box">
+          <!-- 将来キャラクター画像に差し替え可能 -->
+          <div class="mascot-placeholder">✏️</div>
+        </div>
+        <div class="speech-bubble">
+          <div id="status-message" class="status-msg">1文字目を書いてね</div>
+        </div>
       </div>
     </aside>
 
+    <!-- 右カラム（描画・結果確認） -->
     <main class="canvas-pane">
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
         <div class="cards-column">
@@ -171,10 +176,10 @@
       <div class="drawing-main-area" id="drawing-container">
         <div class="char-tabs" id="char-tabs"></div>
 
+        <!-- 矢印を廃止し、1行表示にしたもどす・すすむボタン -->
         <div class="canvas-row-wrapper">
           <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>
-            <span class="history-icon">↶</span>
-            <span class="history-text">1画もどす</span>
+            1画もどす
           </button>
 
           <div class="box">
@@ -182,8 +187,7 @@
           </div>
 
           <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>
-            <span class="history-icon">↷</span>
-            <span class="history-text">1画すすむ</span>
+            1画すすむ
           </button>
         </div>
 
@@ -192,7 +196,7 @@
         <div class="controls">
           <button id="btn-reset" class="btn-reset">この文字を消す</button>
           <button id="btn-prev" class="btn-prev" style="display: none;">前の文字へ</button>
-          <button id="btn-next" class="btn-next">次の文字へ ➔</button>
+          <button id="btn-next" class="btn-next">次の文字へ</button>
           <button id="btn-check" class="btn-check" disabled>答え合わせ！</button>
         </div>
       </div>
@@ -203,7 +207,7 @@
         <div class="clear-subtitle">全5問クリア！よくがんばったね！</div>
         <div class="clear-actions">
           <button id="btn-clear-retry" class="btn-clear-action">もう一度この問題をとく</button>
-          <button id="btn-clear-next" class="btn-clear-action btn-next-set">つぎの回にすすむ ➔</button>
+          <button id="btn-clear-next" class="btn-clear-action btn-next-set">つぎの回にすすむ</button>
           <button id="btn-clear-menu" class="btn-clear-action btn-back-home">メニューにもどる</button>
         </div>
       </div>

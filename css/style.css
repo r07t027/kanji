@@ -141,7 +141,6 @@ body {
   box-shadow: none;
 }
 
-/* きき手ポップアップ選択 */
 .hand-modal-selector {
   display: flex;
   gap: 12px;
@@ -195,7 +194,7 @@ body {
 .btn-modal-cancel:hover { background: #cfd8dc; }
 
 /* ========================================================
-   メニュー画面 (スタート画面)
+   メニュー画面
    ======================================================== */
 .menu-view {
   width: 100%;
@@ -220,7 +219,6 @@ body {
   overflow-y: auto;
 }
 
-/* メニューヘッダー行: ロゴとユーザー情報バーを横並び */
 .menu-header-row {
   display: flex;
   align-items: center;
@@ -241,7 +239,6 @@ body {
   object-fit: contain;
 }
 
-/* ユーザー情報バー */
 .user-info-bar {
   display: flex;
   flex-direction: column;
@@ -311,7 +308,6 @@ body {
   outline: none;
 }
 
-/* 学期タブ */
 .term-tabs {
   display: flex;
   gap: 8px;
@@ -344,7 +340,6 @@ body {
   opacity: 0.7;
 }
 
-/* 単元ボタングリッド */
 .set-grid-container {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -393,7 +388,6 @@ body {
   line-height: 1;
 }
 
-/* スタートボタン */
 button.btn-start {
   background: linear-gradient(135deg, #f57c00, #ff9800);
   font-size: 1.2rem;
@@ -414,16 +408,16 @@ button.btn-start:hover {
 }
 
 /* ========================================================
-   練習画面（2カラムレイアウト）
+   練習画面（レイアウト比率の改善 ＆ 左寄せ ＆ マスコット）
    ======================================================== */
 .app-layout {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1320px;
   height: 100vh;
-  max-height: 700px;
+  max-height: 720px;
   display: flex;
-  padding: 14px 24px;
-  gap: 24px;
+  padding: 14px 20px;
+  gap: 20px;
   align-items: stretch;
 }
 
@@ -431,13 +425,14 @@ button.btn-start:hover {
   flex-direction: row-reverse;
 }
 
+/* 左カラム: 問題文が収まりやすいよう幅を540pxに拡張 */
 .problem-pane {
-  flex: 0 0 390px;
+  flex: 0 0 540px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: #ffffff;
-  padding: 20px 24px;
+  padding: 18px 22px;
   border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
@@ -446,23 +441,25 @@ button.btn-start:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
-.header-top-row h1 {
-  color: #2b5876;
-  margin: 0;
-  font-size: 1.45rem;
+/* 左カラムのロゴ画像（コンパクト表示） */
+.practice-header-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
 }
 
 button.btn-back-menu {
   background: #eceff1;
   color: #455a64;
   border: 1.5px solid #cfd8dc;
-  font-size: 0.82rem;
-  padding: 6px 12px;
+  font-size: 0.85rem;
+  padding: 6px 14px;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 button.btn-back-menu:hover {
@@ -473,29 +470,30 @@ button.btn-back-menu:hover {
   font-size: 1rem;
   font-weight: bold;
   color: #1976d2;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .progress-bar {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: bold;
   color: #4a708b;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
+/* 問題文カード: 左寄せ配置（text-align: left） */
 .question-card {
   background: #fbfdff;
   border: 2px solid #e3edf5;
-  padding: 20px 18px;
+  padding: 18px 20px;
   border-radius: 16px;
-  text-align: center;
+  text-align: left;
   margin-bottom: auto;
 }
 
 .question-notice {
   background: #fff3e0;
   color: #e65100;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: bold;
   padding: 4px 10px;
   border-radius: 6px;
@@ -509,7 +507,8 @@ button.btn-back-menu:hover {
   font-weight: bold;
   color: #2c3e50;
   letter-spacing: 2px;
-  line-height: 1.35;
+  line-height: 1.4;
+  word-break: break-all;
 }
 
 .highlight-target {
@@ -518,23 +517,81 @@ button.btn-back-menu:hover {
   text-underline-offset: 6px;
 }
 
-.feedback-area {
+/* ========================================================
+   マスコット ＆ 吹き出し演出
+   ======================================================== */
+.mascot-feedback-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding-top: 10px;
-  border-top: 1px solid #edf2f7;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1.5px solid #f1f5f9;
+  margin-top: 10px;
+}
+
+.mascot-avatar-box {
+  flex: 0 0 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #eef7ff;
+  border: 2px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mascot-placeholder {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+/* 吹き出し（左向きの三角形のしっぽ付き） */
+.speech-bubble {
+  flex: 1;
+  position: relative;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 10px 14px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -9px;
+  transform: translateY(-50%);
+  border-width: 8px 9px 8px 0;
+  border-style: solid;
+  border-color: transparent #cbd5e1 transparent transparent;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6.5px;
+  transform: translateY(-50%);
+  border-width: 7px 8px 7px 0;
+  border-style: solid;
+  border-color: transparent #f8fafc transparent transparent;
 }
 
 .status-msg {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: bold;
-  min-height: 1.6rem;
-  text-align: center;
+  line-height: 1.4;
+  color: #334155;
+  text-align: left;
 }
-.status-msg.mistake { color: #d32f2f; }
-.status-msg.success { color: #2e7d32; }
+.status-msg.mistake { color: #dc2626; }
+.status-msg.success { color: #16a34a; }
 
+/* 右カラム */
 .canvas-pane {
   flex: 1;
   background: #ffffff;
@@ -543,7 +600,7 @@ button.btn-back-menu:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 20px;
+  padding: 16px;
   position: relative;
 }
 
@@ -588,30 +645,32 @@ button.btn-back-menu:hover {
 .canvas-row-wrapper {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
+/* 1画もどす・すすむボタン（改行なし・文字のみ） */
 button.btn-history {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 64px;
-  height: 84px;
-  background-color: #eef4f8;
-  color: #37474f;
-  border: 2px solid #cfd8dc;
+  width: 86px;
+  height: 54px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 2px solid #cbd5e1;
   border-radius: 12px;
   cursor: pointer;
-  padding: 6px;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  font-weight: bold;
+  white-space: nowrap;
   transition: all 0.15s;
 }
 
 button.btn-history:hover:not(:disabled) {
-  background-color: #e0ecf4;
-  border-color: #90a4ae;
-  color: #1976d2;
+  background-color: #e2e8f0;
+  border-color: #94a3b8;
+  color: #1e293b;
   transform: translateY(-2px);
 }
 
@@ -620,23 +679,11 @@ button.btn-history:active:not(:disabled) {
 }
 
 button.btn-history:disabled {
-  background-color: #f5f5f5;
-  color: #bdbdbd;
-  border-color: #e0e0e0;
+  background-color: #f8fafc;
+  color: #cbd5e1;
+  border-color: #e2e8f0;
   cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.history-icon {
-  font-size: 1.5rem;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.history-text {
-  font-size: 0.72rem;
-  font-weight: bold;
-  letter-spacing: -0.5px;
+  opacity: 0.7;
 }
 
 .box {
@@ -666,9 +713,9 @@ canvas#draw-canvas {
 }
 
 .info-panel {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: bold;
-  color: #444;
+  color: #475569;
   min-height: 1.4rem;
 }
 
