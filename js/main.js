@@ -621,6 +621,13 @@ class KanjiApp {
     const isOkurigana = (q.type === 'okurigana');
     const currentFilled = this.canvasController.strokeCount > 0;
 
+    // 「この文字を消す」ボタンのグレーアウト制御（1画も書いていなければ押せない）
+    const btnReset = document.getElementById('btn-reset');
+    if (btnReset) {
+      btnReset.disabled = !currentFilled;
+    }
+
+    // 「答え合わせ！」ボタンのグレーアウト制御
     if (isOkurigana) {
       const anyFilled = this.userInputs.some((input, idx) => {
         if (idx === this.currentCharIndex) return currentFilled;
@@ -674,19 +681,20 @@ class KanjiApp {
   }
 
   handlePrev() {
+    if (this.currentCharIndex === 0) return;
     this.saveCurrentDrawing();
     this.loadCharInput(this.currentCharIndex - 1);
   }
 
   handleNext() {
+    const q = this.getCurrentQuestion();
+    const isOkurigana = (q.type === 'okurigana');
+
     if (this.canvasController.strokeCount === 0) {
       this.ui.setMessage('文字を書いてから次へ進んでね！', 'mistake');
       return;
     }
     this.saveCurrentDrawing();
-
-    const q = this.getCurrentQuestion();
-    const isOkurigana = (q.type === 'okurigana');
 
     if (isOkurigana) {
       if (this.currentCharIndex === this.userInputs.length - 1 && this.userInputs.length < q.maxChars) {
@@ -695,7 +703,9 @@ class KanjiApp {
       }
       this.loadCharInput(this.currentCharIndex + 1);
     } else {
-      this.loadCharInput(this.currentCharIndex + 1);
+      if (this.currentCharIndex < this.userInputs.length - 1) {
+        this.loadCharInput(this.currentCharIndex + 1);
+      }
     }
   }
 

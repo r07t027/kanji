@@ -107,14 +107,23 @@ export class UIController {
     this.btnRedo.disabled = !canRedo;
   }
 
-  updateNavButtons(currentIndex, totalCount, isOkurigana, maxChars) {
-    this.btnPrev.style.display = (currentIndex > 0) ? 'inline-block' : 'none';
+/**
+   * ナビゲーションボタン（前の文字へ / 次の文字へ）の有効・無効切り替え
+   */
+  updateNavButtons(currentIndex, totalChars, isOkurigana, maxChars = 4) {
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
 
+    // 「前の文字へ」: 1文字目ならグレーアウト、2文字目以降なら押せる
+    btnPrev.disabled = (currentIndex === 0);
+
+    // 「次の文字へ」: 送り仮名または熟語で、これ以上進めないならグレーアウト
     if (isOkurigana) {
-      const atMax = (currentIndex >= maxChars - 1);
-      this.btnNext.style.display = atMax ? 'none' : 'inline-block';
+      // 最大文字数に達している、かつ末尾文字にいるときはグレーアウト
+      btnNext.disabled = (currentIndex >= maxChars - 1);
     } else {
-      this.btnNext.style.display = (currentIndex < totalCount - 1) ? 'inline-block' : 'none';
+      // 最後の文字ならグレーアウト
+      btnNext.disabled = (currentIndex >= totalChars - 1);
     }
   }
 
