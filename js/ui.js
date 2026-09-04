@@ -2,10 +2,11 @@
 import { KanjiVGPlayer } from './kanjivg.js';
 
 export class UIController {
-constructor() {
+  constructor() {
+    // 画面ビュー
     this.menuView = document.getElementById('menu-view');
     this.practiceView = document.getElementById('practice-view');
-    this.allClearView = document.getElementById('all-clear-view'); // 追記
+    this.allClearView = document.getElementById('all-clear-view');
 
     // 問題提示ペイン要素
     this.unitTitleDisplay = document.getElementById('unit-title-display');
@@ -14,7 +15,7 @@ constructor() {
     this.progressEl = document.getElementById('progress-text');
     this.statusEl = document.getElementById('status-message');
 
-    // 描画ペイン要素
+    // 描画・結果確認ペイン要素
     this.drawingContainer = document.getElementById('drawing-container');
     this.charTabsEl = document.getElementById('char-tabs');
     this.strokeInfoEl = document.getElementById('stroke-info');
@@ -24,13 +25,21 @@ constructor() {
     this.btnNext = document.getElementById('btn-next');
     this.btnCheck = document.getElementById('btn-check');
 
-    // 判定結果要素
+    // 判定結果表示要素
     this.resultComparisonArea = document.getElementById('result-comparison-area');
     this.correctCardTitleEl = document.getElementById('correct-card-title');
     this.correctCharsContainer = document.getElementById('correct-chars-container');
     this.userCanvasesContainer = document.getElementById('user-canvases-container');
     this.resultLabelEl = document.getElementById('result-label');
     this.btnRestartAll = document.getElementById('btn-restart-all');
+  }
+
+  setHandedness(isLeftHanded) {
+    if (isLeftHanded) {
+      this.practiceView.classList.add('left-handed');
+    } else {
+      this.practiceView.classList.remove('left-handed');
+    }
   }
 
   showMenuView() {
@@ -48,24 +57,6 @@ constructor() {
   showAllClear() {
     this.practiceView.style.display = 'none';
     this.allClearView.style.display = 'flex';
-  }
-
-  setHandedness(isLeftHanded) {
-    if (isLeftHanded) {
-      this.practiceView.classList.add('left-handed');
-    } else {
-      this.practiceView.classList.remove('left-handed');
-    }
-  }
-
-  showMenuView() {
-    this.practiceView.style.display = 'none';
-    this.menuView.style.display = 'flex';
-  }
-
-  showPracticeView() {
-    this.menuView.style.display = 'none';
-    this.practiceView.style.display = 'flex';
   }
 
   setMessage(text, type = '') {
@@ -88,7 +79,6 @@ constructor() {
 
     this.drawingContainer.style.display = 'flex';
     this.resultComparisonArea.style.display = 'none';
-    this.allClearContainer.style.display = 'none';
     this.resultLabelEl.textContent = '';
     this.btnRestartAll.style.display = 'none';
   }
@@ -121,22 +111,15 @@ constructor() {
     this.btnRedo.disabled = !canRedo;
   }
 
-/**
-   * ナビゲーションボタン（前の文字へ / 次の文字へ）の有効・無効切り替え
-   */
   updateNavButtons(currentIndex, totalChars, isOkurigana, maxChars = 4) {
     const btnPrev = document.getElementById('btn-prev');
     const btnNext = document.getElementById('btn-next');
 
-    // 「前の文字へ」: 1文字目ならグレーアウト、2文字目以降なら押せる
     btnPrev.disabled = (currentIndex === 0);
 
-    // 「次の文字へ」: 送り仮名または熟語で、これ以上進めないならグレーアウト
     if (isOkurigana) {
-      // 最大文字数に達している、かつ末尾文字にいるときはグレーアウト
       btnNext.disabled = (currentIndex >= maxChars - 1);
     } else {
-      // 最後の文字ならグレーアウト
       btnNext.disabled = (currentIndex >= totalChars - 1);
     }
   }
@@ -217,16 +200,5 @@ constructor() {
 
     this.drawingContainer.style.display = 'none';
     this.resultComparisonArea.style.display = 'flex';
-  }
-
-  showAllClear() {
-    this.drawingContainer.style.display = 'none';
-    this.resultComparisonArea.style.display = 'none';
-    this.allClearContainer.style.display = 'flex';
-
-    this.progressEl.textContent = '全問クリア！';
-    this.questionNoticeEl.style.display = 'none';
-    this.questionTextEl.innerHTML = 'たいへんよく<br>できました！';
-    this.setMessage('満点クリアです！', 'success');
   }
 }

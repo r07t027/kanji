@@ -129,7 +129,7 @@
     </div>
   </div>
 
-<!-- ==================== 練習アプリ画面 ==================== -->
+  <!-- ==================== 練習アプリ画面 ==================== -->
   <div id="practice-view" class="app-layout" style="display: none;">
     <!-- 左カラム（問題ペイン） -->
     <aside class="problem-pane">
@@ -157,7 +157,7 @@
       </div>
     </aside>
 
-    <!-- 右カラム（描画ペイン） -->
+    <!-- 右カラム（描画・結果確認ペイン） -->
     <main class="canvas-pane">
       <!-- 判定結果画面（上下比較カード） -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
@@ -183,9 +183,11 @@
 
         <div class="canvas-row-wrapper">
           <button id="btn-undo" class="btn-history" title="1画もどす (Ctrl+Z)" disabled>1画もどす</button>
+
           <div class="box">
             <canvas id="draw-canvas" width="260" height="260"></canvas>
           </div>
+
           <button id="btn-redo" class="btn-history" title="1画すすむ (Ctrl+Y)" disabled>1画すすむ</button>
         </div>
 

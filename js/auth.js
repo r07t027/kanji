@@ -11,7 +11,6 @@ export class AuthManager {
     this.clearedSets = [];
     this.prefetchPromise = options.prefetchPromise || null;
 
-    // コールバック
     this.onUserAuthenticated = options.onUserAuthenticated || (() => {});
     this.onHandModeChanged = options.onHandModeChanged || (() => {});
 

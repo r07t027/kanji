@@ -29,7 +29,7 @@ export class MenuManager {
   }
 
   getSelectedSetId() {
-    return this.selectedSetId;
+    return this.selectedSetId || '1学期_01';
   }
 
   setSelectedSetId(setId) {
@@ -55,7 +55,7 @@ export class MenuManager {
   }
 
   renderGrid(termNum) {
-    if (!this.container || !this.gradeData) return;
+    if (!this.container || !this.gradeData || !this.gradeData.sets) return;
 
     this.container.innerHTML = '';
     const prefix = `${termNum}学期_`;

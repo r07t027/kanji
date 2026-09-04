@@ -24,14 +24,14 @@ class KanjiApp {
     this.ui = new UIController();
     this.validator = new AnswerValidator(2);
 
-    // 1. 起動時即座に先読み開始
     const prefetchPromise = prefetchAllDataAsync();
 
-    // 2. モジュール初期化
     this.auth = new AuthManager({
       prefetchPromise,
       onUserAuthenticated: (user, clearedSets) => {
-        this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+        if (this.gradeData) {
+          this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+        }
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -39,9 +39,7 @@ class KanjiApp {
     });
 
     this.menu = new MenuManager({
-      onSetSelected: (setId) => {
-        // 単元選択変更時のハンドラ
-      }
+      onSetSelected: (setId) => {}
     });
 
     this.canvasController = new CanvasController(
@@ -56,7 +54,6 @@ class KanjiApp {
     initAudioUnlock();
     this.bindEvents();
 
-    // 問題データのロード
     try {
       const res = await fetch('data/grade5_questions.json');
       this.gradeData = await res.json();
@@ -66,12 +63,10 @@ class KanjiApp {
       this.ui.setMessage('問題データの読み込みに失敗しました', 'mistake');
     }
 
-    // 認証フロー開始
     await this.auth.initAuthFlow();
   }
 
   bindEvents() {
-    // 描画・操作ボタン
     document.getElementById('btn-reset').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.handleReset();
@@ -98,7 +93,6 @@ class KanjiApp {
       this.menu.render();
     });
 
-    // 履歴（アンドゥ・リドゥ）
     document.getElementById('btn-undo').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.canvasController.undo();
@@ -108,7 +102,6 @@ class KanjiApp {
       this.canvasController.redo();
     });
 
-    // 全問クリア画面
     document.getElementById('btn-clear-retry').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.startSet(this.menu.getSelectedSetId());
@@ -123,13 +116,11 @@ class KanjiApp {
       this.menu.render();
     });
 
-    // メニュースタートボタン
     document.getElementById('btn-start').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.startSet(this.menu.getSelectedSetId());
     });
 
-    // ショートカットキー (Ctrl+Z / Ctrl+Y)
     window.addEventListener('keydown', (e) => {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const isModifier = isMac ? e.metaKey : e.ctrlKey;
@@ -151,7 +142,7 @@ class KanjiApp {
   }
 
   startSet(setId) {
-    if (!this.gradeData) return;
+    if (!this.gradeData || !this.gradeData.sets) return;
     this.menu.setSelectedSetId(setId);
     this.currentSet = this.gradeData.sets.find(s => s.id === setId);
     if (!this.currentSet) return;
@@ -176,16 +167,19 @@ class KanjiApp {
   }
 
   getCurrentQuestion() {
+    if (!this.currentSet || !this.currentSet.questions) return null;
     return this.currentSet.questions[this.currentQIndex];
   }
 
   loadQuestion(qIndex) {
     this.currentQIndex = qIndex;
     const q = this.getCurrentQuestion();
-    const isOkurigana = (q.type === 'okurigana');
+    if (!q) return;
 
-    const numStr = this.menu.getSelectedSetId().split('_')[1];
-    const termNum = this.menu.getSelectedSetId().split('_')[0];
+    const isOkurigana = (q.type === 'okurigana');
+    const setId = this.menu.getSelectedSetId();
+    const numStr = setId.split('_')[1];
+    const termNum = setId.split('_')[0];
     const displayTitle = `${termNum} その${parseInt(numStr, 10)}`;
 
     this.ui.updateQuestionHeader(
@@ -196,10 +190,12 @@ class KanjiApp {
       q.notice
     );
 
+    // 文字数分の入力配列を初期化
     if (isOkurigana) {
       this.userInputs = [null];
     } else {
-      this.userInputs = new Array(q.targets.length).fill(null);
+      const targetCount = (q.targets && q.targets.length) ? q.targets.length : 1;
+      this.userInputs = new Array(targetCount).fill(null);
     }
 
     this.setupRealtimePreviews();
@@ -208,6 +204,7 @@ class KanjiApp {
 
   setupRealtimePreviews() {
     const container = document.getElementById('realtime-preview-container');
+    if (!container) return;
     container.innerHTML = '';
 
     for (let i = 0; i < this.userInputs.length; i++) {
@@ -299,9 +296,10 @@ class KanjiApp {
   loadCharInput(cIndex) {
     this.currentCharIndex = cIndex;
     const q = this.getCurrentQuestion();
+    if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
 
-    const targetStroke = (cIndex < q.targets.length) ? q.targets[cIndex].strokes : 0;
+    const targetStroke = (q.targets && cIndex < q.targets.length) ? q.targets[cIndex].strokes : 0;
 
     this.ui.renderTabs(
       this.userInputs.length,
@@ -326,7 +324,7 @@ class KanjiApp {
 
     const currentCount = this.canvasController.strokeCount;
     this.ui.updateStrokeInfo(currentCount, targetStroke, isOkurigana, cIndex);
-    this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars);
+    this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars || 4);
     this.ui.updateHistoryButtons(this.canvasController.canUndo(), this.canvasController.canRedo());
     this.checkButtonState();
     this.redrawAllPreviews();
@@ -336,8 +334,9 @@ class KanjiApp {
 
   onCanvasChange(strokeCount, strokesData, canUndo, canRedo) {
     const q = this.getCurrentQuestion();
+    if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
-    const targetStroke = (this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
+    const targetStroke = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
 
     this.ui.updateStrokeInfo(strokeCount, targetStroke, isOkurigana, this.currentCharIndex);
     this.ui.updateHistoryButtons(canUndo, canRedo);
@@ -358,6 +357,7 @@ class KanjiApp {
 
   checkButtonState() {
     const q = this.getCurrentQuestion();
+    if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
     const currentFilled = this.canvasController.strokeCount > 0;
 
@@ -385,8 +385,9 @@ class KanjiApp {
     this.canvasController.clear();
     this.userInputs[this.currentCharIndex] = null;
     const q = this.getCurrentQuestion();
+    if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
-    const targetStroke = (this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
+    const targetStroke = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
 
     const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
     if (currentBox) {
@@ -426,6 +427,7 @@ class KanjiApp {
 
   handleNext() {
     const q = this.getCurrentQuestion();
+    if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
 
     if (this.canvasController.strokeCount === 0) {
@@ -435,7 +437,7 @@ class KanjiApp {
     this.saveCurrentDrawing();
 
     if (isOkurigana) {
-      if (this.currentCharIndex === this.userInputs.length - 1 && this.userInputs.length < q.maxChars) {
+      if (this.currentCharIndex === this.userInputs.length - 1 && this.userInputs.length < (q.maxChars || 4)) {
         this.userInputs.push(null);
         this.setupRealtimePreviews();
       }
@@ -447,12 +449,12 @@ class KanjiApp {
     }
   }
 
-async handleCheck() {
+  async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();
-    const btnCheck = document.getElementById('btn-check');
+    if (!q) return;
 
-    // ボタン側で通信待ちを表現（マスコットには何も喋らせない）
+    const btnCheck = document.getElementById('btn-check');
     btnCheck.disabled = true;
     const originalBtnText = btnCheck.textContent;
     btnCheck.textContent = '判定中...⏳';
@@ -479,7 +481,6 @@ async handleCheck() {
       if (isAllSuccess) {
         playCorrectSound();
 
-        // 正解した瞬間にキャラクターが直接褒める
         const praiseMessages = [
           'すごい！大正解！👏',
           'ばっちり！その調子！✨',
@@ -500,7 +501,7 @@ async handleCheck() {
         setTimeout(async () => {
           if (isFinalQuestion) {
             playFanfareSound();
-            this.ui.showAllClear(); // 全画面クリアへ移行
+            this.ui.showAllClear();
 
             const currentSetId = this.menu.getSelectedSetId();
             this.auth.addClearedSet(currentSetId);
@@ -523,7 +524,6 @@ async handleCheck() {
         }, 3000);
       } else {
         playMistakeSound();
-        // 不正解時は励ます言葉
         this.ui.setMessage('おしい！お手本を見直してみてね！', 'mistake');
         
         this.ui.showResultView(
