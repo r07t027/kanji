@@ -10,9 +10,8 @@ import { AuthManager } from './auth.js';
 import { MenuManager } from './menu.js';
 import { AnswerValidator } from './validator.js';
 
-// かきまるのセリフ集（ひらがな・カタカナ・和語・わかち書き・絵文字なし・末尾句点）
+// かきまるのセリフ集
 const KAKIMARU_MESSAGES = {
-  // 通常・漢字用の案内 ＆ アドバイス
   inputAdvices: [
     (num) => `${num}もじめを かいてね！１かく１かく ていねいに かこう。`,
     (num) => `${num}もじめを かいてね！マスの まんなかに おさめよう。`,
@@ -20,7 +19,6 @@ const KAKIMARU_MESSAGES = {
     (num) => `${num}もじめを かいてね！ゆっくり バランスよく かこう。`,
     (num) => `${num}もじめを かいてね！とめ・はね を いしき してみよう。`
   ],
-  // 送り仮名（ひらがな 2文字目以降）専用アドバイス
   okuriganaAdvices: [
     (num) => `${num}もじめの おくりがなを ひらがなで かいてね。`,
     (num) => `かきおわったら「こたえあわせ」を おしてね。`,
@@ -28,20 +26,17 @@ const KAKIMARU_MESSAGES = {
     (num) => `ただしく かけたら「こたえあわせ」を おそう。`,
     (num) => `おくりがなの もじすうに きをつけてね。`
   ],
-  // 書き直し時
   retryAdvices: [
     'かきなおして さいチャレンジ！おちついて かこう。',
     'だいじょうぶ！かたちを よく おもいだしてみてね。',
     'おてほんの かたちを イメージして かいてみよう。'
   ],
-  // 正解時の賞賛
   praise: [
     'すごい！大せいかい。',
     'ばっちり！そのちょうし。',
     'きれいな じで かけたね。',
     'さすが！かっこいい じだよ。'
   ],
-  // 不正解時の励まし
   mistake: [
     'おしい！おてほんを みなおしてみてね。',
     'もうひといき！かくすうを たしかめてみよう。',
@@ -53,12 +48,14 @@ function getRandomItem(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-// 配列シャッフル関数（Fisher-Yates）
+// 完全に独立したシャッフル配列を生成する関数
 function shuffleArray(array) {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    const temp = shuffled[i];
+    shuffled[i] = shuffled[j];
+    shuffled[j] = temp;
   }
   return shuffled;
 }
@@ -67,7 +64,7 @@ class KanjiApp {
   constructor() {
     this.gradeData = null;
     this.currentSet = null;
-    this.currentQuestions = []; // シャッフルされた5問を保持
+    this.currentQuestions = []; // シャッフル後の5問を格納
     this.currentQIndex = 0;
     this.currentCharIndex = 0;
     this.userInputs = [];
@@ -199,14 +196,14 @@ class KanjiApp {
     });
   }
 
-  // 単元開始時に問題を毎回シャッフル
+  // 単元スタート処理（問題を必ずシャッフル）
   startSet(setId) {
     if (!this.gradeData || !this.gradeData.sets) return;
     this.menu.setSelectedSetId(setId);
     this.currentSet = this.gradeData.sets.find(s => s.id === setId);
-    if (!this.currentSet) return;
+    if (!this.currentSet || !this.currentSet.questions) return;
 
-    // 5問の出題順をランダム化
+    // 毎回必ず全5問をランダムシャッフル
     this.currentQuestions = shuffleArray(this.currentSet.questions);
 
     this.currentSessionLogs = [];
@@ -229,7 +226,13 @@ class KanjiApp {
   }
 
   getCurrentQuestion() {
-    if (!this.currentQuestions || !this.currentQuestions[this.currentQIndex]) return null;
+    if (!this.currentQuestions || this.currentQuestions.length === 0) {
+      if (this.currentSet && this.currentSet.questions) {
+        this.currentQuestions = shuffleArray(this.currentSet.questions);
+      } else {
+        return null;
+      }
+    }
     return this.currentQuestions[this.currentQIndex];
   }
 

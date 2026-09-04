@@ -53,6 +53,7 @@ export class UIController {
     this.resultComparisonArea = document.getElementById('result-comparison-area');
     this.correctCardTitleEl = document.getElementById('correct-card-title');
     this.correctCharsContainer = document.getElementById('correct-chars-container');
+    this.correctHintTextEl = document.getElementById('correct-hint-text');
     this.userCanvasesContainer = document.getElementById('user-canvases-container');
     this.resultLabelEl = document.getElementById('result-label');
     this.btnRestartAll = document.getElementById('btn-restart-all');
@@ -122,7 +123,6 @@ export class UIController {
     this.questionTextEl.innerHTML = `${numPrefix}${sentenceHtml}`;
 
     if (noticeText) {
-      // 漢字を含まないひらがな表記に正規化
       let formattedNotice = noticeText;
       if (formattedNotice.includes('おくりがな') || formattedNotice.includes('送り仮名')) {
         formattedNotice = 'おくりがなまで ぜんぶ かいてね！';
@@ -154,10 +154,8 @@ export class UIController {
     }
   }
 
-  // 画数状況表示（送り仮名の2文字目以降は完全非表示）
   updateStrokeInfo(currentCount, targetCount, isOkurigana, currentCharIndex) {
     if (isOkurigana && currentCharIndex > 0) {
-      // 2文字目以降のひらがなは画数を一切出さない
       this.targetStrokeInfoEl.textContent = '';
       this.currentStrokeInfoEl.textContent = '';
     } else {
@@ -229,10 +227,13 @@ export class UIController {
 
     this.correctCharsContainer.innerHTML = '';
 
-    if (isAllSuccess) {
-      this.correctCardTitleEl.textContent = 'せいかいの おてほん';
-    } else {
-      this.correctCardTitleEl.textContent = 'せいかいの おてほん（タッチで 筆順をみる）';
+    // 見出しは常にシンプルに「せいかいの おてほん」に固定
+    this.correctCardTitleEl.textContent = 'せいかいの おてほん';
+
+    // 筆順案内メッセージは文字の下側に表示（正解時は非表示、不正解・パス時は表示）
+    if (this.correctHintTextEl) {
+      const hasKanji = targetChars.some(c => this.isKanji(c));
+      this.correctHintTextEl.style.display = (!isAllSuccess && hasKanji) ? 'block' : 'none';
     }
 
     targetChars.forEach(char => {

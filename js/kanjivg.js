@@ -51,7 +51,8 @@ export class KanjiVGPlayer {
 
       if (this.isInteractive) {
         this.container.classList.add('interactive');
-        this.container.title = `クリックまたはタップで「${this.char}」の筆順を再生`;
+        // ひらがなに統一
+        this.container.title = `「${this.char}」を タッチすると かきじゅんを みられるよ`;
 
         this.container.addEventListener('click', () => this.play());
         this.container.addEventListener('touchstart', (e) => {
