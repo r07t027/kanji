@@ -12,6 +12,7 @@ import { AnswerValidator } from './validator.js';
 
 // かきまるのセリフ集
 const KAKIMARU_MESSAGES = {
+  // 通常・漢字用の案内 ＆ アドバイス
   inputAdvices: [
     (num) => `${num}文字目を書いてね！1画1画 ていねいに書こう`,
     (num) => `${num}文字目を書いてね！目標の画数ぴったりを目指そう✨`,
@@ -19,17 +20,28 @@ const KAKIMARU_MESSAGES = {
     (num) => `${num}文字目を書いてね！とめ・はね を意識してみてね！`,
     (num) => `${num}文字目を書いてね！マスの中央におさめよう`
   ],
+  // 送り仮名（ひらがな 2文字目以降）専用アドバイス
+  okuriganaAdvices: [
+    (num) => `${num}文字目の送り仮名をひらがなで書いてね！`,
+    (num) => `書き終わったら「答え合わせ！」を押してね！`,
+    (num) => `送り仮名はここまでかな？よく確かめてみよう`,
+    (num) => `正しく送り仮名が書けたら「答え合わせ！」を押そう！`,
+    (num) => `送り仮名の文字数に気をつけてね！`
+  ],
+  // 書き直し時
   retryAdvices: [
     '書き直して再チャレンジ！落ち着いて書こう',
     '大丈夫！形をよく思い出してみてね',
     'お手本の形をイメージして書いてみよう！'
   ],
+  // 正解時の賞賛
   praise: [
     'すごい！大正解！👏',
     'ばっちり！その調子！✨',
     'きれいな字で書けたね！💮',
     'さすが！かっこいい字だよ！🌟'
   ],
+  // 不正解時の励まし
   mistake: [
     'おしい！お手本を見直してみてね！',
     'もう一息！筆順や画数を確かめてみよう',
@@ -359,9 +371,14 @@ class KanjiApp {
     this.checkButtonState();
     this.redrawAllPreviews();
 
-    // ランダムアドバイスの発話
-    const adviceGen = getRandomItem(KAKIMARU_MESSAGES.inputAdvices);
-    this.ui.setMessage(adviceGen(cIndex + 1), 'info');
+    // 【セリフ分岐】送り仮名の2文字目以降は専用メッセージを使用
+    if (isOkurigana && cIndex > 0) {
+      const adviceGen = getRandomItem(KAKIMARU_MESSAGES.okuriganaAdvices);
+      this.ui.setMessage(adviceGen(cIndex + 1), 'info');
+    } else {
+      const adviceGen = getRandomItem(KAKIMARU_MESSAGES.inputAdvices);
+      this.ui.setMessage(adviceGen(cIndex + 1), 'info');
+    }
   }
 
   onCanvasChange(strokeCount, strokesData, canUndo, canRedo) {
@@ -444,7 +461,6 @@ class KanjiApp {
     );
     this.checkButtonState();
 
-    // 書き直し用メッセージ
     this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.retryAdvices), 'info');
   }
 
@@ -515,7 +531,6 @@ class KanjiApp {
       if (isAllSuccess) {
         playCorrectSound();
 
-        // 正解時の賞賛メッセージをランダム抽出
         this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.praise), 'success');
 
         this.ui.showResultView(
@@ -553,7 +568,6 @@ class KanjiApp {
         }, 3000);
       } else {
         playMistakeSound();
-        // 不正解時の励ましメッセージ
         this.ui.setMessage(getRandomItem(KAKIMARU_MESSAGES.mistake), 'mistake');
         
         this.ui.showResultView(
