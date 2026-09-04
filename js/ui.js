@@ -78,7 +78,6 @@ export class UIController {
     this.allClearView.style.display = 'none';
     this.practiceView.style.display = 'flex';
     
-    // 【重要】描画エリアを確実に再表示し、判定結果エリアを隠す
     if (this.drawingContainer) {
       this.drawingContainer.style.display = 'flex';
     }
@@ -93,10 +92,9 @@ export class UIController {
     this.practiceView.style.display = 'none';
     this.allClearView.style.display = 'flex';
 
+    // 全問クリア時は常に「kakimaru_09.png」を固定表示
     if (this.clearMascotImgEl) {
-      const list = KAKIMARU_IMAGES.success;
-      const src = list[Math.floor(Math.random() * list.length)];
-      this.clearMascotImgEl.src = src;
+      this.clearMascotImgEl.src = 'assets/images/kakimaru_09.png';
     }
   }
 
@@ -142,7 +140,6 @@ export class UIController {
       this.questionNoticeEl.style.display = 'none';
     }
 
-    // 【重要】毎問ごとに描画コンテナを確実に表示
     if (this.drawingContainer) {
       this.drawingContainer.style.display = 'flex';
     }
@@ -240,11 +237,8 @@ export class UIController {
     });
 
     this.correctCharsContainer.innerHTML = '';
-
-    // 見出しは常にシンプルに「せいかいの おてほん」に固定
     this.correctCardTitleEl.textContent = 'せいかいの おてほん';
 
-    // 筆順案内メッセージは文字の下側に表示（正解時は非表示、不正解・パス時は表示）
     if (this.correctHintTextEl) {
       const hasKanji = targetChars.some(c => this.isKanji(c));
       this.correctHintTextEl.style.display = (!isAllSuccess && hasKanji) ? 'block' : 'none';

@@ -277,6 +277,7 @@ button.btn-history:disabled {
   opacity: 0.7;
 }
 
+/* キャンバス枠（位置基準） */
 .box {
   width: 250px;
   height: 250px;
@@ -303,6 +304,46 @@ canvas#draw-canvas {
   cursor: crosshair;
 }
 
+/* キャンバス右下のフローティング消しゴムボタン */
+.btn-canvas-eraser {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #fdba74;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.btn-canvas-eraser .eraser-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.btn-canvas-eraser:hover:not(:disabled) {
+  background: #fff7ed;
+  border-color: #f97316;
+  transform: scale(1.1);
+}
+
+.btn-canvas-eraser:disabled {
+  opacity: 0.35;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* 画数情報パネル（2行表示） */
 .info-panel {
   display: flex;
@@ -322,48 +363,34 @@ canvas#draw-canvas {
 }
 
 #target-stroke-info {
-  color: #1e40af; /* 目標画数は濃い青 */
+  color: #1e40af;
 }
 
-/* 操作ボタングループ（まえのもじへ / かきなおす / つぎのもじへ） */
+/* 操作ボタングループ（まえのもじへ / つぎのもじへ の2連） */
 .controls {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
   width: 100%;
+  max-width: 280px;
 }
 
 .controls button {
   flex: 1;
-  max-width: 120px;
   padding: 8px 12px;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: bold;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   color: #ffffff;
+  background-color: #1976d2;
   transition: background-color 0.15s, opacity 0.15s, transform 0.1s;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* 「まえのもじへ」「つぎのもじへ」の色をロイヤルブルーに統一 */
-button.btn-prev,
-button.btn-next {
-  background-color: #1976d2;
-}
-button.btn-prev:hover:not(:disabled),
-button.btn-next:hover:not(:disabled) {
+.controls button:hover:not(:disabled) {
   background-color: #1565c0;
-  transform: translateY(-1px);
-}
-
-/* かきなおす（注意・消去のオレンジ） */
-button.btn-reset {
-  background-color: #f57c00;
-}
-button.btn-reset:hover:not(:disabled) {
-  background-color: #ef6c00;
   transform: translateY(-1px);
 }
 
@@ -440,11 +467,12 @@ button.btn-reset:hover:not(:disabled) {
   display: flex;
   gap: 10px;
   width: 100%;
+  align-items: center;
 }
 
-/* こたえあわせボタン（グリーン） */
+/* こたえあわせボタン（メイン） */
 button.btn-check-main {
-  flex: 3;
+  flex: 2;
   background: linear-gradient(135deg, #16a34a, #22c55e);
   font-size: 1.1rem;
   padding: 10px 16px;
@@ -468,9 +496,10 @@ button.btn-check-main:disabled {
   cursor: not-allowed;
 }
 
-/* パスボタン（有彩色パープル） */
+/* パスボタン（こたえあわせの約半分のボリューム） */
 button.btn-pass-sub {
   flex: 1;
+  max-width: 96px;
   background: linear-gradient(135deg, #7c3aed, #8b5cf6);
   font-size: 0.95rem;
   padding: 10px 12px;
