@@ -138,8 +138,8 @@
           <img src="assets/images/logo_01.png" alt="書きトレ" class="practice-header-logo">
           <button id="btn-back-menu" class="btn-back-menu" title="メニューに戻る">もどる</button>
         </div>
-        <div class="unit-title" id="unit-title-display">1学期 その1</div>
-        <div class="progress-bar" id="progress-text">もんだい 1 / 5</div>
+        <div class="unit-title" id="unit-title-display">1がっき その1</div>
+        <div class="progress-bar" id="progress-text" style="display: none;">もんだい 1 / 5</div>
       </div>
 
       <div class="question-card">
@@ -148,16 +148,16 @@
       </div>
 
       <div class="mascot-feedback-container">
-<div class="mascot-avatar-box">
-  <img id="mascot-img" src="assets/images/kakimaru_01.png" alt="かきまる" class="mascot-img">
-</div>
+        <div class="mascot-avatar-box">
+          <img id="mascot-img" src="assets/images/kakimaru_01.png" alt="かきまる" class="mascot-img">
+        </div>
         <div class="speech-bubble">
-          <div id="status-message" class="status-msg">1文字目を書いてね</div>
+          <div id="status-message" class="status-msg">1もじめを かいてね！</div>
         </div>
       </div>
     </aside>
 
-<!-- 右カラム -->
+    <!-- 右カラム（描画ペイン） -->
     <main class="canvas-pane">
       <!-- 判定結果画面（上下比較カード） -->
       <div class="result-comparison-area" id="result-comparison-area" style="display: none;">
@@ -175,12 +175,13 @@
               タッチすると かきじゅんが みられるよ。
             </div>
           </div>
+        </div> <!-- ← 【修正】欠落していた .cards-column の閉じタグを追加 -->
 
         <div id="result-label" class="result-label"></div>
         <button id="btn-restart-all" class="btn-restart-all">もういちど</button>
       </div>
 
-      <!-- 手書き描画メインエリア -->
+      <!-- 手書き描画メインエリア（正しく result-comparison-area の外側に配置） -->
       <div class="drawing-main-area" id="drawing-container">
         <div class="char-tabs" id="char-tabs"></div>
 
@@ -227,16 +228,16 @@
       <div class="clear-title">はなまる満点！</div>
 
       <!-- マスコットが賞賛の言葉を発話 -->
-<div class="clear-mascot-row">
-  <div class="mascot-avatar-box clear-mascot-avatar">
-    <img id="clear-mascot-img" src="assets/images/kakimaru_05.png" alt="かきまる" class="mascot-img">
-  </div>
-  <div class="speech-bubble clear-speech-bubble">
-    <div class="status-msg clear-status-msg">
-      全5問クリア！さいごまで よくがんばったね！
-    </div>
-  </div>
-</div>
+      <div class="clear-mascot-row">
+        <div class="mascot-avatar-box clear-mascot-avatar">
+          <img id="clear-mascot-img" src="assets/images/kakimaru_05.png" alt="かきまる" class="mascot-img">
+        </div>
+        <div class="speech-bubble clear-speech-bubble">
+          <div class="status-msg clear-status-msg">
+            全5問クリア！さいごまで よくがんばったね！
+          </div>
+        </div>
+      </div>
 
       <div class="clear-actions">
         <button id="btn-clear-retry" class="btn-clear-action">もう一度この問題をとく</button>
