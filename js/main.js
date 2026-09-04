@@ -15,7 +15,7 @@ class KanjiApp {
     this.userInputs = [];
     this.isLeftHanded = false;
 
-    // OCR判定は第2候補まで
+    // OCR許容順位: 第2候補まで
     this.candidateLimit = 2;
 
     this.currentUser = null;
@@ -482,37 +482,85 @@ class KanjiApp {
 
       container.appendChild(box);
     }
+
+    // 枠を初期化・再構築した際に既存文字を復元描画
+    this.redrawAllPreviews();
   }
 
   /**
-   * リアルタイムプレビューの筆跡同期描画
+   * 全プレビュー枠の再描画（タブ切り替えや枠追加時に呼ぶ）
    */
-/**
-   * リアルタイムプレビューの筆跡同期描画
-   */
-  syncRealtimePreviews() {
+  redrawAllPreviews() {
     const mainCanvas = document.getElementById('draw-canvas');
 
     for (let i = 0; i < this.userInputs.length; i++) {
       const box = document.getElementById(`preview-box-${i}`);
       if (!box) continue;
 
-      // 現在選択中の文字枠をハイライト
       box.classList.toggle('active', i === this.currentCharIndex);
+      const canvas = box.querySelector('canvas');
+      if (!canvas) continue;
 
-      // 現在書いている文字のみリアルタイム転写
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       if (i === this.currentCharIndex) {
-        const canvas = box.querySelector('canvas');
-        if (!canvas) continue;
-
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         if (this.canvasController.strokeCount > 0) {
           ctx.drawImage(mainCanvas, 0, 0, canvas.width, canvas.height);
         }
+      } else if (this.userInputs[i] && this.userInputs[i].strokeCount > 0) {
+        this.drawStrokesToMiniCanvas(ctx, this.userInputs[i].strokesData, canvas.width, mainCanvas.width);
       }
     }
+  }
+
+  /**
+   * リアルタイム同期（描画中の1画ごとの反映）
+   */
+  syncRealtimePreviews() {
+    const mainCanvas = document.getElementById('draw-canvas');
+    const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
+    if (!currentBox) return;
+
+    const canvas = currentBox.querySelector('canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (this.canvasController.strokeCount > 0) {
+      ctx.drawImage(mainCanvas, 0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  /**
+   * Google Input Tools 形式のストローク配列 [ [xs, ys], ... ] をミニキャンバスに描画
+   */
+  drawStrokesToMiniCanvas(ctx, strokesData, miniWidth, mainWidth) {
+    if (!strokesData || strokesData.length === 0) return;
+
+    ctx.save();
+    const scale = miniWidth / mainWidth;
+    ctx.scale(scale, scale);
+    ctx.strokeStyle = '#2b5876';
+    ctx.lineWidth = 14;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    strokesData.forEach(stroke => {
+      const xs = stroke[0];
+      const ys = stroke[1];
+      if (xs && xs.length > 0 && ys && ys.length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(xs[0], ys[0]);
+        for (let j = 1; j < xs.length; j++) {
+          ctx.lineTo(xs[j], ys[j]);
+        }
+        ctx.stroke();
+      }
+    });
+
+    ctx.restore();
   }
 
   loadCharInput(cIndex) {
@@ -548,7 +596,7 @@ class KanjiApp {
     this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars);
     this.ui.updateHistoryButtons(this.canvasController.canUndo(), this.canvasController.canRedo());
     this.checkButtonState();
-    this.syncRealtimePreviews();
+    this.redrawAllPreviews();
 
     this.ui.setMessage(`${cIndex + 1}文字目を書いてね`);
   }
@@ -604,14 +652,13 @@ class KanjiApp {
     }
   }
 
-handleReset() {
+  handleReset() {
     this.canvasController.clear();
     this.userInputs[this.currentCharIndex] = null;
     const q = this.getCurrentQuestion();
     const isOkurigana = (q.type === 'okurigana');
     const targetStroke = (this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
 
-    // 現在のプレビュー枠もクリア
     const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
     if (currentBox) {
       const canvas = currentBox.querySelector('canvas');
