@@ -1,8 +1,36 @@
 /**
  * validator.js
- * 手書き文字照合・画数チェック・正誤判定モジュール
+ * 手書き文字認識（Google Input Tools連携） ＆ 画数・正誤判定モジュール
  */
-import { recognizeChar } from './recognition.js';
+
+// Google Input Tools API 連携（内部ヘルパー）
+async function recognizeChar(strokes) {
+  const ink = strokes.map(stroke => [
+    stroke.map(pt => pt[0]),
+    stroke.map(pt => pt[1])
+  ]);
+
+  try {
+    const res = await fetch('https://inputtools.google.com/request?ime=handwriting&app=autho&dbg=1&cs=1&oe=UTF-8', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{
+          writing_guide: { writing_area_width: 260, writing_area_height: 260 },
+          pre_context: '',
+          max_num_results: 5,
+          language: 'ja',
+          ink: ink
+        }]
+      })
+    });
+    const data = await res.json();
+    return (data[1] && data[1][0] && data[1][0][1]) || [];
+  } catch (err) {
+    console.warn('手書き文字認識APIエラー:', err);
+    return [];
+  }
+}
 
 export class AnswerValidator {
   constructor(candidateLimit = 2) {

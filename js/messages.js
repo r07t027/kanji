@@ -1,9 +1,46 @@
 /**
  * messages.js
- * マスコット「かきまる」のセリフ集 ＆ メッセージプロバイダ
+ * アプリ定数・小型ユーティリティ・かきまるセリフ集
  */
-import { getRandomItem } from './utils.js';
 
+// ==================== 定数定義 ====================
+export const KAKIMARU_IMAGES = {
+  info: [
+    'assets/images/kakimaru_01.png',
+    'assets/images/kakimaru_02.png'
+  ],
+  success: [
+    'assets/images/kakimaru_03.png',
+    'assets/images/kakimaru_04.png',
+    'assets/images/kakimaru_05.png'
+  ],
+  mistake: [
+    'assets/images/kakimaru_06.png',
+    'assets/images/kakimaru_07.png',
+    'assets/images/kakimaru_08.png'
+  ],
+  clear: 'assets/images/kakimaru_09.png'
+};
+
+export const CIRCLED_NUMBERS = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+
+// ==================== 小型ユーティリティ ====================
+export function getRandomItem(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+export function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = shuffled[i];
+    shuffled[i] = shuffled[j];
+    shuffled[j] = temp;
+  }
+  return shuffled;
+}
+
+// ==================== かきまるセリフ集 ====================
 export const KAKIMARU_MESSAGES = {
   inputAdvices: [
     (num) => `${num}もじめを かいてね！１かく１かく ていねいに かこう。`,
@@ -37,7 +74,6 @@ export const KAKIMARU_MESSAGES = {
   ]
 };
 
-// 状況に応じたメッセージを返す関数群
 export function getInputAdvice(charNum, isOkurigana = false) {
   if (isOkurigana && charNum > 1) {
     const fn = getRandomItem(KAKIMARU_MESSAGES.okuriganaAdvices);

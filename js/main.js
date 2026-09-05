@@ -9,14 +9,13 @@ import { prefetchAllDataAsync, saveProgressAndLogs } from './logger.js';
 import { AuthManager } from './auth.js';
 import { MenuManager } from './menu.js';
 import { AnswerValidator } from './validator.js';
-import { shuffleArray } from './utils.js';
-import { getInputAdvice, getRetryAdvice, getPraiseMessage, getMistakeMessage } from './messages.js';
+import { shuffleArray, getInputAdvice, getRetryAdvice, getPraiseMessage, getMistakeMessage } from './messages.js';
 
 class KanjiApp {
   constructor() {
     this.gradeData = null;
     this.currentSet = null;
-    this.currentQuestions = []; // シャッフル後の5問を格納
+    this.currentQuestions = []; // 出題順にシャッフルされた問題を保持
     this.currentQIndex = 0;
     this.currentCharIndex = 0;
     this.userInputs = [];
@@ -70,14 +69,26 @@ class KanjiApp {
   }
 
   bindEvents() {
+    // 描画関連ボタン
     document.getElementById('btn-reset').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.handleReset();
     });
-    document.getElementById('btn-restart-all').addEventListener('click', () => {
+    document.getElementById('btn-undo').addEventListener('click', () => {
       ensureAudioUnlocked();
-      this.handleRestartAll();
+      this.canvasController.undo();
     });
+    document.getElementById('btn-redo').addEventListener('click', () => {
+      ensureAudioUnlocked();
+      this.canvasController.redo();
+    });
+
+    // キーボードショートカット（Undo/Redo）をキャンバス側に登録
+    this.canvasController.initKeyboardShortcuts(() => {
+      ensureAudioUnlocked();
+    });
+
+    // ナビゲーション・解答ボタン
     document.getElementById('btn-prev').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.handlePrev();
@@ -94,21 +105,17 @@ class KanjiApp {
       ensureAudioUnlocked();
       this.handlePass();
     });
+    document.getElementById('btn-restart-all').addEventListener('click', () => {
+      ensureAudioUnlocked();
+      this.handleRestartAll();
+    });
     document.getElementById('btn-back-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.ui.showMenuView();
       this.menu.render();
     });
 
-    document.getElementById('btn-undo').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.canvasController.undo();
-    });
-    document.getElementById('btn-redo').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.canvasController.redo();
-    });
-
+    // 全問クリア画面アクション
     document.getElementById('btn-clear-retry').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.startSet(this.menu.getSelectedSetId());
@@ -123,32 +130,13 @@ class KanjiApp {
       this.menu.render();
     });
 
+    // メニュー画面スタート
     document.getElementById('btn-start').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.startSet(this.menu.getSelectedSetId());
     });
-
-    window.addEventListener('keydown', (e) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const isModifier = isMac ? e.metaKey : e.ctrlKey;
-
-      if (isModifier && (e.key === 'z' || e.key === 'Z')) {
-        e.preventDefault();
-        ensureAudioUnlocked();
-        if (e.shiftKey) {
-          this.canvasController.redo();
-        } else {
-          this.canvasController.undo();
-        }
-      } else if (isModifier && (e.key === 'y' || e.key === 'Y')) {
-        e.preventDefault();
-        ensureAudioUnlocked();
-        this.canvasController.redo();
-      }
-    });
   }
 
-  // 単元スタート処理（問題を必ずシャッフル）
   startSet(setId) {
     if (!this.gradeData || !this.gradeData.sets) return;
     this.menu.setSelectedSetId(setId);
@@ -197,12 +185,7 @@ class KanjiApp {
     const termNum = setId.split('_')[0].replace('学期', '');
     const displayTitle = `${termNum}がっき その${parseInt(numStr, 10)}`;
 
-    this.ui.updateQuestionHeader(
-      displayTitle,
-      qIndex,
-      q.sentenceHtml,
-      q.notice
-    );
+    this.ui.updateQuestionHeader(displayTitle, qIndex, q.sentenceHtml, q.notice);
 
     if (isOkurigana) {
       this.userInputs = [null];
@@ -211,95 +194,22 @@ class KanjiApp {
       this.userInputs = new Array(targetCount).fill(null);
     }
 
-    this.setupRealtimePreviews();
-    this.loadCharInput(0);
-  }
-
-  setupRealtimePreviews() {
-    const container = document.getElementById('realtime-preview-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    for (let i = 0; i < this.userInputs.length; i++) {
-      const box = document.createElement('div');
-      box.className = 'preview-char-box';
-      box.id = `preview-box-${i}`;
-
-      const img = document.createElement('img');
-      img.className = 'preview-char-canvas';
-      img.style.width = '46px';
-      img.style.height = '46px';
-      img.style.objectFit = 'contain';
-      img.style.display = 'none';
-      box.appendChild(img);
-
-      box.addEventListener('click', () => {
-        if (i !== this.currentCharIndex) {
-          this.saveCurrentDrawing();
-          this.loadCharInput(i);
-        }
-      });
-
-      container.appendChild(box);
-    }
-
-    this.redrawAllPreviews();
-  }
-
-  redrawAllPreviews() {
-    const mainCanvas = document.getElementById('draw-canvas');
-
-    for (let i = 0; i < this.userInputs.length; i++) {
-      const box = document.getElementById(`preview-box-${i}`);
-      if (!box) continue;
-
-      box.classList.toggle('active', i === this.currentCharIndex);
-      const img = box.querySelector('img');
-      if (!img) continue;
-
-      if (i === this.currentCharIndex) {
-        if (this.canvasController.strokeCount > 0) {
-          img.src = mainCanvas.toDataURL();
-          img.style.display = 'block';
-        } else {
-          img.src = '';
-          img.style.display = 'none';
-        }
-      } else if (this.userInputs[i] && this.userInputs[i].previewUrl) {
-        img.src = this.userInputs[i].previewUrl;
-        img.style.display = 'block';
-      } else {
-        img.src = '';
-        img.style.display = 'none';
+    this.ui.initPreviews(this.userInputs.length, (i) => {
+      if (i !== this.currentCharIndex) {
+        this.saveCurrentDrawing();
+        this.loadCharInput(i);
       }
-    }
-  }
+    });
 
-  syncRealtimePreviews() {
-    const mainCanvas = document.getElementById('draw-canvas');
-    const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
-    if (!currentBox) return;
-
-    const img = currentBox.querySelector('img');
-    if (!img) return;
-
-    if (this.canvasController.strokeCount > 0) {
-      img.src = mainCanvas.toDataURL();
-      img.style.display = 'block';
-    } else {
-      img.src = '';
-      img.style.display = 'none';
-    }
+    this.loadCharInput(0);
   }
 
   saveCurrentDrawing() {
     const data = this.canvasController.getData();
-    const mainCanvas = document.getElementById('draw-canvas');
-
     if (data.strokeCount > 0) {
       this.userInputs[this.currentCharIndex] = {
         ...data,
-        previewUrl: mainCanvas.toDataURL()
+        previewUrl: this.canvasController.toDataURL()
       };
     } else {
       this.userInputs[this.currentCharIndex] = null;
@@ -311,7 +221,6 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
-
     const targetStroke = (q.targets && cIndex < q.targets.length) ? q.targets[cIndex].strokes : 0;
 
     this.ui.renderTabs(
@@ -321,8 +230,7 @@ class KanjiApp {
       (index) => {
         this.saveCurrentDrawing();
         this.loadCharInput(index);
-      },
-      isOkurigana
+      }
     );
 
     if (this.userInputs[cIndex]) {
@@ -340,9 +248,9 @@ class KanjiApp {
     this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars || 4);
     this.ui.updateHistoryButtons(this.canvasController.canUndo(), this.canvasController.canRedo());
     this.checkButtonState();
-    this.redrawAllPreviews();
 
-    // 外出しした関数からセリフを設定
+    const currentDataUrl = currentCount > 0 ? this.canvasController.toDataURL() : '';
+    this.ui.updateAllPreviews(this.userInputs, cIndex, currentDataUrl);
     this.ui.setMessage(getInputAdvice(cIndex + 1, isOkurigana), 'info');
   }
 
@@ -355,6 +263,7 @@ class KanjiApp {
     this.ui.updateStrokeInfo(strokeCount, targetStroke, isOkurigana, this.currentCharIndex);
     this.ui.updateHistoryButtons(canUndo, canRedo);
     this.saveCurrentDrawing();
+
     this.ui.renderTabs(
       this.userInputs.length,
       this.currentCharIndex,
@@ -362,11 +271,12 @@ class KanjiApp {
       (index) => {
         this.saveCurrentDrawing();
         this.loadCharInput(index);
-      },
-      isOkurigana
+      }
     );
+
     this.checkButtonState();
-    this.syncRealtimePreviews();
+    const dataUrl = strokeCount > 0 ? this.canvasController.toDataURL() : '';
+    this.ui.syncActivePreview(this.currentCharIndex, dataUrl);
   }
 
   checkButtonState() {
@@ -403,15 +313,6 @@ class KanjiApp {
     const isOkurigana = (q.type === 'okurigana');
     const targetStroke = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
 
-    const currentBox = document.getElementById(`preview-box-${this.currentCharIndex}`);
-    if (currentBox) {
-      const img = currentBox.querySelector('img');
-      if (img) {
-        img.src = '';
-        img.style.display = 'none';
-      }
-    }
-
     this.ui.updateStrokeInfo(0, targetStroke, isOkurigana, this.currentCharIndex);
     this.ui.updateHistoryButtons(false, false);
     this.ui.renderTabs(
@@ -421,11 +322,10 @@ class KanjiApp {
       (index) => {
         this.saveCurrentDrawing();
         this.loadCharInput(index);
-      },
-      isOkurigana
+      }
     );
     this.checkButtonState();
-
+    this.ui.syncActivePreview(this.currentCharIndex, '');
     this.ui.setMessage(getRetryAdvice(), 'info');
   }
 
@@ -454,7 +354,12 @@ class KanjiApp {
     if (isOkurigana) {
       if (this.currentCharIndex === this.userInputs.length - 1 && this.userInputs.length < (q.maxChars || 4)) {
         this.userInputs.push(null);
-        this.setupRealtimePreviews();
+        this.ui.initPreviews(this.userInputs.length, (i) => {
+          if (i !== this.currentCharIndex) {
+            this.saveCurrentDrawing();
+            this.loadCharInput(i);
+          }
+        });
       }
       this.loadCharInput(this.currentCharIndex + 1);
     } else {
@@ -474,7 +379,6 @@ class KanjiApp {
 
     playMistakeSound();
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
-
     q.targets.forEach(t => this.currentMistakes.push(t.char));
 
     const falseResults = new Array(q.targets.length).fill(false);
@@ -520,7 +424,6 @@ class KanjiApp {
       if (isAllSuccess) {
         playCorrectSound();
         this.ui.setMessage(getPraiseMessage(), 'success');
-
         this.ui.showResultView(
           true,
           'せいかい！',
@@ -557,7 +460,6 @@ class KanjiApp {
       } else {
         playMistakeSound();
         this.ui.setMessage(getMistakeMessage(), 'mistake');
-        
         this.ui.showResultView(
           false,
           feedbackHtml,

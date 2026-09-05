@@ -1,11 +1,10 @@
 /**
  * auth.js
- * ユーザー認証、ログイン画面制御、セッション管理モジュール
+ * ユーザー認証、設定モーダル（利き手・PIN）、セッション管理モジュール
  */
 import { ensureAudioUnlocked } from './audio.js';
-import { fetchClassAndUsersFromLocal, prefetchAllDataAsync } from './logger.js';
+import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, updateHandModeApi, updatePinApi } from './logger.js';
 import { Storage } from './storage.js';
-import { SettingsModalController } from './modals.js';
 
 export class AuthManager {
   constructor(options = {}) {
@@ -16,13 +15,7 @@ export class AuthManager {
     this.onUserAuthenticated = options.onUserAuthenticated || (() => {});
     this.onHandModeChanged = options.onHandModeChanged || (() => {});
 
-    // モーダルコントローラーの初期化
-    this.settingsModal = new SettingsModalController({
-      getCurrentUser: () => this.currentUser,
-      onHandModeChanged: (isLeft) => this.onHandModeChanged(isLeft)
-    });
-
-    this._bindHeaderEvents();
+    this._bindModalEvents();
   }
 
   setPrefetchPromise(promise) {
@@ -174,8 +167,69 @@ export class AuthManager {
   checkHandModeSetup() {
     if (!this.currentUser) return;
     if (!this.currentUser.handMode || this.currentUser.handMode === '') {
-      this.settingsModal.openHandModal(true);
+      this.openHandModal(true);
     }
+  }
+
+  // ==================== 設定モーダル制御 ====================
+  openHandModal(isInitial = false) {
+    const handModal = document.getElementById('hand-modal');
+    const btnClose = document.getElementById('btn-close-hand-modal');
+    btnClose.style.display = isInitial ? 'none' : 'block';
+
+    const currentHand = this.currentUser?.handMode || 'right';
+    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.hand === currentHand);
+    });
+
+    handModal.style.display = 'flex';
+  }
+
+  async saveHandMode(mode) {
+    if (!this.currentUser) return;
+    this.currentUser.handMode = mode;
+    this.onHandModeChanged(mode === 'left');
+
+    Storage.setCurrentUser(this.currentUser);
+    document.getElementById('hand-modal').style.display = 'none';
+    await updateHandModeApi(this.currentUser.userId, mode);
+  }
+
+  openPinModal() {
+    const pinModal = document.getElementById('pin-modal');
+    const inputNewPin = document.getElementById('input-new-pin');
+    const pinMsg = document.getElementById('pin-modal-msg');
+    const btnSave = document.getElementById('btn-save-pin');
+
+    inputNewPin.value = '';
+    pinMsg.style.display = 'none';
+    btnSave.disabled = true;
+    btnSave.textContent = 'ほぞんする';
+
+    inputNewPin.oninput = () => {
+      btnSave.disabled = (inputNewPin.value.trim().length !== 4);
+    };
+
+    btnSave.onclick = async () => {
+      const newPin = inputNewPin.value.trim();
+      btnSave.disabled = true;
+      btnSave.textContent = 'ほぞんちゅう...';
+
+      const res = await updatePinApi(this.currentUser.userId, newPin);
+      if (res.success) {
+        this.currentUser.pin = newPin;
+        Storage.setCurrentUser(this.currentUser);
+        pinModal.style.display = 'none';
+        alert('パスワードを へんこうしました！');
+      } else {
+        pinMsg.textContent = 'へんこう できませんでした。';
+        pinMsg.style.display = 'block';
+        btnSave.disabled = false;
+        btnSave.textContent = 'ほぞんする';
+      }
+    };
+
+    pinModal.style.display = 'flex';
   }
 
   logout() {
@@ -183,13 +237,23 @@ export class AuthManager {
     location.reload();
   }
 
-  _bindHeaderEvents() {
-    document.getElementById('btn-open-hand-modal').addEventListener('click', () => {
-      this.settingsModal.openHandModal(false);
+  _bindModalEvents() {
+    // ききてモーダル
+    document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
+    document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
+      document.getElementById('hand-modal').style.display = 'none';
     });
-    document.getElementById('btn-open-pin-modal').addEventListener('click', () => {
-      this.settingsModal.openPinModal();
+    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
+      btn.addEventListener('click', () => this.saveHandMode(btn.dataset.hand));
     });
+
+    // PIN変更モーダル
+    document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
+    document.getElementById('btn-cancel-pin').addEventListener('click', () => {
+      document.getElementById('pin-modal').style.display = 'none';
+    });
+
+    // ログアウト
     document.getElementById('btn-logout').addEventListener('click', () => {
       if (confirm('ログアウトしますか？')) {
         this.logout();

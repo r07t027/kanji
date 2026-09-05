@@ -1,4 +1,7 @@
-// 手書きCanvas操作モジュール (アンドゥ・リドゥ対応)
+/**
+ * canvas.js
+ * 手書きCanvas操作モジュール (アンドゥ・リドゥ・キーボードショートカット対応)
+ */
 
 export class CanvasController {
   constructor(canvasEl, onChangeCallback) {
@@ -31,6 +34,28 @@ export class CanvasController {
     this.canvas.addEventListener('touchstart', (e) => this._startDraw(e), { passive: false });
     this.canvas.addEventListener('touchmove', (e) => this._moveDraw(e), { passive: false });
     window.addEventListener('touchend', () => this._endDraw());
+  }
+
+  // キーボードショートカットの登録（Undo/Redo）
+  initKeyboardShortcuts(onActionCallback) {
+    window.addEventListener('keydown', (e) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const isModifier = isMac ? e.metaKey : e.ctrlKey;
+
+      if (isModifier && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (onActionCallback) onActionCallback();
+        if (e.shiftKey) {
+          this.redo();
+        } else {
+          this.undo();
+        }
+      } else if (isModifier && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        if (onActionCallback) onActionCallback();
+        this.redo();
+      }
+    });
   }
 
   _getPos(e) {
@@ -137,5 +162,9 @@ export class CanvasController {
       strokeCount: this.strokeCount,
       redoStack: [...this.redoStack]
     };
+  }
+
+  toDataURL() {
+    return this.canvas.toDataURL();
   }
 }

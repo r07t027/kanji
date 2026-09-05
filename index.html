@@ -8,14 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;700&display=swap" rel="stylesheet">
   
-  <!-- 分割したスタイルシートの並列読み込み -->
+  <!-- 最適化されたスタイルシート構成 -->
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/modal.css">
   <link rel="stylesheet" href="css/menu.css">
   <link rel="stylesheet" href="css/practice.css">
-    <link rel="stylesheet" href="css/question.css">
-    <link rel="stylesheet" href="css/canvas.css">
-    <link rel="stylesheet" href="css/controls.css">
   <link rel="stylesheet" href="css/result.css">
 </head>
 <body>
@@ -190,7 +187,6 @@
         <div class="canvas-row-wrapper">
           <button id="btn-undo" class="btn-history" title="1かくもどる (Ctrl+Z)" disabled>1かくもどる</button>
           
-          <!-- キャンバス枠の中に消しゴムボタンをオーバーレイ配置 -->
           <div class="box">
             <canvas id="draw-canvas" width="260" height="260"></canvas>
             <button type="button" id="btn-reset" class="btn-canvas-eraser" title="ぜんぶけす" disabled>
@@ -207,7 +203,7 @@
           <div id="current-stroke-info" class="stroke-info-line">いまの かくすう：０かく</div>
         </div>
 
-        <!-- 描画操作ボタン（まえのもじへ / つぎのもじへ の2連） -->
+        <!-- 描画操作ボタン -->
         <div class="controls">
           <button id="btn-prev" class="btn-prev" disabled>まえのもじへ</button>
           <button id="btn-next" class="btn-next">つぎのもじへ</button>
@@ -234,7 +230,6 @@
       <div class="clear-badge">💮</div>
       <div class="clear-title">はなまる まんてん！</div>
 
-      <!-- マスコットが賞賛の言葉を発話（kakimaru_09.png を固定使用） -->
       <div class="clear-mascot-row">
         <div class="mascot-avatar-box clear-mascot-avatar">
           <img id="clear-mascot-img" src="assets/images/kakimaru_09.png" alt="かきまる" class="mascot-img">

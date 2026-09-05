@@ -1,6 +1,6 @@
 /**
  * storage.js
- * localStorage へのアクセス・セッション永続化モジュール
+ * localStorage セッション・進捗データの永続化モジュール
  */
 
 const STORAGE_KEYS = {
