@@ -1,5 +1,41 @@
 // 日本の文科省筆順・KanjiVG SVG 描画モジュール
-// 静止画表示 ＆ クリック時アニメーション再生
+// 静止画表示 ＆ クリック時アニメーション再生（SVGメモリキャッシュ・プリフェッチ対応）
+
+const svgCache = new Map();
+
+/**
+ * 漢字文字コードからKanjiVGのURLを取得
+ */
+function getKanjiVgUrl(char) {
+  const hex = char.charCodeAt(0).toString(16).padStart(5, '0');
+  return `https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${hex}.svg`;
+}
+
+/**
+ * 問題読み込み時に呼び出す先読み関数
+ * @param {string[]} chars - 先読みする漢字の配列
+ */
+export async function prefetchKanjiVG(chars) {
+  if (!chars || !Array.isArray(chars)) return;
+
+  const kanjiRegex = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+  const promises = chars
+    .filter(c => c && kanjiRegex.test(c) && !svgCache.has(c))
+    .map(async (char) => {
+      try {
+        const url = getKanjiVgUrl(char);
+        const res = await fetch(url);
+        if (res.ok) {
+          const text = await res.text();
+          svgCache.set(char, text);
+        }
+      } catch (e) {
+        // 先読み失敗時は表示時にフォールバックするので無視
+      }
+    });
+
+  await Promise.allSettled(promises);
+}
 
 export class KanjiVGPlayer {
   constructor(containerEl, char, isInteractive = true) {
@@ -13,14 +49,23 @@ export class KanjiVGPlayer {
   }
 
   async init() {
-    const hex = this.char.charCodeAt(0).toString(16).padStart(5, '0');
-    const url = `https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${hex}.svg`;
+    let svgText = svgCache.get(this.char) || null;
+
+    if (!svgText) {
+      const url = getKanjiVgUrl(this.char);
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('SVG not found');
+        svgText = await res.text();
+        svgCache.set(this.char, svgText);
+      } catch (err) {
+        console.warn(`KanjiVG load failed for ${this.char}:`, err);
+        this.container.innerHTML = `<span class="correct-kana-text">${this.char}</span>`;
+        return;
+      }
+    }
 
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('SVG not found');
-      const svgText = await res.text();
-
       const parser = new DOMParser();
       const doc = parser.parseFromString(svgText, 'image/svg+xml');
       const svgEl = doc.querySelector('svg');
@@ -51,7 +96,6 @@ export class KanjiVGPlayer {
 
       if (this.isInteractive) {
         this.container.classList.add('interactive');
-        // ひらがなに統一
         this.container.title = `「${this.char}」を タッチすると かきじゅんを みられるよ`;
 
         this.container.addEventListener('click', () => this.play());
@@ -62,7 +106,7 @@ export class KanjiVGPlayer {
       }
 
     } catch (err) {
-      console.warn(`KanjiVG load failed for ${this.char}:`, err);
+      console.warn(`KanjiVG render failed for ${this.char}:`, err);
       this.container.innerHTML = `<span class="correct-kana-text">${this.char}</span>`;
     }
   }

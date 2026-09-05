@@ -72,15 +72,32 @@ export const Storage = {
     return Object.keys(progress.clearedSets);
   },
 
-  // 1文字ごとの正誤結果を即時保存（漢字のみ対象・直近3件リングバッファ）
+  /**
+   * 1文字ごとの正誤結果を記録
+   * - 漢字以外は除外
+   * - 一度も間違えていない初見正解（true）は記録しない（苦手漢字のみを対象とする）
+   * - 過去に間違えたことがある漢字は、復習・克服状況を更新するため true も記録する
+   */
   recordCharAttempt(char, isSuccess) {
-    // ひらがな・カタカナ・記号などは除外し、漢字のみを統計対象とする
+    // ひらがな・カタカナ・記号などは除外し、漢字のみを対象とする
     if (!char || !KANJI_REGEX.test(char)) {
       return;
     }
 
     const progress = this.getProgress();
-    if (!progress.charStats[char]) {
+    if (!progress.charStats) {
+      progress.charStats = {};
+    }
+
+    const existingStat = progress.charStats[char];
+
+    // 初めて書く漢字で、正解（true）の場合は苦手リストに登録不要
+    if (!existingStat && isSuccess) {
+      return;
+    }
+
+    // 初めての間違い（false）、または既に苦手リストに入っている漢字の更新
+    if (!existingStat) {
       progress.charStats[char] = {
         history: [],
         lastAttempt: ''
