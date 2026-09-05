@@ -179,7 +179,7 @@ export class UIController {
     this.setMascotEmotion('info');
   }
 
-// 全問クリア画面の表示（通常クリア or かきまる勝負勝利）
+  // 全問クリア画面の表示（通常クリア or かきまる勝負勝利）
   showAllClear(isChallengeMode = false, userName = '') {
     this.practiceView.style.display = 'none';
     this.allClearView.style.display = 'flex';
@@ -194,14 +194,14 @@ export class UIController {
 
     if (isChallengeMode) {
       // ===== かきまるとの勝負 勝利演出 =====
-      if (clearBadgeEl) clearBadgeEl.textContent = '🥇'; // ごほうびメダル
+      if (clearBadgeEl) clearBadgeEl.textContent = '🥇'; // ごほうび金メダル
       if (clearTitleEl) clearTitleEl.textContent = `${userName ? userName + ' の' : ''} かち！`;
       if (clearMascotImgEl) clearMascotImgEl.src = 'assets/images/kakimaru_11.png';
       if (clearStatusMsgEl) {
         clearStatusMsgEl.innerHTML = 'まいりました！<br>また しょうぶしよう。つぎは まけないよ！';
       }
 
-      // 「メニューに戻る」ボタンのみ表示
+      // 「メニューに戻る」ボタンのみ中央に配置
       if (btnRetry) btnRetry.style.display = 'none';
       if (btnNext) btnNext.style.display = 'none';
       if (btnMenu) {

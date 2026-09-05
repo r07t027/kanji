@@ -11,7 +11,7 @@ export class ChallengeManager {
     this.storage = storage;
   }
 
-// 今日の挑戦が可能か（まだ今日勝負しておらず、5問作れるか）
+  // 今日の挑戦が可能か（まだ今日勝負しておらず、5問作れるか）
   canChallengeToday() {
     const progress = this.storage.getProgress();
     const today = new Date().toISOString().split('T')[0];
@@ -108,7 +108,6 @@ export class ChallengeManager {
 
     // ==================== プールB: 過去合格問題（忘却曲線復習） ====================
     if (selectedQuestions.length < 5) {
-      // クリア日時が古い順にソート
       const sortedByOldestClear = [...allAvailableQuestions].sort((a, b) => a.clearedAt - b.clearedAt);
 
       for (const q of sortedByOldestClear) {

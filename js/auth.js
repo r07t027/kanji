@@ -50,7 +50,6 @@ export class AuthManager {
     const savedProgress = Storage.getProgress();
     if (savedUser && savedProgress) {
       this.currentUser = savedUser;
-
       const rawCleared = savedProgress.clearedSets;
       this.clearedSets = Array.isArray(rawCleared)
         ? rawCleared
@@ -137,8 +136,11 @@ export class AuthManager {
 
       if (matchedUser && matchedUser.pin === enteredPin) {
         this.currentUser = matchedUser;
-        const userProgress = progressMap[selectedUserId] || { clearedSets: [], weakChars: {} };
-        this.clearedSets = userProgress.clearedSets || [];
+        const userProgress = progressMap[selectedUserId] || { clearedSets: {}, weakChars: {} };
+        const rawCleared = userProgress.clearedSets;
+        this.clearedSets = Array.isArray(rawCleared)
+          ? rawCleared
+          : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
 
         Storage.setCurrentUser(this.currentUser);
         Storage.setProgress(userProgress);
@@ -246,7 +248,6 @@ export class AuthManager {
   }
 
   _bindModalEvents() {
-    // ききてモーダル
     document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
     document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
       document.getElementById('hand-modal').style.display = 'none';
@@ -255,13 +256,11 @@ export class AuthManager {
       btn.addEventListener('click', () => this.saveHandMode(btn.dataset.hand));
     });
 
-    // PIN変更モーダル
     document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
     document.getElementById('btn-cancel-pin').addEventListener('click', () => {
       document.getElementById('pin-modal').style.display = 'none';
     });
 
-    // ログアウト
     document.getElementById('btn-logout').addEventListener('click', () => {
       if (confirm('ログアウトしますか？')) {
         this.logout();

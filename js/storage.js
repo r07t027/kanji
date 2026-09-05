@@ -27,12 +27,12 @@ export const Storage = {
     }
   },
 
-// storage.js の getProgress に lastDismissDate を追加
   getProgress() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.PROGRESS);
       const progress = data ? JSON.parse(data) : {};
       
+      // 後方互換性ガード（clearedSets が配列の場合は連想配列へ正規化）
       let clearedSetsObj = {};
       if (Array.isArray(progress.clearedSets)) {
         progress.clearedSets.forEach(setId => {
@@ -46,20 +46,12 @@ export const Storage = {
         clearedSets: clearedSetsObj,
         charStats: progress.charStats || {},
         lastChallengeDate: progress.lastChallengeDate || '',
-        lastDismissDate: progress.lastDismissDate || '' // 追加
+        lastDismissDate: progress.lastDismissDate || ''
       };
     } catch (e) {
       console.warn('進捗情報の復元に失敗しました:', e);
       return { clearedSets: {}, charStats: {}, lastChallengeDate: '', lastDismissDate: '' };
     }
-  },
-
-  // 挑戦状を「あとに する」で閉じた日付を記録
-  recordDismissToday() {
-    const progress = this.getProgress();
-    const today = new Date().toISOString().split('T')[0];
-    progress.lastDismissDate = today;
-    this.setProgress(progress);
   },
 
   setProgress(progress) {
@@ -105,17 +97,24 @@ export const Storage = {
     this.setProgress(progress);
   },
 
-  clearSession() {
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+  // 挑戦状を「あとに する」で閉じた日付を記録
+  recordDismissToday() {
+    const progress = this.getProgress();
+    const today = new Date().toISOString().split('T')[0];
+    progress.lastDismissDate = today;
+    this.setProgress(progress);
   },
 
-// 動作確認用：1日1回の挑戦制限（挑戦日・辞退日）をリセット
+  // 動作確認用：1日1回の挑戦制限（挑戦日・辞退日）をリセット
   resetChallengeLimit() {
     const progress = this.getProgress();
     progress.lastChallengeDate = '';
     progress.lastDismissDate = '';
     this.setProgress(progress);
   },
-};
 
+  clearSession() {
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+  }
+};

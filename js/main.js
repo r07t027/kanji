@@ -187,6 +187,17 @@ class KanjiApp {
       });
     }
 
+    // デバッグ用：1日1回の制限リセット
+    const btnDebugReset = document.getElementById('btn-debug-reset-challenge');
+    if (btnDebugReset) {
+      btnDebugReset.addEventListener('click', () => {
+        ensureAudioUnlocked();
+        Storage.resetChallengeLimit();
+        this.checkDailyChallenge();
+        alert('1日1回の制限をリセットしました！');
+      });
+    }
+
     // 全問クリア画面アクション
     document.getElementById('btn-clear-retry').addEventListener('click', () => {
       ensureAudioUnlocked();
@@ -233,7 +244,6 @@ class KanjiApp {
     this.currentSessionLogs = [];
     this.currentMistakes = [];
 
-    // ヘッダーボタンを非表示化
     const btnHeader = document.getElementById('btn-header-challenge');
     if (btnHeader) btnHeader.style.display = 'none';
 
@@ -553,7 +563,7 @@ class KanjiApp {
         this.ui.setMessage(getPraiseMessage(), 'success');
         this.ui.showResultView(true, 'せいかい！', q.targets.map(t => t.char), validInputs, charResults);
 
-    const isFinalQuestion = (this.currentQIndex === this.currentQuestions.length - 1);
+        const isFinalQuestion = (this.currentQIndex === this.currentQuestions.length - 1);
         setTimeout(async () => {
           if (isFinalQuestion) {
             playFanfareSound();
@@ -561,7 +571,7 @@ class KanjiApp {
             const currentUser = this.auth.getCurrentUser();
             const displayName = currentUser ? currentUser.kanaName : '';
 
-            // 勝負モードフラグを渡して特別演出を表示
+            // 特別クリア画面の呼び出し（勝負モードフラグ ＆ 児童名）
             this.ui.showAllClear(this.isChallengeMode, displayName);
 
             // 通常モード時のみセットクリア記録を更新
@@ -580,14 +590,13 @@ class KanjiApp {
                 );
               }
             } else {
-              this.isChallengeMode = false; // 挑戦完了
+              this.isChallengeMode = false;
             }
           } else {
             this.currentQIndex++;
             this.loadQuestion(this.currentQIndex);
           }
         }, 3000);
-
       } else {
         playMistakeSound();
         this.ui.setMessage(getMistakeMessage(), 'mistake');
@@ -606,14 +615,3 @@ class KanjiApp {
 window.addEventListener('DOMContentLoaded', () => {
   new KanjiApp();
 });
-
-// デバッグ用：1日1回の制限リセット
-    const btnDebugReset = document.getElementById('btn-debug-reset-challenge');
-    if (btnDebugReset) {
-      btnDebugReset.addEventListener('click', () => {
-        ensureAudioUnlocked();
-        Storage.resetChallengeLimit();
-        this.checkDailyChallenge();
-        alert('1日1回の制限をリセットしました！');
-      });
-    }
