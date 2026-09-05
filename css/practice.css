@@ -1,386 +1,527 @@
 /* ========================================================
-   メニュー画面
+   1. 練習画面 全体レイアウト ＆ 利き手反転
    ======================================================== */
-.menu-view {
+.app-layout {
   width: 100%;
+  max-width: 1320px;
   height: 100vh;
+  max-height: 720px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  padding: 14px 20px;
+  gap: 20px;
+  align-items: stretch;
 }
 
-.menu-card {
-  background: #ffffff;
-  width: 100%;
-  max-width: 690px;
-  max-height: 94vh;
-  padding: 18px 28px 24px;
-  border-radius: 24px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+/* 利き手反転モード */
+.app-layout.left-handed {
+  flex-direction: row-reverse;
+}
+
+/* ========================================================
+   2. 左カラム（問題提示ペイン ＆ マスコット）
+   ======================================================== */
+.problem-pane {
+  flex: 0 0 540px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  overflow-y: auto;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 18px 22px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.menu-header-row {
+.header-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 4px;
-  border-bottom: 1.5px solid #f0f4f8;
+  margin-bottom: 4px;
 }
 
-.menu-logo-container {
+.practice-header-logo {
+  width: 165px;
+  max-width: 165px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+button.btn-back-menu {
+  background: #eceff1;
+  color: #455a64;
+  border: 1.5px solid #cfd8dc;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button.btn-back-menu:hover {
+  background: #cfd8dc;
+}
+
+.unit-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #1976d2;
+  margin-bottom: 2px;
+}
+
+.progress-bar {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #4a708b;
+  margin-bottom: 8px;
+}
+
+.question-card {
+  background: #fbfdff;
+  border: 2px solid #e3edf5;
+  padding: 18px 20px;
+  border-radius: 16px;
+  text-align: left;
+  margin-bottom: auto;
+}
+
+.question-notice {
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.88rem;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: inline-block;
+  border: 1px solid #ffe0b2;
+}
+
+.question-sentence {
+  font-size: 1.65rem;
+  font-weight: bold;
+  color: #2c3e50;
+  letter-spacing: 1.5px;
+  line-height: 1.45;
+  word-break: break-all;
+}
+
+.highlight-target {
+  color: #e65100;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* マスコット連動エリア */
+.mascot-feedback-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1.5px solid #f1f5f9;
+  margin-top: 10px;
+}
+
+.mascot-avatar-box {
+  flex: 0 0 74px;
+  height: 74px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.mascot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mascot-placeholder {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.speech-bubble {
+  flex: 1;
+  position: relative;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 10px 14px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -9px;
+  transform: translateY(-50%);
+  border-width: 8px 9px 8px 0;
+  border-style: solid;
+  border-color: transparent #cbd5e1 transparent transparent;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6.5px;
+  transform: translateY(-50%);
+  border-width: 7px 8px 7px 0;
+  border-style: solid;
+  border-color: transparent #f8fafc transparent transparent;
+}
+
+.status-msg {
+  font-size: 1.05rem;
+  font-weight: bold;
+  line-height: 1.4;
+  color: #334155;
+  text-align: left;
+}
+.status-msg.mistake { color: #dc2626; }
+.status-msg.success { color: #16a34a; }
+
+/* ========================================================
+   3. 右カラム（描画ペイン ＆ キャンバス ＆ 画数）
+   ======================================================== */
+.canvas-pane {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  position: relative;
+}
+
+.drawing-main-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.char-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.char-tab {
+  padding: 5px 14px;
+  border-radius: 10px;
+  background: #eef2f5;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #78909c;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.char-tab.active {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #1976d2;
+}
+
+.char-tab.done {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.canvas-row-wrapper {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.menu-logo-img {
-  width: 165px;
-  height: auto;
-  object-fit: contain;
-}
-
-/* ヘッダー用のかきまる挑戦オープンボタン */
-button.btn-header-challenge {
+button.btn-history {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #fff7ed, #ffedd5);
-  color: #c2410c;
-  border: 2px solid #f97316;
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.18);
-  transition: transform 0.15s, background-color 0.15s;
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-button.btn-header-challenge:hover {
-  background: #fed7aa;
-  transform: translateY(-1px) scale(1.02);
-}
-
-.header-challenge-badge {
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.header-challenge-text {
-  letter-spacing: 0.5px;
-}
-
-.user-info-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  background: #f4f9fd;
-  border: 1px solid #dbeafe;
-  border-radius: 14px;
-  padding: 6px 12px;
-}
-
-.user-welcome {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #1e3a8a;
-}
-
-.user-actions-group {
-  display: flex;
-  gap: 6px;
-}
-
-.btn-user-action {
-  background: #ffffff;
+  justify-content: center;
+  width: 82px;
+  height: 48px;
+  background-color: #f1f5f9;
   color: #475569;
-  border: 1px solid #cbd5e1;
-  font-size: 0.76rem;
-  font-weight: bold;
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.btn-user-action:hover {
-  background: #f1f5f9;
-  color: #1e293b;
-}
-
-.btn-user-action.btn-action-logout {
-  color: #dc2626;
-  border-color: #fecaca;
-}
-
-.btn-user-action.btn-action-logout:hover {
-  background: #fef2f2;
-}
-
-/* デバッグ用：1日1回制限リセットボタン */
-.btn-user-action.btn-action-debug {
-  color: #7c3aed;
-  border-color: #ddd6fe;
-}
-
-.btn-user-action.btn-action-debug:hover {
-  background: #f5f3ff;
-  border-color: #8b5cf6;
-}
-
-.menu-section {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.menu-label {
-  font-size: 0.95rem;
-  font-weight: bold;
-  color: #4a708b;
-}
-
-.custom-select {
-  padding: 9px 12px;
-  font-size: 1rem;
-  font-weight: bold;
-  color: #333;
-  border: 2px solid #cfd8dc;
+  border: 2px solid #cbd5e1;
   border-radius: 12px;
-  background-color: #f8fafc;
-  outline: none;
-}
-
-.term-tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.term-tab {
-  flex: 1;
-  padding: 8px 10px;
-  font-size: 0.92rem;
-  font-weight: bold;
-  background-color: #edf2f7;
-  color: #607d8b;
-  border: 2px solid transparent;
-  border-radius: 10px;
   cursor: pointer;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
   transition: all 0.15s;
 }
 
-.term-tab.active {
-  background-color: #e3f2fd;
-  color: #1976d2;
-  border-color: #1976d2;
+button.btn-history:hover:not(:disabled) {
+  background-color: #e2e8f0;
+  border-color: #94a3b8;
+  color: #1e293b;
+  transform: translateY(-2px);
 }
 
-.term-tab-disabled {
-  background-color: #f1f3f4;
-  color: #9e9e9e;
-  border-color: transparent;
+button.btn-history:disabled {
+  background-color: #f8fafc;
+  color: #cbd5e1;
+  border-color: #e2e8f0;
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-.set-grid-container {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 6px;
-  max-height: 135px;
-  overflow-y: auto;
-  padding: 6px;
-  border: 1px solid #e0e0e0;
+/* キャンバス枠（位置基準） */
+.box {
+  width: 250px;
+  height: 250px;
+  border: 3px dashed #b0c4de;
   border-radius: 12px;
-  background: #fafbfc;
+  background: #fafafa;
+  position: relative;
+  touch-action: none;
 }
 
-.set-btn {
-  position: relative;
-  padding: 7px 2px;
-  font-size: 0.82rem;
-  font-weight: bold;
-  border-radius: 8px;
-  border: 1.5px solid #cfd8dc;
+.box::before, .box::after {
+  content: '';
+  position: absolute;
+  background-color: #e0e6ed;
+  pointer-events: none;
+}
+.box::before { top: 0; bottom: 0; left: 50%; width: 1px; }
+.box::after { left: 0; right: 0; top: 50%; height: 1px; }
+
+canvas#draw-canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 9px;
+  cursor: crosshair;
+}
+
+/* キャンバス右下のフローティング消しゴムボタン */
+.btn-canvas-eraser {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: #ffffff;
-  color: #37474f;
-  cursor: pointer;
-  transition: all 0.15s;
+  border: 2px solid #fdba74;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  white-space: nowrap;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.15s ease;
+  padding: 0;
 }
 
-.set-btn:hover {
-  background: #e1f5fe;
-  border-color: #0288d1;
-}
-
-.set-btn.selected {
-  background: #1976d2;
-  color: #ffffff;
-  border-color: #1565c0;
-}
-
-.set-badge-clear {
-  position: absolute;
-  top: -6px;
-  right: -5px;
-  font-size: 0.88rem;
+.btn-canvas-eraser .eraser-icon {
+  font-size: 1.15rem;
   line-height: 1;
 }
 
-button.btn-start {
-  background: linear-gradient(135deg, #f57c00, #ff9800);
-  font-size: 1.2rem;
-  padding: 13px 24px;
-  border-radius: 14px;
-  color: white;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(245, 124, 0, 0.3);
-  transition: transform 0.15s, opacity 0.15s;
-  margin-top: 4px;
+.btn-canvas-eraser:hover:not(:disabled) {
+  background: #fff7ed;
+  border-color: #f97316;
+  transform: scale(1.1);
 }
 
-button.btn-start:hover {
-  transform: translateY(-2px);
-  opacity: 0.95;
+.btn-canvas-eraser:disabled {
+  opacity: 0.3;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 画数情報パネル（2行表示） */
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 2.8rem;
+  margin: 2px 0;
+}
+
+.stroke-info-line {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #475569;
+  line-height: 1.3;
+}
+
+#target-stroke-info {
+  color: #1e40af;
 }
 
 /* ========================================================
-   かきまるからの挑戦状パネル
+   4. 共通操作・リアルタイムプレビュー ＆ 判定アクション
    ======================================================== */
-.challenge-panel {
+.controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  max-width: 280px;
+}
+
+.controls button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #ffffff;
+  background-color: #1976d2;
+  transition: background-color 0.15s, opacity 0.15s, transform 0.1s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.controls button:hover:not(:disabled) {
+  background-color: #1565c0;
+  transform: translateY(-1px);
+}
+
+.controls button:disabled {
+  background-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* 下部アクションパネル */
+.bottom-action-panel {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 10px 4px 6px;
-  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.challenge-body {
-  display: flex;
   align-items: center;
-  gap: 20px;
-  background: #fffaf0;
-  border: 2px solid #fed7aa;
-  border-radius: 20px;
-  padding: 18px 24px;
-}
-
-.challenge-mascot-box {
-  flex: 0 0 110px;
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.challenge-mascot-img {
+  gap: 8px;
+  margin-top: 4px;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 10px rgba(249, 115, 22, 0.2));
-  animation: fadeIn 0.3s ease-in-out;
+  max-width: 380px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 8px 14px;
 }
 
-.challenge-speech-bubble {
-  flex: 1;
-  position: relative;
-  background: #ffffff;
-  border: 2px solid #f97316;
-  border-radius: 16px;
-  padding: 14px 18px;
-  box-shadow: 0 3px 8px rgba(249, 115, 22, 0.08);
-}
-
-.challenge-speech-bubble::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -10px;
-  transform: translateY(-50%);
-  border-width: 8px 10px 8px 0;
-  border-style: solid;
-  border-color: transparent #f97316 transparent transparent;
-}
-
-.challenge-speech-bubble::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -7px;
-  transform: translateY(-50%);
-  border-width: 7px 9px 7px 0;
-  border-style: solid;
-  border-color: transparent #ffffff transparent transparent;
-}
-
-.challenge-speech-title {
-  font-size: 1.15rem;
-  font-weight: bold;
-  color: #c2410c;
-  margin-bottom: 6px;
-}
-
-.challenge-speech-text {
-  font-size: 1.05rem;
-  font-weight: bold;
-  color: #334155;
-  line-height: 1.5;
-}
-
-.challenge-actions {
+.realtime-preview-row {
   display: flex;
-  gap: 14px;
-  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.realtime-preview-label {
+  font-size: 0.82rem;
+  font-weight: bold;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.realtime-preview-container {
+  display: flex;
+  gap: 8px;
+  flex: 1;
   align-items: center;
 }
 
-button.btn-challenge-accept {
-  flex: 2;
-  background: linear-gradient(135deg, #ea580c, #f97316);
-  font-size: 1.25rem;
-  padding: 14px 24px;
-  border-radius: 14px;
-  color: white;
-  border: none;
-  font-weight: bold;
+.preview-char-box {
+  width: 52px;
+  height: 52px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
-  transition: transform 0.15s, opacity 0.15s;
-}
-
-button.btn-challenge-accept:hover {
-  transform: translateY(-2px);
-  opacity: 0.95;
-}
-
-button.btn-challenge-decline {
-  flex: 1;
-  background: #eceff1;
-  color: #546e7a;
-  border: 1.5px solid #cfd8dc;
-  font-size: 1.05rem;
-  padding: 14px 18px;
-  border-radius: 14px;
-  font-weight: bold;
-  cursor: pointer;
+  position: relative;
   transition: all 0.15s;
 }
 
-button.btn-challenge-decline:hover {
-  background: #cfd8dc;
-  color: #263238;
+.preview-char-box.active {
+  border: 2px solid #1976d2;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+}
+
+.preview-char-canvas {
+  width: 46px;
+  height: 46px;
+}
+
+/* 最下部アクションボタングループ（こたえあわせ ＆ パス） */
+.submit-action-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+/* こたえあわせボタン（メイン） */
+button.btn-check-main {
+  flex: 2;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  font-size: 1.1rem;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(22, 163, 74, 0.25);
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+button.btn-check-main:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  opacity: 0.95;
+}
+
+button.btn-check-main:disabled {
+  background: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* パスボタン */
+button.btn-pass-sub {
+  flex: 1;
+  max-width: 96px;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+button.btn-pass-sub:hover {
+  transform: translateY(-1.5px);
+  opacity: 0.95;
 }
