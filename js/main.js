@@ -553,11 +553,16 @@ class KanjiApp {
         this.ui.setMessage(getPraiseMessage(), 'success');
         this.ui.showResultView(true, 'せいかい！', q.targets.map(t => t.char), validInputs, charResults);
 
-        const isFinalQuestion = (this.currentQIndex === this.currentQuestions.length - 1);
+    const isFinalQuestion = (this.currentQIndex === this.currentQuestions.length - 1);
         setTimeout(async () => {
           if (isFinalQuestion) {
             playFanfareSound();
-            this.ui.showAllClear();
+
+            const currentUser = this.auth.getCurrentUser();
+            const displayName = currentUser ? currentUser.kanaName : '';
+
+            // 勝負モードフラグを渡して特別演出を表示
+            this.ui.showAllClear(this.isChallengeMode, displayName);
 
             // 通常モード時のみセットクリア記録を更新
             if (!this.isChallengeMode) {
@@ -565,7 +570,6 @@ class KanjiApp {
               this.auth.addClearedSet(currentSetId);
               this.menu.updateClearedSets(this.auth.getClearedSets());
 
-              const currentUser = this.auth.getCurrentUser();
               if (currentUser) {
                 await saveProgressAndLogs(
                   currentUser.userId,
@@ -576,13 +580,14 @@ class KanjiApp {
                 );
               }
             } else {
-              this.isChallengeMode = false;
+              this.isChallengeMode = false; // 挑戦完了
             }
           } else {
             this.currentQIndex++;
             this.loadQuestion(this.currentQIndex);
           }
         }, 3000);
+
       } else {
         playMistakeSound();
         this.ui.setMessage(getMistakeMessage(), 'mistake');
@@ -601,3 +606,14 @@ class KanjiApp {
 window.addEventListener('DOMContentLoaded', () => {
   new KanjiApp();
 });
+
+// デバッグ用：1日1回の制限リセット
+    const btnDebugReset = document.getElementById('btn-debug-reset-challenge');
+    if (btnDebugReset) {
+      btnDebugReset.addEventListener('click', () => {
+        ensureAudioUnlocked();
+        Storage.resetChallengeLimit();
+        this.checkDailyChallenge();
+        alert('1日1回の制限をリセットしました！');
+      });
+    }

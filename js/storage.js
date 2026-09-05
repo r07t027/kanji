@@ -110,3 +110,11 @@ export const Storage = {
     localStorage.removeItem(STORAGE_KEYS.PROGRESS);
   }
 };
+
+// 動作確認用：1日1回の挑戦制限（挑戦日・辞退日）をリセット
+  resetChallengeLimit() {
+    const progress = this.getProgress();
+    progress.lastChallengeDate = '';
+    progress.lastDismissDate = '';
+    this.setProgress(progress);
+  },

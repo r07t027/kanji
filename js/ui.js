@@ -179,12 +179,53 @@ export class UIController {
     this.setMascotEmotion('info');
   }
 
-  showAllClear() {
+// 全問クリア画面の表示（通常クリア or かきまる勝負勝利）
+  showAllClear(isChallengeMode = false, userName = '') {
     this.practiceView.style.display = 'none';
     this.allClearView.style.display = 'flex';
 
-    if (this.clearMascotImgEl) {
-      this.clearMascotImgEl.src = KAKIMARU_IMAGES.clear;
+    const clearBadgeEl = document.querySelector('.clear-badge');
+    const clearTitleEl = document.querySelector('.clear-title');
+    const clearMascotImgEl = document.getElementById('clear-mascot-img');
+    const clearStatusMsgEl = document.querySelector('.clear-status-msg');
+    const btnRetry = document.getElementById('btn-clear-retry');
+    const btnNext = document.getElementById('btn-clear-next');
+    const btnMenu = document.getElementById('btn-clear-menu');
+
+    if (isChallengeMode) {
+      // ===== かきまるとの勝負 勝利演出 =====
+      if (clearBadgeEl) clearBadgeEl.textContent = '🥇'; // ごほうびメダル
+      if (clearTitleEl) clearTitleEl.textContent = `${userName ? userName + ' の' : ''} かち！`;
+      if (clearMascotImgEl) clearMascotImgEl.src = 'assets/images/kakimaru_11.png';
+      if (clearStatusMsgEl) {
+        clearStatusMsgEl.innerHTML = 'まいりました！<br>また しょうぶしよう。つぎは まけないよ！';
+      }
+
+      // 「メニューに戻る」ボタンのみ表示
+      if (btnRetry) btnRetry.style.display = 'none';
+      if (btnNext) btnNext.style.display = 'none';
+      if (btnMenu) {
+        btnMenu.style.display = 'inline-block';
+        btnMenu.style.padding = '12px 32px';
+        btnMenu.style.fontSize = '1.1rem';
+      }
+    } else {
+      // ===== 通常単元 はなまる満点演出 =====
+      if (clearBadgeEl) clearBadgeEl.textContent = '💮';
+      if (clearTitleEl) clearTitleEl.textContent = 'はなまる まんてん！';
+      if (clearMascotImgEl) clearMascotImgEl.src = 'assets/images/kakimaru_09.png';
+      if (clearStatusMsgEl) {
+        clearStatusMsgEl.textContent = 'ぜんもん せいかい！さいごまで よくがんばったね！💮';
+      }
+
+      // 3連ボタンを復元
+      if (btnRetry) btnRetry.style.display = 'inline-block';
+      if (btnNext) btnNext.style.display = 'inline-block';
+      if (btnMenu) {
+        btnMenu.style.display = 'inline-block';
+        btnMenu.style.padding = '';
+        btnMenu.style.fontSize = '';
+      }
     }
   }
 

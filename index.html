@@ -102,16 +102,16 @@
           </button>
         </div>
 
-        <div id="user-info-bar" class="user-info-bar" style="display: none;">
-          <!-- 既存のユーザーバー -->
+       <div id="user-info-bar" class="user-info-bar" style="display: none;">
           <div class="user-welcome">👤 <span id="user-display-name">---</span> さん</div>
           <div class="user-actions-group">
             <button type="button" id="btn-open-hand-modal" class="btn-user-action" title="ききてを変更">🤚 ききて</button>
             <button type="button" id="btn-open-pin-modal" class="btn-user-action" title="パスワードを変更">🔑 パスワード</button>
+            <!-- 動作確認・デバッグ用リセットボタンを追加 -->
+            <button type="button" id="btn-debug-reset-challenge" class="btn-user-action btn-action-debug" title="1日1回の挑戦制限をリセット">🔄 制限リセット</button>
             <button type="button" id="btn-logout" class="btn-user-action btn-action-logout">ログアウト</button>
           </div>
         </div>
-      </div>
 
       <!-- ① かきまるからの挑戦状パネル（1日1回・発生時のみ表示） -->
       <div id="challenge-panel" class="challenge-panel" style="display: none;">

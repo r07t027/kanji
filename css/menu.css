@@ -378,3 +378,14 @@ button.btn-header-challenge:hover {
 .header-challenge-text {
   letter-spacing: 0.5px;
 }
+
+/* デバッグ用：1日1回制限リセットボタン */
+.btn-user-action.btn-action-debug {
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+
+.btn-user-action.btn-action-debug:hover {
+  background: #f5f3ff;
+  border-color: #8b5cf6;
+}
