@@ -194,11 +194,13 @@ export class UIController {
 
     if (isChallengeMode) {
       // ===== かきまるとの勝負 勝利演出 =====
-      if (clearBadgeEl) clearBadgeEl.textContent = '🥇'; // ごほうび金メダル
-      if (clearTitleEl) clearTitleEl.textContent = `${userName ? userName + ' の' : ''} かち！`;
+      if (clearBadgeEl) clearBadgeEl.textContent = '🥇';
+      // 児童名に「さん」を付与
+      if (clearTitleEl) clearTitleEl.textContent = `${userName ? userName + 'さん の' : ''} かち！`;
       if (clearMascotImgEl) clearMascotImgEl.src = 'assets/images/kakimaru_11.png';
+      // 1行のシンプルなセリフに変更
       if (clearStatusMsgEl) {
-        clearStatusMsgEl.innerHTML = 'まいりました！<br>また しょうぶしよう。つぎは まけないよ！';
+        clearStatusMsgEl.textContent = 'まいりました！つぎは まけないよ。';
       }
 
       // 「メニューに戻る」ボタンのみ中央に配置
