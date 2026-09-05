@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/menu.css">
   <link rel="stylesheet" href="css/practice.css">
   <link rel="stylesheet" href="css/result.css">
+  <link rel="stylesheet" href="css/drill.css">
 </head>
 <body>
 
@@ -93,13 +94,22 @@
       <div class="menu-card">
         
         <div class="menu-header-row">
-          <div class="menu-logo-container">
-            <img src="assets/images/logo_01.png" alt="かきトレ" class="menu-logo-img">
-            <!-- ヘッダー用のかきまる挑戦オープンボタン（アイコンのみ） -->
-            <button type="button" id="btn-header-challenge" class="btn-header-challenge" style="display: none;" title="ちょうせんじょうをひらく">
-              <img src="assets/images/kakimaru_10.png" alt="ちょうせん" class="header-challenge-mascot-icon">
-            </button>
-          </div>
+
+        <div class="menu-logo-container">
+          <img src="assets/images/logo_01.png" alt="かきトレ" class="menu-logo-img">
+  
+          <!-- ★ 追加：にがてとっくんボタン（バッジ付き） -->
+          <button type="button" id="btn-menu-drill" class="btn-menu-drill" title="にがてなかんじをとっくんする">
+            <span class="drill-btn-icon">🔥</span>
+            <span class="drill-btn-text">にがてとっくん</span>
+            <span id="drill-badge-count" class="drill-badge-count" style="display: none;">0</span>
+          </button>
+
+          <!-- ヘッダー用のかきまる挑戦オープンボタン（アイコンのみ） -->
+          <button type="button" id="btn-header-challenge" class="btn-header-challenge" style="display: none;" title="ちょうせんじょうをひらく">
+            <img src="assets/images/kakimaru_10.png" alt="ちょうせん" class="header-challenge-mascot-icon">
+          </button>
+        </div>
 
           <div id="user-info-bar" class="user-info-bar" style="display: none;">
             <div class="user-welcome"><span id="user-display-name">---</span> さん</div>
@@ -276,7 +286,7 @@
         </div>
         <div class="speech-bubble clear-speech-bubble">
           <div class="status-msg clear-status-msg">
-            ぜんもん せいかい！さいごまで よくがんばったね！💮
+            ぜんもん せいかい！さいごまで よくがんばったね！
           </div>
         </div>
       </div>
@@ -287,6 +297,83 @@
         <button id="btn-clear-menu" class="btn-clear-action btn-back-home">メニューに もどる</button>
       </div>
     </div>
+  </div>
+
+<!-- ==================== にがてとっくんビュー ==================== -->
+  <div id="drill-view" class="drill-view" style="display: none;">
+    
+    <!-- 1. 苦手漢字一覧カード -->
+    <div id="drill-list-card" class="drill-card drill-list-card">
+      <div class="drill-header-row">
+        <h2 class="drill-title">🔥 にがてな かんじ とっくん</h2>
+        <button type="button" id="btn-drill-close-list" class="btn-back-menu">メニューへ もどる</button>
+      </div>
+      <p class="drill-desc">３かい つづけて ただしく かけたら こくふくだ！</p>
+      
+      <div id="drill-grid-container" class="drill-grid-container">
+        <!-- JSで苦手漢字タイルを動的描画 -->
+      </div>
+
+      <div id="drill-empty-msg" class="drill-empty-msg" style="display: none;">
+        <div class="drill-empty-badge">💮</div>
+        <div class="drill-empty-title">いまは にがてな かんじは ないよ！</div>
+        <div class="drill-empty-desc">ぜんぶ ばっちり！このちょうしで がんばろう！</div>
+      </div>
+    </div>
+
+    <!-- 2. 1文字特化 練習カード（1文字選択時に表示） -->
+    <div id="drill-practice-card" class="drill-card drill-practice-card" style="display: none;">
+      <div class="drill-header-row">
+        <div class="drill-practice-target-title">
+          「<span id="drill-target-char-display">漢</span>」の とっくん
+        </div>
+        <button type="button" id="btn-drill-back-list" class="btn-back-menu">いちらんに もどる</button>
+      </div>
+
+      <div class="drill-practice-body">
+        <!-- 左部/上部：お手本 & 筆順再生 & カウンター -->
+        <div class="drill-model-pane">
+          <div class="drill-counter-box">
+            <span class="drill-counter-label">せいかい</span>
+            <div class="drill-dots-container">
+              <span class="drill-dot" id="drill-dot-1"></span>
+              <span class="drill-dot" id="drill-dot-2"></span>
+              <span class="drill-dot" id="drill-dot-3"></span>
+            </div>
+            <span id="drill-counter-text" class="drill-counter-text">あと ３かい！</span>
+          </div>
+
+          <div class="drill-model-box" id="drill-model-box" title="タッチすると かきじゅんを みられるよ">
+            <!-- KanjiVGPlayer で教科書体SVGを描画 -->
+          </div>
+          <div class="drill-model-hint">タッチすると かきじゅんが みられるよ</div>
+          <div class="drill-stroke-target" id="drill-stroke-target">もくひょう：0かく</div>
+        </div>
+
+        <!-- 右部/下部：シンプルキャンバス & 判定 -->
+        <div class="drill-canvas-pane">
+          <div class="canvas-row-wrapper">
+            <button id="btn-drill-undo" class="btn-history" title="1かくもどる" disabled>1かくもどる</button>
+            <div class="box">
+              <canvas id="drill-draw-canvas" width="260" height="260"></canvas>
+              <button type="button" id="btn-drill-reset" class="btn-canvas-eraser" title="ぜんぶけす" disabled>
+                <span class="eraser-icon">🧹</span>
+              </button>
+            </div>
+            <button id="btn-drill-redo" class="btn-history" title="1かくすすむ" disabled>1かくすすむ</button>
+          </div>
+
+          <div class="drill-canvas-status" id="drill-canvas-status">いまの かくすう：0かく</div>
+
+          <div class="drill-feedback-msg" id="drill-feedback-msg" style="display: none;"></div>
+
+          <button type="button" id="btn-drill-check" class="btn-check-main drill-submit-btn" disabled>
+            こたえあわせ
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script type="module" src="js/main.js"></script>

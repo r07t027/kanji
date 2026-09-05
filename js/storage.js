@@ -77,6 +77,7 @@ export const Storage = {
    * - 漢字以外は除外
    * - 一度も間違えていない初見正解（true）は記録しない（苦手漢字のみを対象とする）
    * - 過去に間違えたことがある漢字は、復習・克服状況を更新するため true も記録する
+   * - ★ 不正解（false）時は、特訓完了フラグ（drillCleared）を false にリセット
    */
   recordCharAttempt(char, isSuccess) {
     // ひらがな・カタカナ・記号などは除外し、漢字のみを対象とする
@@ -100,7 +101,8 @@ export const Storage = {
     if (!existingStat) {
       progress.charStats[char] = {
         history: [],
-        lastAttempt: ''
+        lastAttempt: '',
+        drillCleared: false
       };
     }
 
@@ -111,7 +113,54 @@ export const Storage = {
     }
     stat.lastAttempt = new Date().toISOString();
 
+    // 再び間違えた場合は特訓完了フラグをリセットして特訓対象へ復活
+    if (!isSuccess) {
+      stat.drillCleared = false;
+    }
+
     this.setProgress(progress);
+  },
+
+  /**
+   * ★ 特訓対象の漢字一覧を取得
+   * 直近が不正解（未克服）かつ、まだ特訓完了（drillCleared: true）していない文字を返す
+   */
+  getDrillTargets() {
+    const progress = this.getProgress();
+    const charStats = progress.charStats || {};
+    const targets = [];
+
+    Object.entries(charStats).forEach(([char, stat]) => {
+      if (!char || !KANJI_REGEX.test(char)) return;
+      const history = stat.history || [];
+      if (history.length === 0) return;
+
+      const lastResult = history[history.length - 1];
+      // 直近が不正解 かつ 特訓未完了のもの
+      if (lastResult === false && stat.drillCleared !== true) {
+        targets.push({
+          char,
+          history: [...history],
+          lastAttempt: stat.lastAttempt || ''
+        });
+      }
+    });
+
+    // 最終試行日時が新しい順にソート
+    targets.sort((a, b) => new Date(b.lastAttempt).getTime() - new Date(a.lastAttempt).getTime());
+    return targets;
+  },
+
+  /**
+   * ★ 特訓で3回連続正解した漢字に drillCleared: true を付与
+   */
+  markDrillCleared(char) {
+    if (!char) return;
+    const progress = this.getProgress();
+    if (progress.charStats && progress.charStats[char]) {
+      progress.charStats[char].drillCleared = true;
+      this.setProgress(progress);
+    }
   },
 
   // 挑戦状に今日挑戦した日付を保存

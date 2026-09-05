@@ -13,6 +13,7 @@ import { shuffleArray, getInputAdvice, getRetryAdvice, getPraiseMessage, getMist
 import { ChallengeManager } from './challenge.js';
 import { Storage } from './storage.js';
 import { prefetchKanjiVG } from './kanjivg.js';
+import { DrillManager } from './drill.js'; // ★ 追加
 
 const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
 
@@ -28,6 +29,7 @@ class KanjiApp {
     this.currentSessionLogs = [];
     this.isChallengeMode = false;
     this.challengeManager = null;
+    this.drillManager = null; // ★ 追加
 
     // 初回試行管理 ＆ セッション変更フラグ
     this.hasAttemptedFirst = false;
@@ -43,8 +45,9 @@ class KanjiApp {
       onUserAuthenticated: (user, clearedSets) => {
         if (this.gradeData) {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+          if (this.drillManager) this.drillManager.updateBadgeCount(); // ★ バッジ更新
         }
-        // ★ ログイン成功時にも即座に挑戦状の判定を実行する
+        // ログイン成功時にも即座に挑戦状の判定を実行
         this.checkDailyChallenge();
       },
       onHandModeChanged: (isLeftHanded) => {
@@ -66,6 +69,28 @@ class KanjiApp {
 
   async init() {
     initAudioUnlock();
+
+    // ★ 特訓マネージャーの初期化
+    this.drillManager = new DrillManager({
+      storage: Storage,
+      validator: this.validator,
+      gradeData: this.gradeData,
+      onClose: () => {
+        // 特訓画面を閉じたときに未保存の変更があれば裏で静かに同期
+        if (this.hasUnsavedSessionChanges) {
+          const currentUser = this.auth.getCurrentUser();
+          if (currentUser) {
+            const progress = Storage.getProgress();
+            syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+          }
+          this.hasUnsavedSessionChanges = false;
+        }
+      },
+      onProgressChange: () => {
+        this.hasUnsavedSessionChanges = true;
+      }
+    });
+
     this.bindEvents();
 
     try {
@@ -73,6 +98,7 @@ class KanjiApp {
       this.gradeData = await res.json();
       this.menu.setData(this.gradeData, this.auth.getClearedSets());
       this.challengeManager = new ChallengeManager(this.gradeData, Storage);
+      this.drillManager.setGradeData(this.gradeData); // ★ 特訓マネージャーへ問題データをセット
     } catch (e) {
       console.error('問題データの読み込みに失敗しました:', e);
       this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
@@ -157,6 +183,17 @@ class KanjiApp {
       this.handleBackToMenu();
     });
 
+    // ★ ヘッダーの「🔥 にがてとっくん」ボタン
+    const btnMenuDrill = document.getElementById('btn-menu-drill');
+    if (btnMenuDrill) {
+      btnMenuDrill.addEventListener('click', () => {
+        ensureAudioUnlocked();
+        if (this.drillManager) {
+          this.drillManager.open();
+        }
+      });
+    }
+
     // 挑戦状パネルアクション（受けて立つ）
     const btnChallengeAccept = document.getElementById('btn-challenge-accept');
     if (btnChallengeAccept) {
@@ -180,7 +217,7 @@ class KanjiApp {
       });
     }
 
-    // ヘッダーの「🥋 かきまると しょうぶ！」ボタン押下時
+    // ヘッダーの挑戦状オープンボタン
     const btnHeaderChallenge = document.getElementById('btn-header-challenge');
     if (btnHeaderChallenge) {
       btnHeaderChallenge.addEventListener('click', () => {
@@ -218,6 +255,7 @@ class KanjiApp {
         this.ui.showMenuView();
         this.menu.render();
         this.checkDailyChallenge();
+        if (this.drillManager) this.drillManager.updateBadgeCount();
       } else {
         this.startNextSet();
       }
@@ -228,6 +266,7 @@ class KanjiApp {
       this.ui.showMenuView();
       this.menu.render();
       this.checkDailyChallenge();
+      if (this.drillManager) this.drillManager.updateBadgeCount();
     });
 
     // メニュー画面スタート
@@ -252,6 +291,7 @@ class KanjiApp {
     this.ui.showMenuView();
     this.menu.render();
     this.checkDailyChallenge();
+    if (this.drillManager) this.drillManager.updateBadgeCount(); // ★ バッジ更新
   }
 
   // 「かきまるからのちょうせん！」開始
@@ -298,6 +338,7 @@ class KanjiApp {
       this.ui.showMenuView();
       this.menu.render();
       this.checkDailyChallenge();
+      if (this.drillManager) this.drillManager.updateBadgeCount();
     }
   }
 
@@ -548,6 +589,7 @@ class KanjiApp {
         }
       });
       this.hasAttemptedFirst = true;
+      if (this.drillManager) this.drillManager.updateBadgeCount();
     }
 
     const falseResults = new Array((q.targets || []).length).fill(false);
@@ -596,6 +638,7 @@ class KanjiApp {
           }
         });
         this.hasAttemptedFirst = true;
+        if (this.drillManager) this.drillManager.updateBadgeCount();
       }
 
       this.currentSessionLogs.push({
@@ -648,6 +691,7 @@ class KanjiApp {
             }
 
             this.hasUnsavedSessionChanges = false;
+            if (this.drillManager) this.drillManager.updateBadgeCount();
           } else {
             this.currentQIndex++;
             this.loadQuestion(this.currentQIndex);
