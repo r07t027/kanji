@@ -52,12 +52,41 @@ export async function updatePinApi(userId, newPin) {
   return await callApi('updatePin', { userId, newPin });
 }
 
-export async function saveProgressAndLogs(userId, setId, isSetCleared, mistakes, logRecords) {
+/**
+ * 学習完了時の保存（backend.gs の payload.charStats と完全一致させる）
+ */
+export async function saveProgressAndLogs(userId, setId, isSetCleared, charStats, logRecords) {
   return await callApi('saveProgressAndLog', {
     userId,
     setId,
     isSetCleared,
-    mistakes,
+    charStats,
     logRecords
   });
+}
+
+/**
+ * 「もどる」ボタン押下時などのバックグラウンド軽量進捗同期
+ */
+export async function syncProgressSilently(userId, clearedSets, charStats) {
+  try {
+    fetch(GAS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      redirect: 'follow',
+      keepalive: true,
+      body: JSON.stringify({
+        action: 'updateProgress',
+        payload: {
+          userId,
+          clearedSets,
+          charStats
+        }
+      })
+    }).catch(err => console.warn('バックグラウンド同期エラー:', err));
+  } catch (e) {
+    console.warn('同期呼び出し例外:', e);
+  }
 }
