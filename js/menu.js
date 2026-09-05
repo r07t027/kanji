@@ -17,13 +17,13 @@ export class MenuManager {
 
   setData(gradeData, clearedSets, initialSetId = '1学期_01') {
     this.gradeData = gradeData;
-    this.clearedSets = clearedSets || [];
+    this.clearedSets = this._normalizeClearedSets(clearedSets);
     this.selectedSetId = initialSetId;
     this.render();
   }
 
   updateClearedSets(clearedSets) {
-    this.clearedSets = clearedSets || [];
+    this.clearedSets = this._normalizeClearedSets(clearedSets);
     const activeTab = document.querySelector('.term-tab.active');
     this.renderGrid(activeTab ? activeTab.dataset.term : '1');
   }
@@ -36,6 +36,12 @@ export class MenuManager {
     this.selectedSetId = setId;
     const activeTab = document.querySelector('.term-tab.active');
     this.renderGrid(activeTab ? activeTab.dataset.term : '1');
+  }
+
+  _normalizeClearedSets(data) {
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object') return Object.keys(data);
+    return [];
   }
 
   _bindEvents() {
@@ -60,6 +66,7 @@ export class MenuManager {
     this.container.innerHTML = '';
     const prefix = `${termNum}学期_`;
     const setsInTerm = this.gradeData.sets.filter(s => s.id.startsWith(prefix));
+    const clearedList = this._normalizeClearedSets(this.clearedSets);
 
     setsInTerm.forEach(setObj => {
       const btn = document.createElement('button');
@@ -70,7 +77,7 @@ export class MenuManager {
       const numStr = setObj.id.split('_')[1];
       btn.textContent = `その${parseInt(numStr, 10)}`;
 
-      if (this.clearedSets.includes(setObj.id)) {
+      if (clearedList.includes(setObj.id)) {
         const badge = document.createElement('span');
         badge.className = 'set-badge-clear';
         badge.textContent = '💮';

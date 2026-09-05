@@ -27,7 +27,10 @@ export class AuthManager {
   }
 
   getClearedSets() {
-    return this.clearedSets;
+    if (this.clearedSets && typeof this.clearedSets === 'object' && !Array.isArray(this.clearedSets)) {
+      return Object.keys(this.clearedSets);
+    }
+    return Array.isArray(this.clearedSets) ? this.clearedSets : [];
   }
 
   addClearedSet(setId) {
@@ -47,7 +50,12 @@ export class AuthManager {
     const savedProgress = Storage.getProgress();
     if (savedUser && savedProgress) {
       this.currentUser = savedUser;
-      this.clearedSets = savedProgress.clearedSets || [];
+
+      const rawCleared = savedProgress.clearedSets;
+      this.clearedSets = Array.isArray(rawCleared)
+        ? rawCleared
+        : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
+
       this.applyUserData();
       modal.style.display = 'none';
       this.checkHandModeSetup();
