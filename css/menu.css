@@ -10,10 +10,17 @@
   padding: 16px;
 }
 
+.menu-outer-wrapper {
+  width: 100%;
+  max-width: 690px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .menu-card {
   background: #ffffff;
   width: 100%;
-  max-width: 690px;
   max-height: 94vh;
   padding: 18px 28px 24px;
   border-radius: 24px;
@@ -125,17 +132,6 @@ button.btn-header-challenge:hover {
   background: #fef2f2;
 }
 
-/* デバッグ用：1日1回制限リセットボタン */
-.btn-user-action.btn-action-debug {
-  color: #7c3aed;
-  border-color: #ddd6fe;
-}
-
-.btn-user-action.btn-action-debug:hover {
-  background: #f5f3ff;
-  border-color: #8b5cf6;
-}
-
 .menu-section {
   display: flex;
   flex-direction: column;
@@ -239,10 +235,26 @@ button.btn-header-challenge:hover {
   line-height: 1;
 }
 
+.normal-menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 「チャレンジする」ボタンのセンタリング用ラッパー */
+.btn-start-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 6px;
+}
+
 button.btn-start {
   background: linear-gradient(135deg, #f57c00, #ff9800);
   font-size: 1.2rem;
-  padding: 13px 24px;
+  min-width: 240px;
+  padding: 13px 36px;
   border-radius: 14px;
   color: white;
   border: none;
@@ -250,12 +262,36 @@ button.btn-start {
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(245, 124, 0, 0.3);
   transition: transform 0.15s, opacity 0.15s;
-  margin-top: 4px;
 }
 
 button.btn-start:hover {
   transform: translateY(-2px);
   opacity: 0.95;
+}
+
+/* 白枠外に配置されたデバッグ用ボタンエリア */
+.menu-debug-area {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-debug-outside {
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  color: #94a3b8;
+  font-size: 0.76rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-debug-outside:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #64748b;
 }
 
 /* ========================================================

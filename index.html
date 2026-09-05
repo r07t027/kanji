@@ -89,75 +89,83 @@
 
   <!-- ==================== メニュー（スタート）画面 ==================== -->
   <div id="menu-view" class="menu-view">
-    <div class="menu-card">
-      
-      <div class="menu-header-row">
-        <div class="menu-logo-container">
-          <img src="assets/images/logo_01.png" alt="かきトレ" class="menu-logo-img">
-          <!-- ヘッダー用のかきまる挑戦オープンボタン -->
-          <button type="button" id="btn-header-challenge" class="btn-header-challenge" style="display: none;" title="かきまるからの挑戦状をひらく">
-            <span class="header-challenge-badge">🥋</span>
-            <span class="header-challenge-text">かきまると しょうぶ！</span>
-          </button>
-        </div>
-
-        <div id="user-info-bar" class="user-info-bar" style="display: none;">
-          <div class="user-welcome">👤 <span id="user-display-name">---</span> さん</div>
-          <div class="user-actions-group">
-            <button type="button" id="btn-open-hand-modal" class="btn-user-action" title="ききてを変更">🤚 ききて</button>
-            <button type="button" id="btn-open-pin-modal" class="btn-user-action" title="パスワードを変更">🔑 パスワード</button>
-            <!-- 動作確認用：1日1回制限リセットボタン -->
-            <button type="button" id="btn-debug-reset-challenge" class="btn-user-action btn-action-debug" title="1日1回の挑戦制限をリセット">🔄 制限リセット</button>
-            <button type="button" id="btn-logout" class="btn-user-action btn-action-logout">ログアウト</button>
+    <div class="menu-outer-wrapper">
+      <div class="menu-card">
+        
+        <div class="menu-header-row">
+          <div class="menu-logo-container">
+            <img src="assets/images/logo_01.png" alt="かきトレ" class="menu-logo-img">
+            <!-- ヘッダー用のかきまる挑戦オープンボタン -->
+            <button type="button" id="btn-header-challenge" class="btn-header-challenge" style="display: none;" title="かきまるからの挑戦状をひらく">
+              <span class="header-challenge-badge">🥋</span>
+              <span class="header-challenge-text">かきまると しょうぶ！</span>
+            </button>
           </div>
-        </div>
-      </div>
 
-      <!-- ① かきまるからの挑戦状パネル（1日1回・発生時のみ表示） -->
-      <div id="challenge-panel" class="challenge-panel" style="display: none;">
-        <div class="challenge-body">
-          <div class="challenge-mascot-box">
-            <img src="assets/images/kakimaru_10.png" alt="かきまるの挑戦" class="challenge-mascot-img">
-          </div>
-          <div class="challenge-speech-bubble">
-            <div class="challenge-speech-title">🥋 かきまるからの ちょうせん！</div>
-            <div class="challenge-speech-text">
-              きみに かきとりしょうぶを もうしこむ！<br>
-              これまでの かんじから ５もん だすよ。<br>
-              うけてたつ？
+          <div id="user-info-bar" class="user-info-bar" style="display: none;">
+            <div class="user-welcome">👤 <span id="user-display-name">---</span> さん</div>
+            <div class="user-actions-group">
+              <button type="button" id="btn-open-hand-modal" class="btn-user-action" title="ききてを変更">🤚 ききて</button>
+              <button type="button" id="btn-open-pin-modal" class="btn-user-action" title="パスワードを変更">🔑 パスワード</button>
+              <button type="button" id="btn-logout" class="btn-user-action btn-action-logout">ログアウト</button>
             </div>
           </div>
         </div>
-        <div class="challenge-actions">
-          <button type="button" id="btn-challenge-accept" class="btn-challenge-accept">うけてたつ！（しょうぶする）</button>
-          <button type="button" id="btn-challenge-decline" class="btn-challenge-decline">あとに する</button>
-        </div>
-      </div>
 
-      <!-- ② 通常メニューコンテンツ -->
-      <div id="normal-menu-content" class="normal-menu-content">
-        <div class="menu-section">
-          <label class="menu-label">1. どの がくねんの かんじ？</label>
-          <select id="select-grade" class="custom-select">
-            <option value="5" selected>5ねんせい</option>
-          </select>
+        <!-- ① かきまるからの挑戦状パネル（1日1回・発生時のみ表示） -->
+        <div id="challenge-panel" class="challenge-panel" style="display: none;">
+          <div class="challenge-body">
+            <div class="challenge-mascot-box">
+              <img src="assets/images/kakimaru_10.png" alt="かきまるの挑戦" class="challenge-mascot-img">
+            </div>
+            <div class="challenge-speech-bubble">
+              <div class="challenge-speech-title">🥋 かきまるからの ちょうせん！</div>
+              <div class="challenge-speech-text">
+                きみに かきとりしょうぶを もうしこむ！<br>
+                これまでの かんじから ５もん だすよ。<br>
+                うけてたつ？
+              </div>
+            </div>
+          </div>
+          <div class="challenge-actions">
+            <button type="button" id="btn-challenge-accept" class="btn-challenge-accept">うけてたつ！（しょうぶする）</button>
+            <button type="button" id="btn-challenge-decline" class="btn-challenge-decline">あとに する</button>
+          </div>
         </div>
 
-        <div class="menu-section">
-          <label class="menu-label">2. もんだいを えらぶ</label>
-          
-          <div class="term-tabs">
-            <button type="button" class="term-tab active" data-term="1">1がっき</button>
-            <button type="button" class="term-tab" data-term="2">2がっき</button>
-            <button type="button" class="term-tab term-tab-disabled" disabled>3がっき</button>
+        <!-- ② 通常メニューコンテンツ -->
+        <div id="normal-menu-content" class="normal-menu-content">
+          <div class="menu-section">
+            <label class="menu-label">1. どの がくねんの かんじ？</label>
+            <select id="select-grade" class="custom-select">
+              <option value="5" selected>5ねんせい</option>
+            </select>
           </div>
 
-          <div id="set-grid-container" class="set-grid-container"></div>
+          <div class="menu-section">
+            <label class="menu-label">2. もんだいを えらぶ</label>
+            
+            <div class="term-tabs">
+              <button type="button" class="term-tab active" data-term="1">1がっき</button>
+              <button type="button" class="term-tab" data-term="2">2がっき</button>
+              <button type="button" class="term-tab term-tab-disabled" disabled>3がっき</button>
+            </div>
+
+            <div id="set-grid-container" class="set-grid-container"></div>
+          </div>
+
+          <!-- 「チャレンジする」ボタンをセンタリングするためのラッパー -->
+          <div class="btn-start-wrapper">
+            <button id="btn-start" class="btn-start">チャレンジする</button>
+          </div>
         </div>
 
-        <button id="btn-start" class="btn-start">チャレンジする</button>
       </div>
 
+      <!-- 白いエリアの外側に配置したデバッグ用ボタン -->
+      <div class="menu-debug-area">
+        <button type="button" id="btn-debug-reset-challenge" class="btn-debug-outside" title="1日1回の挑戦制限をリセット">🔄 制限リセット (デバッグ用)</button>
+      </div>
     </div>
   </div>
 
@@ -283,4 +291,4 @@
 
   <script type="module" src="js/main.js"></script>
 </body>
-</html>f
+</html>
