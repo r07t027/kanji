@@ -29,12 +29,11 @@ async function postToGas(bodyObj) {
 export async function fetchClassAndUsersFromLocal() {
   try {
     const res = await fetch('data/users.json');
-    if (!res.ok) throw new Error('users.json not found');
     const users = await res.json();
     const classes = [...new Set(users.map(u => u.className))];
     return { success: true, classes, users };
   } catch (e) {
-    console.warn('ローカル名簿の取得をスキップ（GASから取得します）:', e);
+    console.error('ローカル名簿の取得に失敗:', e);
     return { success: false, error: e };
   }
 }
