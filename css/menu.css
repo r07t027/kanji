@@ -80,10 +80,11 @@ button.btn-header-challenge:hover {
   object-fit: contain;
 }
 
+/* ユーザー情報バー：左寄せに変更 */
 .user-info-bar {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 6px;
   background: #f4f9fd;
   border: 1px solid #dbeafe;
@@ -95,6 +96,8 @@ button.btn-header-challenge:hover {
   font-size: 0.9rem;
   font-weight: bold;
   color: #1e3a8a;
+  text-align: left;
+  width: 100%;
 }
 
 .user-actions-group {
