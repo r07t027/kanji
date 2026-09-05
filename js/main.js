@@ -523,7 +523,7 @@ class KanjiApp {
     playMistakeSound();
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
 
-    // ★ 初回試行の場合のみ正誤統計（charStats）に false を記録
+    // 初回試行の場合のみ正誤統計（charStats）に false を記録
     if (!this.hasAttemptedFirst) {
       const targets = q.targets || [];
       targets.forEach(t => {
@@ -566,7 +566,7 @@ class KanjiApp {
         questionLogDetail
       } = await this.validator.validateQuestion(q, this.userInputs);
 
-      // ★ 初回試行の場合のみ正誤統計（charStats）をローカルに記録
+      // 初回試行の場合のみ正誤統計（charStats）をローカルに記録
       if (!this.hasAttemptedFirst) {
         const targets = q.targets || [];
         targets.forEach((t, idx) => {
@@ -610,7 +610,6 @@ class KanjiApp {
 
               if (currentUser) {
                 const progress = Storage.getProgress();
-                // ★【修正箇所】backend.gs の期待する charStats を送信
                 await saveProgressAndLogs(
                   currentUser.userId,
                   currentSetId,
@@ -620,7 +619,7 @@ class KanjiApp {
                 );
               }
             } else {
-              // 挑戦モード時も charStats を裏で同期
+              // 挑戦モード時も最新の charStats を確実に裏で同期
               const currentUser = this.auth.getCurrentUser();
               if (currentUser) {
                 const progress = Storage.getProgress();
