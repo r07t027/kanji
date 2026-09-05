@@ -340,3 +340,41 @@ button.btn-challenge-decline:hover {
   background: #cfd8dc;
   color: #263238;
 }
+
+/* ヘッダー用のかきまる挑戦ボタン */
+.menu-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+button.btn-header-challenge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  color: #c2410c;
+  border: 2px solid #f97316;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.18);
+  transition: transform 0.15s, background-color 0.15s;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+button.btn-header-challenge:hover {
+  background: #fed7aa;
+  transform: translateY(-1px) scale(1.02);
+}
+
+.header-challenge-badge {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.header-challenge-text {
+  letter-spacing: 0.5px;
+}

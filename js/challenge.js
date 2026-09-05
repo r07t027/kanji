@@ -11,25 +11,31 @@ export class ChallengeManager {
     this.storage = storage;
   }
 
-  // 今日の挑戦が可能か判定（1日1回 & 5問抽出可能）
+// 今日の挑戦が可能か（まだ今日勝負しておらず、5問作れるか）
   canChallengeToday() {
     const progress = this.storage.getProgress();
     const today = new Date().toISOString().split('T')[0];
 
-    // 今日すでに挑戦済みの場合は不可
+    // 今日すでに「勝負」を完了している場合は不可
     if (progress.lastChallengeDate === today) {
       return false;
     }
 
-    // クリア済みセットが1つもない場合は不可
     const clearedSetIds = Object.keys(progress.clearedSets);
     if (clearedSetIds.length === 0) {
       return false;
     }
 
-    // 5問抽出できるか試行
     const questions = this.generateQuestions();
     return questions !== null && questions.length === 5;
+  }
+
+  // 起動時に自動ポップアップを出すべきか（今日まだ「あとに する」も押していない）
+  shouldShowPopupToday() {
+    if (!this.canChallengeToday()) return false;
+    const progress = this.storage.getProgress();
+    const today = new Date().toISOString().split('T')[0];
+    return progress.lastDismissDate !== today;
   }
 
   // アラカルト5問を生成

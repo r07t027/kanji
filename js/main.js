@@ -74,18 +74,33 @@ class KanjiApp {
     this.checkDailyChallenge();
   }
 
-  // 1日1回の挑戦状の出現判定
+  // 1日1回の挑戦状の出現判定 & ヘッダーボタンの表示切り替え
   checkDailyChallenge() {
     const challengePanel = document.getElementById('challenge-panel');
     const normalContent = document.getElementById('normal-menu-content');
+    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
     if (!challengePanel || !normalContent) return;
 
-    if (this.challengeManager && this.challengeManager.canChallengeToday()) {
-      normalContent.style.display = 'none';
-      challengePanel.style.display = 'flex';
+    const canChallenge = this.challengeManager && this.challengeManager.canChallengeToday();
+
+    if (canChallenge) {
+      const shouldPopup = this.challengeManager.shouldShowPopupToday();
+      if (shouldPopup) {
+        // 起動時：自動で挑戦状パネルを開く
+        normalContent.style.display = 'none';
+        challengePanel.style.display = 'flex';
+        if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
+      } else {
+        // 案内済みの場合：通常メニューを表示し、ヘッダーに挑戦ボタンを常設
+        challengePanel.style.display = 'none';
+        normalContent.style.display = 'block';
+        if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
+      }
     } else {
+      // そもそも条件未達、または今日すでに勝負済み
       challengePanel.style.display = 'none';
       normalContent.style.display = 'block';
+      if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
     }
   }
 
@@ -138,7 +153,7 @@ class KanjiApp {
       this.checkDailyChallenge();
     });
 
-    // 挑戦状パネルアクション
+    // 挑戦状パネルアクション（受けて立つ）
     const btnChallengeAccept = document.getElementById('btn-challenge-accept');
     if (btnChallengeAccept) {
       btnChallengeAccept.addEventListener('click', () => {
@@ -147,12 +162,28 @@ class KanjiApp {
       });
     }
 
+    // 挑戦状パネルアクション（あとに する）
     const btnChallengeDecline = document.getElementById('btn-challenge-decline');
     if (btnChallengeDecline) {
       btnChallengeDecline.addEventListener('click', () => {
         ensureAudioUnlocked();
+        Storage.recordDismissToday(); // 「今日閉じた」ことを記録してリロード時の再表示を抑止
         document.getElementById('challenge-panel').style.display = 'none';
         document.getElementById('normal-menu-content').style.display = 'block';
+
+        const btnHeader = document.getElementById('btn-header-challenge');
+        if (btnHeader) btnHeader.style.display = 'flex';
+      });
+    }
+
+    // ヘッダーの「🥋 かきまると しょうぶ！」ボタン押下時
+    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
+    if (btnHeaderChallenge) {
+      btnHeaderChallenge.addEventListener('click', () => {
+        ensureAudioUnlocked();
+        document.getElementById('normal-menu-content').style.display = 'none';
+        document.getElementById('challenge-panel').style.display = 'flex';
+        btnHeaderChallenge.style.display = 'none';
       });
     }
 
@@ -171,6 +202,7 @@ class KanjiApp {
         this.isChallengeMode = false;
         this.ui.showMenuView();
         this.menu.render();
+        this.checkDailyChallenge();
       } else {
         this.startNextSet();
       }
@@ -180,6 +212,7 @@ class KanjiApp {
       this.isChallengeMode = false;
       this.ui.showMenuView();
       this.menu.render();
+      this.checkDailyChallenge();
     });
 
     // メニュー画面スタート
@@ -199,6 +232,10 @@ class KanjiApp {
     this.currentQuestions = questions;
     this.currentSessionLogs = [];
     this.currentMistakes = [];
+
+    // ヘッダーボタンを非表示化
+    const btnHeader = document.getElementById('btn-header-challenge');
+    if (btnHeader) btnHeader.style.display = 'none';
 
     this.ui.showPracticeView();
     this.loadQuestion(0);
@@ -229,6 +266,7 @@ class KanjiApp {
     } else {
       this.ui.showMenuView();
       this.menu.render();
+      this.checkDailyChallenge();
     }
   }
 
