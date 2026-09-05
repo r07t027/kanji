@@ -5,6 +5,9 @@
 import { KAKIMARU_IMAGES, CIRCLED_NUMBERS } from './messages.js';
 import { KanjiVGPlayer } from './kanjivg.js';
 
+// 漢字判定用正規表現
+const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+
 // ========================================================
 // 判定結果画面（上下比較カード ＆ ミニキャンバス描画）
 // ========================================================
@@ -20,7 +23,7 @@ class ResultViewController {
   }
 
   isKanji(char) {
-    return /[\u4E00-\u9FAF\u3400-\u4DBF]/.test(char);
+    return KANJI_REGEX.test(char);
   }
 
   hide() {
@@ -195,15 +198,12 @@ export class UIController {
     if (isChallengeMode) {
       // ===== かきまるとの勝負 勝利演出 =====
       if (clearBadgeEl) clearBadgeEl.textContent = '🥇';
-      // 児童名に「さん」を付与
       if (clearTitleEl) clearTitleEl.textContent = `${userName ? userName + 'さん の' : ''} かち！`;
       if (clearMascotImgEl) clearMascotImgEl.src = 'assets/images/kakimaru_11.png';
-      // 1行のシンプルなセリフに変更
       if (clearStatusMsgEl) {
         clearStatusMsgEl.textContent = 'まいりました！つぎは まけないよ。';
       }
 
-      // 「メニューに戻る」ボタンのみ中央に配置
       if (btnRetry) btnRetry.style.display = 'none';
       if (btnNext) btnNext.style.display = 'none';
       if (btnMenu) {
@@ -220,7 +220,6 @@ export class UIController {
         clearStatusMsgEl.textContent = 'ぜんもん せいかい！さいごまで よくがんばったね！💮';
       }
 
-      // 3連ボタンを復元
       if (btnRetry) btnRetry.style.display = 'inline-block';
       if (btnNext) btnNext.style.display = 'inline-block';
       if (btnMenu) {
@@ -292,8 +291,15 @@ export class UIController {
     }
   }
 
-  updateStrokeInfo(currentCount, targetCount, isOkurigana, currentCharIndex) {
-    if (isOkurigana && currentCharIndex > 0) {
+  /**
+   * 画数情報の表示更新
+   * 対象文字が漢字以外（ひらがな等）、または送り仮名問題の2文字目以降は画数を表示しない
+   */
+  updateStrokeInfo(currentCount, targetCount, isOkurigana, currentCharIndex, targetChar = '') {
+    const isKanji = targetChar ? KANJI_REGEX.test(targetChar) : true;
+    const hideStrokeInfo = (isOkurigana && currentCharIndex > 0) || !isKanji;
+
+    if (hideStrokeInfo) {
       this.targetStrokeInfoEl.textContent = '';
       this.currentStrokeInfoEl.textContent = '';
     } else {

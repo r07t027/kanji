@@ -8,6 +8,9 @@ const STORAGE_KEYS = {
   PROGRESS: 'kanji_user_progress'
 };
 
+// 漢字判定用正規表現（CJK統合漢字・拡張A）
+const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+
 export const Storage = {
   getCurrentUser() {
     try {
@@ -69,8 +72,13 @@ export const Storage = {
     return Object.keys(progress.clearedSets);
   },
 
-  // 1文字ごとの正誤結果を即時保存（直近3件リングバッファ）
+  // 1文字ごとの正誤結果を即時保存（漢字のみ対象・直近3件リングバッファ）
   recordCharAttempt(char, isSuccess) {
+    // ひらがな・カタカナ・記号などは除外し、漢字のみを統計対象とする
+    if (!char || !KANJI_REGEX.test(char)) {
+      return;
+    }
+
     const progress = this.getProgress();
     if (!progress.charStats[char]) {
       progress.charStats[char] = {

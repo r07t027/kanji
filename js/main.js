@@ -13,6 +13,8 @@ import { shuffleArray, getInputAdvice, getRetryAdvice, getPraiseMessage, getMist
 import { ChallengeManager } from './challenge.js';
 import { Storage } from './storage.js';
 
+const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+
 class KanjiApp {
   constructor() {
     this.gradeData = null;
@@ -361,7 +363,9 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
-    const targetStroke = (q.targets && cIndex < q.targets.length) ? q.targets[cIndex].strokes : 0;
+    const targetObj = (q.targets && cIndex < q.targets.length) ? q.targets[cIndex] : null;
+    const targetStroke = targetObj ? targetObj.strokes : 0;
+    const targetChar = targetObj ? targetObj.char : '';
 
     this.ui.renderTabs(
       this.userInputs.length,
@@ -384,7 +388,8 @@ class KanjiApp {
     }
 
     const currentCount = this.canvasController.strokeCount;
-    this.ui.updateStrokeInfo(currentCount, targetStroke, isOkurigana, cIndex);
+    // ターゲット文字を渡し、漢字以外なら画数表示を非表示にする
+    this.ui.updateStrokeInfo(currentCount, targetStroke, isOkurigana, cIndex, targetChar);
     this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars || 4);
     this.ui.updateHistoryButtons(this.canvasController.canUndo(), this.canvasController.canRedo());
     this.checkButtonState();
@@ -398,9 +403,11 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
-    const targetStroke = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
+    const targetObj = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex] : null;
+    const targetStroke = targetObj ? targetObj.strokes : 0;
+    const targetChar = targetObj ? targetObj.char : '';
 
-    this.ui.updateStrokeInfo(strokeCount, targetStroke, isOkurigana, this.currentCharIndex);
+    this.ui.updateStrokeInfo(strokeCount, targetStroke, isOkurigana, this.currentCharIndex, targetChar);
     this.ui.updateHistoryButtons(canUndo, canRedo);
     this.saveCurrentDrawing();
 
@@ -451,9 +458,11 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     if (!q) return;
     const isOkurigana = (q.type === 'okurigana');
-    const targetStroke = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex].strokes : 0;
+    const targetObj = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex] : null;
+    const targetStroke = targetObj ? targetObj.strokes : 0;
+    const targetChar = targetObj ? targetObj.char : '';
 
-    this.ui.updateStrokeInfo(0, targetStroke, isOkurigana, this.currentCharIndex);
+    this.ui.updateStrokeInfo(0, targetStroke, isOkurigana, this.currentCharIndex, targetChar);
     this.ui.updateHistoryButtons(false, false);
     this.ui.renderTabs(
       this.userInputs.length,
@@ -511,7 +520,7 @@ class KanjiApp {
     }
   }
 
-  // パス処理（初回試行時のみ誤答としてローカル記録）
+  // パス処理（初回試行時かつ漢字のみ誤答としてローカル記録）
   handlePass() {
     const q = this.getCurrentQuestion();
     if (!q) return;
@@ -523,16 +532,16 @@ class KanjiApp {
     playMistakeSound();
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
 
-    // 初回試行の場合のみ正誤統計（charStats）に false を記録
+    // 初回試行の場合のみ正誤統計（charStats）に false を記録（漢字のみ）
     if (!this.hasAttemptedFirst) {
       const targets = q.targets || [];
       targets.forEach(t => {
-        if (t && t.char) {
+        if (t && t.char && KANJI_REGEX.test(t.char)) {
           Storage.recordCharAttempt(t.char, false);
+          this.hasUnsavedSessionChanges = true;
         }
       });
       this.hasAttemptedFirst = true;
-      this.hasUnsavedSessionChanges = true;
     }
 
     const falseResults = new Array((q.targets || []).length).fill(false);
@@ -546,7 +555,7 @@ class KanjiApp {
     this.ui.updateCheckButtonState(true);
   }
 
-  // 解答判定処理（初回試行時のみ正誤を記録）
+  // 解答判定処理（初回試行時かつ漢字のみ正誤を記録）
   async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();
@@ -566,17 +575,17 @@ class KanjiApp {
         questionLogDetail
       } = await this.validator.validateQuestion(q, this.userInputs);
 
-      // 初回試行の場合のみ正誤統計（charStats）をローカルに記録
+      // 初回試行の場合のみ正誤統計（charStats）をローカルに記録（漢字のみ）
       if (!this.hasAttemptedFirst) {
         const targets = q.targets || [];
         targets.forEach((t, idx) => {
-          if (t && t.char) {
+          if (t && t.char && KANJI_REGEX.test(t.char)) {
             const isCharOk = (charResults && charResults[idx] === true);
             Storage.recordCharAttempt(t.char, isCharOk);
+            this.hasUnsavedSessionChanges = true;
           }
         });
         this.hasAttemptedFirst = true;
-        this.hasUnsavedSessionChanges = true;
       }
 
       this.currentSessionLogs.push({
