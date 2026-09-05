@@ -213,3 +213,130 @@ button.btn-start:hover {
   transform: translateY(-2px);
   opacity: 0.95;
 }
+
+/* ========================================================
+   かきまるからの挑戦状パネル
+   ======================================================== */
+.challenge-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 10px 4px 6px;
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.challenge-body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #fffaf0;
+  border: 2px solid #fed7aa;
+  border-radius: 20px;
+  padding: 18px 24px;
+}
+
+.challenge-mascot-box {
+  flex: 0 0 110px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.challenge-mascot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(249, 115, 22, 0.2));
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.challenge-speech-bubble {
+  flex: 1;
+  position: relative;
+  background: #ffffff;
+  border: 2px solid #f97316;
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 3px 8px rgba(249, 115, 22, 0.08);
+}
+
+.challenge-speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  transform: translateY(-50%);
+  border-width: 8px 10px 8px 0;
+  border-style: solid;
+  border-color: transparent #f97316 transparent transparent;
+}
+
+.challenge-speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -7px;
+  transform: translateY(-50%);
+  border-width: 7px 9px 7px 0;
+  border-style: solid;
+  border-color: transparent #ffffff transparent transparent;
+}
+
+.challenge-speech-title {
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: #c2410c;
+  margin-bottom: 6px;
+}
+
+.challenge-speech-text {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.challenge-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+}
+
+button.btn-challenge-accept {
+  flex: 2;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  font-size: 1.25rem;
+  padding: 14px 24px;
+  border-radius: 14px;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+button.btn-challenge-accept:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+button.btn-challenge-decline {
+  flex: 1;
+  background: #eceff1;
+  color: #546e7a;
+  border: 1.5px solid #cfd8dc;
+  font-size: 1.05rem;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+button.btn-challenge-decline:hover {
+  background: #cfd8dc;
+  color: #263238;
+}
