@@ -3,20 +3,16 @@
  * Google Apps Script (GAS) Web API との通信モジュール
  */
 
-// ★お使いのデプロイ済みGAS WebアプリURLを指定してください
+// ★お使いのデプロイ済みGAS WebアプリURL
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyaVMcWyIW9KXYQ6WvUm6MwKA2i4ZpykFZ5xrW6ehWomoy7Jkj4leCr3jKWZG5LcfGn/exec';
 
 /**
- * GAS向けPOSTヘルパー（CORS/リダイレクト対策）
+ * GAS向けPOSTヘルパー（CORSプリフライト回避・リダイレクト追従）
  */
 async function postToGas(bodyObj) {
+  // headers を指定せずプレーン文字列を送ることでプリフライト(OPTIONS)を完全に回避
   const res = await fetch(GAS_API_URL, {
     method: 'POST',
-    // text/plain にすることでブラウザのプリフライト(OPTIONS)を回避
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8'
-    },
-    // GASのリダイレクト(302)を自動追従
     redirect: 'follow',
     body: JSON.stringify(bodyObj)
   });
@@ -78,7 +74,6 @@ export async function syncProgressSilently(userId, clearedSets, charStats) {
   try {
     fetch(GAS_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       redirect: 'follow',
       keepalive: true,
       body: JSON.stringify({
