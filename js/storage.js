@@ -108,8 +108,7 @@ export const Storage = {
   clearSession() {
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.PROGRESS);
-  }
-};
+  },
 
 // 動作確認用：1日1回の挑戦制限（挑戦日・辞退日）をリセット
   resetChallengeLimit() {
@@ -118,3 +117,5 @@ export const Storage = {
     progress.lastDismissDate = '';
     this.setProgress(progress);
   },
+};
+
