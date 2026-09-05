@@ -3,11 +3,13 @@
  * 手書き文字認識（Google Input Tools連携） ＆ 画数・正誤判定モジュール
  */
 
-// Google Input Tools API 連携（内部ヘルパー）
+// Google Input Tools API 連携（安全ガード付き）
 async function recognizeChar(strokes) {
+  if (!strokes || strokes.length === 0) return [];
+
   const ink = strokes.map(stroke => [
-    stroke.map(pt => pt[0]),
-    stroke.map(pt => pt[1])
+    stroke.map(pt => Math.round(pt[0])),
+    stroke.map(pt => Math.round(pt[1]))
   ]);
 
   try {
@@ -18,23 +20,30 @@ async function recognizeChar(strokes) {
         requests: [{
           writing_guide: { writing_area_width: 260, writing_area_height: 260 },
           pre_context: '',
-          max_num_results: 5,
+          max_num_results: 10,
           language: 'ja',
           ink: ink
         }]
       })
     });
+
+    if (!res.ok) return [];
+
     const data = await res.json();
-    return (data[1] && data[1][0] && data[1][0][1]) || [];
+    // オプショナルチェイニングで undefined エラーを完全防止
+    if (data && data[1] && data[1][0] && Array.isArray(data[1][0][1])) {
+      return data[1][0][1];
+    }
+    return [];
   } catch (err) {
-    console.warn('手書き文字認識APIエラー:', err);
+    console.warn('手書き文字認識API呼び出しエラー:', err);
     return [];
   }
 }
 
 export class AnswerValidator {
-  constructor(candidateLimit = 2) {
-    this.candidateLimit = candidateLimit; // 第2候補まで合格判定
+  constructor(candidateLimit = 3) {
+    this.candidateLimit = candidateLimit; // 第3候補まで合格判定
   }
 
   async validateQuestion(question, userInputs) {
@@ -52,16 +61,18 @@ export class AnswerValidator {
     const questionLogDetail = { chars: [] };
     const mistakenChars = [];
 
+    const targets = question.targets || [];
+
     for (let i = 0; i < validInputs.length; i++) {
       const input = validInputs[i];
-      const target = (i < question.targets.length) ? question.targets[i] : null;
+      const target = (i < targets.length) ? targets[i] : null;
 
       if (!target) {
         charResults.push(false);
         continue;
       }
 
-      if (!input || input.strokeCount === 0) {
+      if (!input || !input.strokeCount || input.strokeCount === 0) {
         charResults.push(false);
         adviceMessages.push({
           index: i,
@@ -72,10 +83,17 @@ export class AnswerValidator {
         continue;
       }
 
-      // OCR認識（Google Input Tools API連携）
-      const candidates = await recognizeChar(input.strokesData);
+      // OCR認識（Google Input Tools API）
+      let candidates = [];
+      try {
+        candidates = await recognizeChar(input.strokesData);
+      } catch (e) {
+        candidates = [];
+      }
+
       const recognized = candidates[0] || '';
-      const isCharMatched = candidates.slice(0, this.candidateLimit).includes(target.char);
+      const topCandidates = candidates.slice(0, this.candidateLimit);
+      const isCharMatched = topCandidates.includes(target.char);
 
       if (!isCharMatched) {
         charResults.push(false);
@@ -122,8 +140,8 @@ export class AnswerValidator {
       });
     }
 
-    const isCountMatched = (validInputs.length === question.targets.length);
-    const isAllCharsCorrect = charResults.every(r => r === true);
+    const isCountMatched = (validInputs.length === targets.length);
+    const isAllCharsCorrect = charResults.length > 0 && charResults.every(r => r === true);
     const isAllSuccess = isCountMatched && isAllCharsCorrect;
 
     // 不正解時のフィードバックメッセージ生成
