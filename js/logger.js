@@ -7,16 +7,34 @@
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyaVMcWyIW9KXYQ6WvUm6MwKA2i4ZpykFZ5xrW6ehWomoy7Jkj4leCr3jKWZG5LcfGn/exec';
 
 /**
+ * GAS向けPOSTヘルパー（CORS/リダイレクト対策）
+ */
+async function postToGas(bodyObj) {
+  const res = await fetch(GAS_API_URL, {
+    method: 'POST',
+    // text/plain にすることでブラウザのプリフライト(OPTIONS)を回避
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    // GASのリダイレクト(302)を自動追従
+    redirect: 'follow',
+    body: JSON.stringify(bodyObj)
+  });
+  return await res.json();
+}
+
+/**
  * 静的名簿JSONの読み込み
  */
 export async function fetchClassAndUsersFromLocal() {
   try {
     const res = await fetch('data/users.json');
+    if (!res.ok) throw new Error('users.json not found');
     const users = await res.json();
     const classes = [...new Set(users.map(u => u.className))];
     return { success: true, classes, users };
   } catch (e) {
-    console.error('ローカル名簿の取得に失敗:', e);
+    console.warn('ローカル名簿の取得をスキップ（GASから取得します）:', e);
     return { success: false, error: e };
   }
 }
@@ -26,11 +44,7 @@ export async function fetchClassAndUsersFromLocal() {
  */
 export async function prefetchAllDataAsync() {
   try {
-    const res = await fetch(GAS_API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'prefetchAllData' })
-    });
-    return await res.json();
+    return await postToGas({ action: 'prefetchAllData' });
   } catch (e) {
     console.warn('GAS事前データ取得に失敗:', e);
     return { success: false, error: e };
@@ -42,20 +56,16 @@ export async function prefetchAllDataAsync() {
  */
 export async function saveProgressAndLogs(userId, setId, isSetCleared, charStats, sessionLogs) {
   try {
-    const res = await fetch(GAS_API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'saveProgressAndLog',
-        payload: {
-          userId: userId,
-          setId: setId,
-          isSetCleared: isSetCleared,
-          charStats: charStats,
-          logRecords: sessionLogs
-        }
-      })
+    return await postToGas({
+      action: 'saveProgressAndLog',
+      payload: {
+        userId: userId,
+        setId: setId,
+        isSetCleared: isSetCleared,
+        charStats: charStats,
+        logRecords: sessionLogs
+      }
     });
-    return await res.json();
   } catch (e) {
     console.warn('進捗ログ保存に失敗:', e);
     return { success: false, error: e };
@@ -69,6 +79,8 @@ export async function syncProgressSilently(userId, clearedSets, charStats) {
   try {
     fetch(GAS_API_URL, {
       method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      redirect: 'follow',
       keepalive: true,
       body: JSON.stringify({
         action: 'updateProgress',
@@ -89,17 +101,13 @@ export async function syncProgressSilently(userId, clearedSets, charStats) {
  */
 export async function updateHandModeApi(userId, handMode) {
   try {
-    const res = await fetch(GAS_API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'updateHandMode',
-        payload: {
-          userId: userId,
-          handMode: handMode
-        }
-      })
+    return await postToGas({
+      action: 'updateHandMode',
+      payload: {
+        userId: userId,
+        handMode: handMode
+      }
     });
-    return await res.json();
   } catch (e) {
     return { success: false, error: e };
   }
@@ -110,17 +118,13 @@ export async function updateHandModeApi(userId, handMode) {
  */
 export async function updatePinApi(userId, newPin) {
   try {
-    const res = await fetch(GAS_API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'updatePin',
-        payload: {
-          userId: userId,
-          newPin: newPin
-        }
-      })
+    return await postToGas({
+      action: 'updatePin',
+      payload: {
+        userId: userId,
+        newPin: newPin
+      }
     });
-    return await res.json();
   } catch (e) {
     return { success: false, error: e };
   }
