@@ -62,9 +62,13 @@ export class AuthManager {
       return;
     }
 
-    // 2. ローカル静的名簿の読み込み
+    // 2. ローカル静的名簿（data/users.json）の読み込み（以前の元通りの処理）
+    selectClass.innerHTML = '<option value="">よみこみ中...</option>';
+    selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
+    selectUser.disabled = true;
+
     const res = await fetchClassAndUsersFromLocal();
-    if (!res.success) {
+    if (!res.success || !res.users || res.users.length === 0) {
       selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
       modal.style.display = 'flex';
       return;
@@ -72,8 +76,6 @@ export class AuthManager {
 
     const { classes, users } = res;
     selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
-    selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
-    selectUser.disabled = true;
 
     classes.forEach(c => {
       const opt = document.createElement('option');
@@ -136,7 +138,7 @@ export class AuthManager {
 
       if (matchedUser && matchedUser.pin === enteredPin) {
         this.currentUser = matchedUser;
-        const userProgress = progressMap[selectedUserId] || { clearedSets: {}, weakChars: {} };
+        const userProgress = progressMap[selectedUserId] || { clearedSets: {}, charStats: {} };
         const rawCleared = userProgress.clearedSets;
         this.clearedSets = Array.isArray(rawCleared)
           ? rawCleared
