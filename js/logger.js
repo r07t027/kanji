@@ -4,7 +4,7 @@
  */
 
 // ★お使いのデプロイ済みGAS WebアプリURLを指定してください
-const GAS_API_URL = 'https://script.google.com/macros/s/15MNUjS1D9pk4i6miH6dQX7aWpAnyTMXTa_DhpkziaNM/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyaVMcWyIW9KXYQ6WvUm6MwKA2i4ZpykFZ5xrW6ehWomoy7Jkj4leCr3jKWZG5LcfGn/exec';
 
 /**
  * 静的名簿JSONの読み込み
