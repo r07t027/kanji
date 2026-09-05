@@ -44,6 +44,8 @@ class KanjiApp {
         if (this.gradeData) {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
         }
+        // ★ ログイン成功時にも即座に挑戦状の判定を実行する
+        this.checkDailyChallenge();
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -316,7 +318,7 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     if (!q) return;
 
-    // ★ お手本SVGのバックグラウンド先読み（描画中に取得完了させる）
+    // お手本SVGのバックグラウンド先読み（描画中に取得完了させる）
     if (q.targets && Array.isArray(q.targets)) {
       const chars = q.targets.map(t => t.char);
       prefetchKanjiVG(chars);
