@@ -10,7 +10,6 @@ const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyaVMcWyIW9KXYQ6WvU
  * GAS向けPOSTヘルパー（CORSプリフライト回避・リダイレクト追従）
  */
 async function postToGas(bodyObj) {
-  // headers を指定せずプレーン文字列を送ることでプリフライト(OPTIONS)を完全に回避
   const res = await fetch(GAS_API_URL, {
     method: 'POST',
     redirect: 'follow',
@@ -20,14 +19,18 @@ async function postToGas(bodyObj) {
 }
 
 /**
- * 静的名簿JSONの読み込み
+ * 静的名簿JSON（data/users.json）の読み込み
  */
 export async function fetchClassAndUsersFromLocal() {
   try {
     const res = await fetch('data/users.json');
-    const users = await res.json();
-    const classes = [...new Set(users.map(u => u.className))];
-    return { success: true, classes, users };
+    if (!res.ok) throw new Error('users.json の読み込みに失敗しました');
+    const data = await res.json();
+    return {
+      success: true,
+      classes: data.classes || [],
+      users: data.users || []
+    };
   } catch (e) {
     console.error('ローカル名簿の取得に失敗:', e);
     return { success: false, error: e };
