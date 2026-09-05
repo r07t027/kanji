@@ -26,7 +26,7 @@ class KanjiApp {
     this.isChallengeMode = false;
     this.challengeManager = null;
 
-    // 初回試行判定管理 & セッション内変更フラグ
+    // 初回試行管理 ＆ セッション変更フラグ
     this.hasAttemptedFirst = false;
     this.hasUnsavedSessionChanges = false;
 
@@ -152,7 +152,7 @@ class KanjiApp {
       this.handleBackToMenu();
     });
 
-    // 挑戦状アクション（受けて立つ）
+    // 挑戦状パネルアクション（受けて立つ）
     const btnChallengeAccept = document.getElementById('btn-challenge-accept');
     if (btnChallengeAccept) {
       btnChallengeAccept.addEventListener('click', () => {
@@ -161,7 +161,7 @@ class KanjiApp {
       });
     }
 
-    // 挑戦状アクション（あとに する）
+    // 挑戦状パネルアクション（あとに する）
     const btnChallengeDecline = document.getElementById('btn-challenge-decline');
     if (btnChallengeDecline) {
       btnChallengeDecline.addEventListener('click', () => {
@@ -471,7 +471,7 @@ class KanjiApp {
 
   handleRestartAll() {
     this.loadQuestion(this.currentQIndex);
-    // 書き直しの際は初回試行ではないため true を維持（正答率アップには加算されない）
+    // 書き直しの際は初回試行ではないため true を維持（正答率には加算されない）
     this.hasAttemptedFirst = true;
     this.ui.setMessage('1もじめから もういちど かいてみよう。おちついてね。', 'info');
   }
@@ -610,7 +610,7 @@ class KanjiApp {
 
               if (currentUser) {
                 const progress = Storage.getProgress();
-                // ★ backend.gs の期待するキー名 charStats で確実に送信
+                // ★【修正箇所】backend.gs の期待する charStats を送信
                 await saveProgressAndLogs(
                   currentUser.userId,
                   currentSetId,
