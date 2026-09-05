@@ -23,11 +23,10 @@ class KanjiApp {
     this.userInputs = [];
 
     this.currentSessionLogs = [];
-    this.currentMistakes = [];
     this.isChallengeMode = false;
     this.challengeManager = null;
 
-    // 初回試行管理 ＆ セッション変更フラグ
+    // 初回試行判定管理 & セッション内変更フラグ
     this.hasAttemptedFirst = false;
     this.hasUnsavedSessionChanges = false;
 
@@ -90,18 +89,15 @@ class KanjiApp {
     if (canChallenge) {
       const shouldPopup = this.challengeManager.shouldShowPopupToday();
       if (shouldPopup) {
-        // 起動時：自動で挑戦状パネルを開く
         normalContent.style.display = 'none';
         challengePanel.style.display = 'flex';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
       } else {
-        // 案内済みの場合：通常メニューを表示し、ヘッダーに挑戦ボタンを常設
         challengePanel.style.display = 'none';
         normalContent.style.display = 'block';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
       }
     } else {
-      // そもそも条件未達、または今日すでに勝負済み
       challengePanel.style.display = 'none';
       normalContent.style.display = 'block';
       if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
@@ -123,7 +119,7 @@ class KanjiApp {
       this.canvasController.redo();
     });
 
-    // キーボードショートカット（Undo/Redo）をキャンバス側に登録
+    // キーボードショートカット
     this.canvasController.initKeyboardShortcuts(() => {
       ensureAudioUnlocked();
     });
@@ -150,13 +146,13 @@ class KanjiApp {
       this.handleRestartAll();
     });
 
-    // 「もどる」ボタン押下時：セッション内に変更があれば裏でGASへ同期
+    // メニューに戻るボタン（変更があれば裏で同期）
     document.getElementById('btn-back-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.handleBackToMenu();
     });
 
-    // 挑戦状パネルアクション（受けて立つ）
+    // 挑戦状アクション（受けて立つ）
     const btnChallengeAccept = document.getElementById('btn-challenge-accept');
     if (btnChallengeAccept) {
       btnChallengeAccept.addEventListener('click', () => {
@@ -165,7 +161,7 @@ class KanjiApp {
       });
     }
 
-    // 挑戦状パネルアクション（あとに する）
+    // 挑戦状アクション（あとに する）
     const btnChallengeDecline = document.getElementById('btn-challenge-decline');
     if (btnChallengeDecline) {
       btnChallengeDecline.addEventListener('click', () => {
@@ -262,7 +258,6 @@ class KanjiApp {
     this.isChallengeMode = true;
     this.currentQuestions = questions;
     this.currentSessionLogs = [];
-    this.currentMistakes = [];
     this.hasUnsavedSessionChanges = false;
 
     const btnHeader = document.getElementById('btn-header-challenge');
@@ -282,7 +277,6 @@ class KanjiApp {
 
     this.currentQuestions = shuffleArray(this.currentSet.questions);
     this.currentSessionLogs = [];
-    this.currentMistakes = [];
     this.hasUnsavedSessionChanges = false;
 
     this.ui.showPracticeView();
@@ -477,7 +471,7 @@ class KanjiApp {
 
   handleRestartAll() {
     this.loadQuestion(this.currentQIndex);
-    // もう一度書き直す際は、初回試行ではないため true を維持
+    // 書き直しの際は初回試行ではないため true を維持（正答率アップには加算されない）
     this.hasAttemptedFirst = true;
     this.ui.setMessage('1もじめから もういちど かいてみよう。おちついてね。', 'info');
   }
@@ -517,7 +511,7 @@ class KanjiApp {
     }
   }
 
-  // パス処理（初回試行のみローカル記録）
+  // パス処理（初回試行時のみ誤答としてローカル記録）
   handlePass() {
     const q = this.getCurrentQuestion();
     if (!q) return;
@@ -531,26 +525,28 @@ class KanjiApp {
 
     // ★ 初回試行の場合のみ正誤統計（charStats）に false を記録
     if (!this.hasAttemptedFirst) {
-      q.targets.forEach(t => {
-        this.currentMistakes.push(t.char);
-        Storage.recordCharAttempt(t.char, false);
+      const targets = q.targets || [];
+      targets.forEach(t => {
+        if (t && t.char) {
+          Storage.recordCharAttempt(t.char, false);
+        }
       });
       this.hasAttemptedFirst = true;
       this.hasUnsavedSessionChanges = true;
     }
 
-    const falseResults = new Array(q.targets.length).fill(false);
+    const falseResults = new Array((q.targets || []).length).fill(false);
     this.ui.showResultView(
       false,
       'パスしました。おてほんを かくにんしよう。',
-      q.targets.map(t => t.char),
+      (q.targets || []).map(t => t.char),
       this.userInputs,
       falseResults
     );
     this.ui.updateCheckButtonState(true);
   }
 
-  // 解答判定処理（初回試行のみローカル記録）
+  // 解答判定処理（初回試行時のみ正誤を記録）
   async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();
@@ -567,17 +563,18 @@ class KanjiApp {
         charResults,
         validInputs,
         feedbackHtml,
-        mistakenChars,
         questionLogDetail
       } = await this.validator.validateQuestion(q, this.userInputs);
 
       // ★ 初回試行の場合のみ正誤統計（charStats）をローカルに記録
       if (!this.hasAttemptedFirst) {
-        q.targets.forEach((t, idx) => {
-          const isCharOk = charResults[idx] === true;
-          Storage.recordCharAttempt(t.char, isCharOk);
+        const targets = q.targets || [];
+        targets.forEach((t, idx) => {
+          if (t && t.char) {
+            const isCharOk = (charResults && charResults[idx] === true);
+            Storage.recordCharAttempt(t.char, isCharOk);
+          }
         });
-        this.currentMistakes.push(...mistakenChars);
         this.hasAttemptedFirst = true;
         this.hasUnsavedSessionChanges = true;
       }
@@ -593,7 +590,7 @@ class KanjiApp {
       if (isAllSuccess) {
         playCorrectSound();
         this.ui.setMessage(getPraiseMessage(), 'success');
-        this.ui.showResultView(true, 'せいかい！', q.targets.map(t => t.char), validInputs, charResults);
+        this.ui.showResultView(true, 'せいかい！', (q.targets || []).map(t => t.char), validInputs, charResults);
 
         const isFinalQuestion = (this.currentQIndex === this.currentQuestions.length - 1);
         setTimeout(async () => {
@@ -605,7 +602,7 @@ class KanjiApp {
 
             this.ui.showAllClear(this.isChallengeMode, displayName);
 
-            // 通常モード時：セットクリア記録 ＋ charStats をGASへ保存
+            // 通常モード時のみセットクリア記録を更新してGASへ送信
             if (!this.isChallengeMode) {
               const currentSetId = this.menu.getSelectedSetId();
               this.auth.addClearedSet(currentSetId);
@@ -613,7 +610,7 @@ class KanjiApp {
 
               if (currentUser) {
                 const progress = Storage.getProgress();
-                // ★ backend.gs の期待通り charStats を第4引数として送信
+                // ★ backend.gs の期待するキー名 charStats で確実に送信
                 await saveProgressAndLogs(
                   currentUser.userId,
                   currentSetId,
@@ -623,7 +620,7 @@ class KanjiApp {
                 );
               }
             } else {
-              // 挑戦モード時も最新 charStats を裏で同期
+              // 挑戦モード時も charStats を裏で同期
               const currentUser = this.auth.getCurrentUser();
               if (currentUser) {
                 const progress = Storage.getProgress();
@@ -641,7 +638,7 @@ class KanjiApp {
       } else {
         playMistakeSound();
         this.ui.setMessage(getMistakeMessage(), 'mistake');
-        this.ui.showResultView(false, feedbackHtml, q.targets.map(t => t.char), validInputs, charResults);
+        this.ui.showResultView(false, feedbackHtml, (q.targets || []).map(t => t.char), validInputs, charResults);
         this.ui.updateCheckButtonState(true);
       }
     } catch (err) {

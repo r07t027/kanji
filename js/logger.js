@@ -53,7 +53,7 @@ export async function updatePinApi(userId, newPin) {
 }
 
 /**
- * 学習完了時の保存（backend.gs の payload.charStats と完全一致させる）
+ * 学習完了時の保存（backend.gs の payload.charStats と完全に一致させる）
  */
 export async function saveProgressAndLogs(userId, setId, isSetCleared, charStats, logRecords) {
   return await callApi('saveProgressAndLog', {
@@ -66,7 +66,7 @@ export async function saveProgressAndLogs(userId, setId, isSetCleared, charStats
 }
 
 /**
- * 「もどる」ボタン押下時などのバックグラウンド軽量進捗同期
+ * 「もどる」ボタン押下時などのバックグラウンド進捗同期
  */
 export async function syncProgressSilently(userId, clearedSets, charStats) {
   try {
