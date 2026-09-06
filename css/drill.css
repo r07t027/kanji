@@ -46,17 +46,32 @@
 }
 
 /* ========================================================
-   にがてとっくん 全体ビュー & カード
+   にがてとっくん 全体ビュー（オーバーレイ / 1画面の切り替え）
    ======================================================== */
 .drill-view {
   width: 100vw;
   height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  transition: background-color 0.2s ease;
+}
+
+/* ① 漢字選択モーダル時：メニューがうっすら透ける半透明ブラー背景 */
+.drill-view.is-modal-overlay {
+  background: rgba(18, 38, 58, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+/* ② 1文字特訓時：メニューを消した白・水色基調の独立全画面 */
+.drill-view.is-fullscreen-practice {
   background-color: #f4f9fd;
-  z-index: 100;
+  backdrop-filter: none;
 }
 
 .drill-card {
@@ -66,12 +81,16 @@
   max-height: 94vh;
   padding: 22px 30px;
   border-radius: 24px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  animation: fadeIn 0.25s ease-out;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.drill-practice-card {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 .drill-header-row {
@@ -91,11 +110,56 @@
   gap: 6px;
 }
 
-.drill-desc {
-  margin: 0;
-  font-size: 0.92rem;
+/* ========================================================
+   特訓一覧：かきまるセリフ吹き出し
+   ======================================================== */
+.drill-mascot-speech-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fffaf0;
+  border: 1.5px solid #fed7aa;
+  border-radius: 16px;
+  padding: 8px 14px;
+  margin: 2px 0 6px;
+}
+
+.drill-mascot-avatar-box {
+  flex: 0 0 52px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drill-mascot-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(249, 115, 22, 0.15));
+}
+
+.drill-speech-bubble {
+  flex: 1;
+  background: #ffffff;
+  border: 1.5px solid #f97316;
+  border-radius: 12px;
+  padding: 8px 14px;
+  min-height: auto;
+}
+
+.drill-speech-bubble::before {
+  border-color: transparent #f97316 transparent transparent;
+}
+.drill-speech-bubble::after {
+  border-color: transparent #ffffff transparent transparent;
+}
+
+.drill-status-text {
+  font-size: 0.98rem;
   font-weight: bold;
-  color: #64748b;
+  color: #9a3412;
+  line-height: 1.4;
 }
 
 /* 苦手漢字グリッド */
@@ -152,7 +216,7 @@
   border-radius: 6px;
 }
 
-/* 空メッセージ */
+/* 苦手漢字なし表示 */
 .drill-empty-msg {
   display: flex;
   flex-direction: column;
@@ -180,7 +244,9 @@
   color: #64748b;
 }
 
-/* 1文字集中練習ボディ */
+/* ========================================================
+   1文字集中練習ボディ
+   ======================================================== */
 .drill-practice-target-title {
   font-size: 1.3rem;
   font-weight: bold;
@@ -265,7 +331,7 @@
   transform: scale(1.02);
 }
 
-/* ★ 3回目ブラインド表示スタイル */
+/* 3回目ブラインド表示スタイル */
 .drill-model-box.is-blind {
   background: #f8fafc;
   border-color: #cbd5e1;

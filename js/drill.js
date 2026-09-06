@@ -61,22 +61,28 @@ export class DrillManager {
     }
   }
 
-  // ★ 1画面表示：メニュー画面を完全に隠して特訓ビューを開く
+  // 特訓画面を開く（メニューの上に半透明オーバーレイ表示）
   open() {
-    if (this.menuView) this.menuView.style.display = 'none';
     this.drillView.style.display = 'flex';
     this.showList();
   }
 
-  // ★ 特訓画面を閉じ、メニュー画面を再表示
+  // 特訓画面を閉じ、メニュー画面を再表示
   close() {
     this.drillView.style.display = 'none';
+    this.drillView.classList.remove('is-modal-overlay', 'is-fullscreen-practice');
     if (this.menuView) this.menuView.style.display = 'flex';
     this.updateBadgeCount();
     this.onClose();
   }
 
+  // ① 苦手漢字一覧カード（メニューを背面に残したオーバーレイモーダル）
   showList() {
+    if (this.menuView) this.menuView.style.display = 'flex';
+
+    this.drillView.classList.remove('is-fullscreen-practice');
+    this.drillView.classList.add('is-modal-overlay');
+
     this.practiceCard.style.display = 'none';
     this.listCard.style.display = 'flex';
     this._renderGrid();
@@ -151,7 +157,13 @@ export class DrillManager {
     });
   }
 
+  // ② 1文字特訓の開始（メニューを完全に隠して1画面専用ビューへ）
   startDrillForChar(char) {
+    if (this.menuView) this.menuView.style.display = 'none';
+
+    this.drillView.classList.remove('is-modal-overlay');
+    this.drillView.classList.add('is-fullscreen-practice');
+
     this.currentChar = char;
     this.successStreak = 0;
     this.targetStroke = this._lookupStrokeCount(char);
@@ -184,7 +196,7 @@ export class DrillManager {
     btn.disabled = !enabled;
   }
 
-  // ★ 連続正解数に応じてお手本とお知らせを出し分け
+  // 連続正解数に応じてお手本とお知らせを出し分け（3回目はブラインド）
   _updateStreakAndModelUI() {
     for (let i = 1; i <= 3; i++) {
       const dot = document.getElementById(`drill-dot-${i}`);
@@ -256,7 +268,6 @@ export class DrillManager {
         this._updateStreakAndModelUI();
 
         if (this.successStreak >= 3) {
-          // 3回連続正解（達成）
           playFanfareSound();
           this.storage.markDrillCleared(this.currentChar);
           this.onProgressChange();
@@ -284,7 +295,7 @@ export class DrillManager {
 
       } else {
         playMistakeSound();
-        this.successStreak = 0; // 不正解時はリセット
+        this.successStreak = 0;
         this._updateStreakAndModelUI();
         this._setFeedback(feedbackHtml || 'おしい！おてほんを たしかめて もういちど かこう。', 'mistake');
         btn.disabled = false;
