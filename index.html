@@ -331,7 +331,7 @@
       </div>
 
       <div class="drill-practice-body">
-        <!-- 左部/上部：お手本 & 筆順再生 & カウンター -->
+        <!-- 左部：お手本 & 筆順再生 & カウンター -->
         <div class="drill-model-pane">
           <div class="drill-counter-box">
             <span class="drill-counter-label">せいかい</span>
@@ -343,14 +343,11 @@
             <span id="drill-counter-text" class="drill-counter-text">あと ３かい！</span>
           </div>
 
-          <div class="drill-model-box" id="drill-model-box" title="タッチすると かきじゅんを みられるよ">
-            <!-- KanjiVGPlayer で教科書体SVGを描画 -->
-          </div>
-          <div class="drill-model-hint">タッチすると かきじゅんが みられるよ</div>
-          <div class="drill-stroke-target" id="drill-stroke-target">もくひょう：0かく</div>
+          <div class="drill-model-box" id="drill-model-box" title="タッチすると かきじゅんを みられるよ"></div>
+          <div class="drill-model-hint" id="drill-model-hint">タッチすると かきじゅんが みられるよ</div>
         </div>
 
-        <!-- 右部/下部：シンプルキャンバス & 判定 -->
+        <!-- 右部：シンプルキャンバス & 2行画数表示 & 判定 -->
         <div class="drill-canvas-pane">
           <div class="canvas-row-wrapper">
             <button id="btn-drill-undo" class="btn-history" title="1かくもどる" disabled>1かくもどる</button>
@@ -363,7 +360,11 @@
             <button id="btn-drill-redo" class="btn-history" title="1かくすすむ" disabled>1かくすすむ</button>
           </div>
 
-          <div class="drill-canvas-status" id="drill-canvas-status">いまの かくすう：0かく</div>
+          <!-- ★ 通常問題と同じ2行画数パネル（視線移動なし） -->
+          <div class="info-panel drill-info-panel">
+            <div id="drill-stroke-target" class="stroke-info-line" style="color: #1e40af;">このじは ０かく です。</div>
+            <div id="drill-canvas-status" class="stroke-info-line">いまの かくすう：０かく</div>
+          </div>
 
           <div class="drill-feedback-msg" id="drill-feedback-msg" style="display: none;"></div>
 
