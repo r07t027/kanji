@@ -380,3 +380,58 @@
   max-width: 260px;
   margin-top: 4px;
 }
+
+/* ========================================================
+   メニューヘッダーの「にがてとっくん」正方形アイコンボタン
+   ======================================================== */
+button.btn-menu-drill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+  border: 2px solid #f43f5e;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(244, 63, 94, 0.18);
+  flex-shrink: 0;
+  transition: transform 0.15s, background-color 0.15s;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+button.btn-menu-drill:hover {
+  background: #fecdd3;
+  transform: translateY(-1px) scale(1.05);
+}
+
+.drill-header-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* ★ アプリアイコンの未読通知風：右下にギリギリ重なる配置 */
+.drill-badge-count {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background-color: #e11d48;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
