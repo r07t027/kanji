@@ -22,6 +22,7 @@ export class DrillManager {
     this.gridContainer = document.getElementById('drill-grid-container');
     this.emptyMsg = document.getElementById('drill-empty-msg');
     this.badgeCountEl = document.getElementById('drill-badge-count');
+    this.speechTextEl = document.querySelector('.drill-status-text');
 
     // お手本・画数・ロック・アクション要素
     this.modelBox = document.getElementById('drill-model-box');
@@ -36,6 +37,7 @@ export class DrillManager {
     this.currentChar = null;
     this.targetStroke = 0;
     this.successStreak = 0; // 連続正解数 (0〜3)
+    this.lastClearedChar = null; // 消滅アニメーション対象の漢字
 
     // キャンバスコントローラー初期化 (260px)
     this.canvasController = new CanvasController(
@@ -72,13 +74,15 @@ export class DrillManager {
     }
   }
 
-  // 特訓画面を開く（メニューの上に半透明オーバーレイ表示）
   open() {
     this.drillView.style.display = 'flex';
+    // 初期メッセージ
+    if (this.speechTextEl) {
+      this.speechTextEl.textContent = '３かい つづけて ただしく かけたら こくふくだ！ いっしょに がんばろう！';
+    }
     this.showList();
   }
 
-  // 特訓画面を閉じ、メニュー画面を再表示
   close() {
     this.drillView.style.display = 'none';
     this.drillView.classList.remove('is-modal-overlay', 'is-fullscreen-practice');
@@ -87,7 +91,7 @@ export class DrillManager {
     this.onClose();
   }
 
-  // ① 苦手漢字一覧カード（メニューを背面に残したオーバーレイモーダル）
+  // ① 苦手漢字一覧カード
   showList() {
     if (this.menuView) this.menuView.style.display = 'flex';
 
@@ -107,6 +111,10 @@ export class DrillManager {
 
     document.getElementById('btn-drill-back-list').addEventListener('click', () => {
       ensureAudioUnlocked();
+      // 通常の一覧復帰時は初期セリフに戻す
+      if (this.speechTextEl) {
+        this.speechTextEl.textContent = '３かい つづけて ただしく かけたら こくふくだ！ いっしょに がんばろう！';
+      }
       this.showList();
     });
 
@@ -125,7 +133,6 @@ export class DrillManager {
       this._setFeedback('', 'info');
     });
 
-    // 「はじめから」ボタン押下時（ここで初めてカウントをリセットして再開）
     if (this.btnRestart) {
       this.btnRestart.addEventListener('click', () => {
         ensureAudioUnlocked();
@@ -133,7 +140,6 @@ export class DrillManager {
       });
     }
 
-    // 「こたえあわせ」ボタン押下時
     if (this.btnCheck) {
       this.btnCheck.addEventListener('click', () => {
         ensureAudioUnlocked();
@@ -146,7 +152,17 @@ export class DrillManager {
     this.gridContainer.innerHTML = '';
     const targets = this.storage.getDrillTargets();
 
-    if (targets.length === 0) {
+    // 直前に克服した文字があれば、消滅エフェクトを見せるために一時的に一覧へ加える
+    const displayList = [...targets];
+    if (this.lastClearedChar && !displayList.some(t => t.char === this.lastClearedChar)) {
+      displayList.unshift({
+        char: this.lastClearedChar,
+        history: [true, true, true],
+        isJustCleared: true
+      });
+    }
+
+    if (displayList.length === 0) {
       this.gridContainer.style.display = 'none';
       this.emptyMsg.style.display = 'flex';
       return;
@@ -155,31 +171,48 @@ export class DrillManager {
     this.emptyMsg.style.display = 'none';
     this.gridContainer.style.display = 'grid';
 
-    prefetchKanjiVG(targets.map(t => t.char));
+    prefetchKanjiVG(displayList.map(t => t.char));
 
-    targets.forEach(t => {
+    displayList.forEach(t => {
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'drill-char-tile';
 
       const historyIcons = t.history.map(h => (h ? '◯' : '✕')).join(' ');
+      const badgeText = t.isJustCleared ? 'こくふく！' : 'とっくん';
+      const badgeClass = t.isJustCleared ? 'drill-tile-badge is-cleared' : 'drill-tile-badge';
 
       tile.innerHTML = `
         <span class="drill-tile-char">${t.char}</span>
-        <span class="drill-tile-badge">とっくん</span>
+        <span class="${badgeClass}">${badgeText}</span>
         <span class="drill-tile-history">${historyIcons}</span>
       `;
 
-      tile.addEventListener('click', () => {
-        ensureAudioUnlocked();
-        this.startDrillForChar(t.char);
-      });
+      if (t.isJustCleared) {
+        // ★ 克服した文字：少し待ってから縮小消滅アニメーションを発動
+        setTimeout(() => {
+          tile.classList.add('is-disappearing');
+          setTimeout(() => {
+            tile.remove();
+            this.lastClearedChar = null;
+            if (this.storage.getDrillTargets().length === 0) {
+              this.gridContainer.style.display = 'none';
+              this.emptyMsg.style.display = 'flex';
+            }
+          }, 650);
+        }, 400);
+      } else {
+        tile.addEventListener('click', () => {
+          ensureAudioUnlocked();
+          this.startDrillForChar(t.char);
+        });
+      }
 
       this.gridContainer.appendChild(tile);
     });
   }
 
-  // ② 1文字特訓の開始（メニューを完全に隠して1画面専用ビューへ）
+  // ② 1文字特訓の開始
   startDrillForChar(char) {
     if (this.menuView) this.menuView.style.display = 'none';
 
@@ -204,18 +237,16 @@ export class DrillManager {
     this.practiceCard.style.display = 'flex';
   }
 
-  // 「はじめから」ボタン押下によるリスタート処理
   _resetToBeginning() {
     this.successStreak = 0;
     this._updateStreakAndModelUI();
     this.canvasController.clear();
     this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
     this._setFeedback('', 'info');
-    this._setLocked(false); // ロック解除して最初から書けるようにする
+    this._setLocked(false);
     this._updateSubmitButton(false);
   }
 
-  // 描画および操作ボタンのロック/アンロック制御
   _setLocked(locked) {
     if (this.canvasBox) {
       this.canvasBox.classList.toggle('is-locked', locked);
@@ -223,7 +254,6 @@ export class DrillManager {
     document.getElementById('btn-drill-undo').disabled = locked || !this.canvasController.canUndo();
     document.getElementById('btn-drill-redo').disabled = locked || !this.canvasController.canRedo();
     document.getElementById('btn-drill-reset').disabled = locked || (this.canvasController.strokeCount === 0);
-    // 「はじめから」ボタンは常に操作可能（locked の影響を受けない）
   }
 
   _onCanvasChange(strokeCount, canUndo, canRedo) {
@@ -241,16 +271,16 @@ export class DrillManager {
     }
   }
 
-  // 連続正解数に応じてお手本とお知らせを出し分け（3回目はブラインド）
+  // ★ ドットカウンタ更新（ハンコなし、「こくふく！」のみ）
   _updateStreakAndModelUI() {
     for (let i = 1; i <= 3; i++) {
       const dot = document.getElementById(`drill-dot-${i}`);
       dot.classList.toggle('checked', i <= this.successStreak);
     }
     const remaining = 3 - this.successStreak;
-    document.getElementById('drill-counter-text').textContent = remaining > 0 ? `あと ${remaining}かい！` : 'こくふく！💮';
+    // ハンコを省き「こくふく！」のみ表示
+    document.getElementById('drill-counter-text').textContent = remaining > 0 ? `あと ${remaining}かい！` : 'こくふく！';
 
-    // 3回目（過去2回正解・あと1回）はお手本を隠して自力テスト
     if (this.successStreak === 2) {
       this.modelBox.innerHTML = '<span class="drill-blind-icon">？</span>';
       this.modelBox.classList.add('is-blind');
@@ -265,7 +295,6 @@ export class DrillManager {
     }
   }
 
-  // メッセージ表示（高さを維持したまま visibility を制御）
   _setFeedback(text, type = 'info') {
     const msgEl = document.getElementById('drill-feedback-msg');
     if (!text) {
@@ -298,7 +327,7 @@ export class DrillManager {
   async _handleCheck() {
     this._updateSubmitButton(false);
     this.btnCheck.textContent = 'かくにん中...';
-    this._setLocked(true); // 判定開始とともにキャンバス操作を完全にロック
+    this._setLocked(true);
 
     const inputData = this.canvasController.getData();
 
@@ -320,20 +349,26 @@ export class DrillManager {
         this._updateStreakAndModelUI();
 
         if (this.successStreak >= 3) {
-          // 3回連続正解（克服完了）
+          // ★ 3回連続正解（克服完了）
           playFanfareSound();
-          this.storage.markDrillCleared(this.currentChar);
+          const clearedChar = this.currentChar;
+          this.lastClearedChar = clearedChar;
+          this.storage.markDrillCleared(clearedChar);
           this.onProgressChange();
 
-          this._setFeedback('せいかい！💮 こくふく かんりょう！', 'success');
+          // メッセージ欄はシンプルに「せいかい！」のみ
+          this._setFeedback('せいかい！', 'success');
 
+          // ポップアップなし。3秒後に自動でモーダル一覧へ復帰
           setTimeout(() => {
-            alert(`「${this.currentChar}」をとっくんしたよ！このちょうしで がんばろう！`);
+            if (this.speechTextEl) {
+              this.speechTextEl.textContent = `「${clearedChar}」を こくふくしたよ！このちょうしで がんばろう！`;
+            }
             this.showList();
-          }, 1500);
+          }, 3000);
 
         } else {
-          // 1回目・2回目の正解：3秒間ロックを維持して余韻を表示
+          // 1回目・2回目の正解
           playCorrectSound();
           this._setFeedback('せいかい！', 'success');
 
@@ -341,16 +376,15 @@ export class DrillManager {
             this.canvasController.clear();
             this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
             this._setFeedback('', 'info');
-            this._setLocked(false); // 次の描画のためにロック解除
+            this._setLocked(false);
             this._updateSubmitButton(false);
           }, 3000);
         }
 
       } else {
-        // ★ 不正解時：カウンタはリセットせずそのまま保持
+        // 不正解時
         playMistakeSound();
 
-        // メッセージをシンプルかつひらがなベースに最適化
         let cleanFeedback = 'おしい！もういちど かくにんしよう。';
         const charDetail = (questionLogDetail && questionLogDetail.chars) ? questionLogDetail.chars[0] : null;
 
@@ -365,8 +399,6 @@ export class DrillManager {
         }
 
         this._setFeedback(cleanFeedback, 'mistake');
-
-        // ★ キャンバスと「こたえあわせ」ボタンはロックしたまま維持（「はじめから」ボタンのみ受付）
         this._setLocked(true);
         this._updateSubmitButton(false);
       }
