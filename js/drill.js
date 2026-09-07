@@ -228,7 +228,7 @@ export class DrillManager {
 
           }, { once: true });
 
-        }, 800);
+        }, 1200);
 
       } else {
         tile.addEventListener('click', () => {
