@@ -13,7 +13,7 @@ import { shuffleArray, getInputAdvice, getRetryAdvice, getPraiseMessage, getMist
 import { ChallengeManager } from './challenge.js';
 import { Storage } from './storage.js';
 import { prefetchKanjiVG } from './kanjivg.js';
-import { DrillManager } from './drill.js'; // ★ 追加
+import { DrillManager } from './drill.js';
 
 const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
 
@@ -29,7 +29,7 @@ class KanjiApp {
     this.currentSessionLogs = [];
     this.isChallengeMode = false;
     this.challengeManager = null;
-    this.drillManager = null; // ★ 追加
+    this.drillManager = null;
 
     // 初回試行管理 ＆ セッション変更フラグ
     this.hasAttemptedFirst = false;
@@ -45,7 +45,7 @@ class KanjiApp {
       onUserAuthenticated: (user, clearedSets) => {
         if (this.gradeData) {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
-          if (this.drillManager) this.drillManager.updateBadgeCount(); // ★ バッジ更新
+          if (this.drillManager) this.drillManager.updateBadgeCount();
         }
         // ログイン成功時にも即座に挑戦状の判定を実行
         this.checkDailyChallenge();
@@ -70,7 +70,7 @@ class KanjiApp {
   async init() {
     initAudioUnlock();
 
-    // ★ 特訓マネージャーの初期化
+    // 特訓マネージャーの初期化
     this.drillManager = new DrillManager({
       storage: Storage,
       validator: this.validator,
@@ -98,7 +98,7 @@ class KanjiApp {
       this.gradeData = await res.json();
       this.menu.setData(this.gradeData, this.auth.getClearedSets());
       this.challengeManager = new ChallengeManager(this.gradeData, Storage);
-      this.drillManager.setGradeData(this.gradeData); // ★ 特訓マネージャーへ問題データをセット
+      this.drillManager.setGradeData(this.gradeData);
     } catch (e) {
       console.error('問題データの読み込みに失敗しました:', e);
       this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
@@ -108,29 +108,25 @@ class KanjiApp {
     this.checkDailyChallenge();
   }
 
-  // 1日1回の挑戦状の出現判定 & ヘッダーボタンの表示切り替え
+  // 1日1回の挑戦状の出現判定 & ヘッダーボタンの表示切り替え（モーダル方式）
   checkDailyChallenge() {
-    const challengePanel = document.getElementById('challenge-panel');
-    const normalContent = document.getElementById('normal-menu-content');
+    const overlay = document.getElementById('challenge-modal-overlay');
     const btnHeaderChallenge = document.getElementById('btn-header-challenge');
-    if (!challengePanel || !normalContent) return;
+    if (!overlay) return;
 
     const canChallenge = this.challengeManager && this.challengeManager.canChallengeToday();
 
     if (canChallenge) {
       const shouldPopup = this.challengeManager.shouldShowPopupToday();
       if (shouldPopup) {
-        normalContent.style.display = 'none';
-        challengePanel.style.display = 'flex';
+        overlay.style.display = 'flex';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
       } else {
-        challengePanel.style.display = 'none';
-        normalContent.style.display = 'block';
+        overlay.style.display = 'none';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
       }
     } else {
-      challengePanel.style.display = 'none';
-      normalContent.style.display = 'block';
+      overlay.style.display = 'none';
       if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
     }
   }
@@ -183,7 +179,7 @@ class KanjiApp {
       this.handleBackToMenu();
     });
 
-    // ★ ヘッダーの「🔥 にがてとっくん」ボタン
+    // ヘッダーの道着アイコンボタン（にがてとっくん）
     const btnMenuDrill = document.getElementById('btn-menu-drill');
     if (btnMenuDrill) {
       btnMenuDrill.addEventListener('click', () => {
@@ -194,36 +190,35 @@ class KanjiApp {
       });
     }
 
-    // 挑戦状パネルアクション（受けて立つ）
+    // 挑戦状モーダルアクション（うけて立つ）
     const btnChallengeAccept = document.getElementById('btn-challenge-accept');
     if (btnChallengeAccept) {
       btnChallengeAccept.addEventListener('click', () => {
         ensureAudioUnlocked();
+        document.getElementById('challenge-modal-overlay').style.display = 'none';
         this.startChallengeSet();
       });
     }
 
-    // 挑戦状パネルアクション（あとに する）
+    // 挑戦状モーダルアクション（あとに する）
     const btnChallengeDecline = document.getElementById('btn-challenge-decline');
     if (btnChallengeDecline) {
       btnChallengeDecline.addEventListener('click', () => {
         ensureAudioUnlocked();
         Storage.recordDismissToday();
-        document.getElementById('challenge-panel').style.display = 'none';
-        document.getElementById('normal-menu-content').style.display = 'block';
+        document.getElementById('challenge-modal-overlay').style.display = 'none';
 
         const btnHeader = document.getElementById('btn-header-challenge');
         if (btnHeader) btnHeader.style.display = 'flex';
       });
     }
 
-    // ヘッダーの挑戦状オープンボタン
+    // ヘッダーの挑戦状オープンボタン（再ポップアップ）
     const btnHeaderChallenge = document.getElementById('btn-header-challenge');
     if (btnHeaderChallenge) {
       btnHeaderChallenge.addEventListener('click', () => {
         ensureAudioUnlocked();
-        document.getElementById('normal-menu-content').style.display = 'none';
-        document.getElementById('challenge-panel').style.display = 'flex';
+        document.getElementById('challenge-modal-overlay').style.display = 'flex';
         btnHeaderChallenge.style.display = 'none';
       });
     }
@@ -291,7 +286,7 @@ class KanjiApp {
     this.ui.showMenuView();
     this.menu.render();
     this.checkDailyChallenge();
-    if (this.drillManager) this.drillManager.updateBadgeCount(); // ★ バッジ更新
+    if (this.drillManager) this.drillManager.updateBadgeCount();
   }
 
   // 「かきまるからのちょうせん！」開始

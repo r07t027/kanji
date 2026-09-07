@@ -49,15 +49,23 @@ export class DrillManager {
   }
 
   updateBadgeCount() {
-    if (!this.badgeCountEl || !this.storage) return;
+    const btnDrill = document.getElementById('btn-menu-drill');
+    if (!this.storage || !btnDrill) return;
+
     const targets = this.storage.getDrillTargets();
     const count = targets.length;
 
     if (count > 0) {
-      this.badgeCountEl.textContent = count;
-      this.badgeCountEl.style.display = 'inline-block';
+      btnDrill.style.display = 'flex';
+      if (this.badgeCountEl) {
+        this.badgeCountEl.textContent = count;
+        this.badgeCountEl.style.display = 'flex';
+      }
     } else {
-      this.badgeCountEl.style.display = 'none';
+      btnDrill.style.display = 'none';
+      if (this.badgeCountEl) {
+        this.badgeCountEl.style.display = 'none';
+      }
     }
   }
 
