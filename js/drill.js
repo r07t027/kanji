@@ -176,14 +176,13 @@ export class DrillManager {
     this.successStreak = 0;
     this.targetStroke = this._lookupStrokeCount(char);
 
-    document.getElementById('drill-target-char-display').textContent = char;
     this.targetStrokeEl.textContent = `このじは ${this.targetStroke}かく です。`;
     this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
 
     this._updateStreakAndModelUI();
 
     this.canvasController.clear();
-    this._setFeedback('１かく１かく ていねいに かこう！', 'info');
+    this._setFeedback('', 'info'); // 開始時の余計なメッセージは削除
     this._updateSubmitButton(false);
 
     this.listCard.style.display = 'none';
@@ -251,6 +250,7 @@ export class DrillManager {
     return 0;
   }
 
+  // 解答判定処理
   async _handleCheck() {
     const btn = document.getElementById('btn-drill-check');
     btn.disabled = true;
@@ -276,36 +276,42 @@ export class DrillManager {
         this._updateStreakAndModelUI();
 
         if (this.successStreak >= 3) {
+          // 3回連続正解（克服完了）
           playFanfareSound();
           this.storage.markDrillCleared(this.currentChar);
           this.onProgressChange();
 
-          this._setFeedback('🎉 ３かい れんぞく せいかい！こくふく かんりょう！💮', 'success');
+          this._setFeedback('せいかい！💮 こくふく かんりょう！', 'success');
 
           setTimeout(() => {
             alert(`「${this.currentChar}」をとっくんしたよ！このちょうしで がんばろう！`);
             this.showList();
-          }, 1200);
+          }, 1500);
 
         } else {
+          // 1回目・2回目の正解：3秒待ってから次へ
           playCorrectSound();
-          const nextMsg = (this.successStreak === 2)
-            ? 'ばっちり！さいごは おてほんなしで かいてみよう！'
-            : `ばっちり！せいかい！（あと ${3 - this.successStreak}かい）`;
+          this._setFeedback('せいかい！', 'success');
 
-          this._setFeedback(nextMsg, 'success');
           setTimeout(() => {
             this.canvasController.clear();
             this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
-            this._setFeedback('もういちど かいてみよう！', 'info');
-          }, 1100);
+            this._setFeedback('', 'info'); // メッセージをクリア
+            this._updateSubmitButton(false);
+          }, 3000); // 通常問題と同じ3秒待機
         }
 
       } else {
+        // 不正解：カウントリセット & 「1文字目:」を削除して理由のみ表示
         playMistakeSound();
         this.successStreak = 0;
         this._updateStreakAndModelUI();
-        this._setFeedback(feedbackHtml || 'おしい！おてほんを たしかめて もういちど かこう。', 'mistake');
+
+        let cleanFeedback = feedbackHtml || 'おしい！おてほんを たしかめて もういちど かこう。';
+        // 「1文字目:」「1文字目：」の不要な接頭辞を除去
+        cleanFeedback = cleanFeedback.replace(/^[0-9]+文字目[:：]\s*/g, '');
+
+        this._setFeedback(cleanFeedback, 'mistake');
         btn.disabled = false;
       }
 
