@@ -407,30 +407,32 @@ button.btn-menu-drill:hover {
   margin-top: 4px;
 }
 
-/* 「はじめから」ボタン：小ぶりで誤操作しにくい設計 */
+/* 「はじめから」ボタン：小ぶりな紫グラデーション（通常問題の「パス」と完全統一） */
 button.btn-drill-restart {
   flex: 0 0 88px;
-  background: #f1f5f9;
-  border: 1.5px solid #cbd5e1;
-  color: #64748b;
-  font-size: 0.82rem;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  border: none;
+  color: #ffffff;
+  font-size: 0.88rem;
   font-weight: bold;
-  padding: 8px 10px;
+  padding: 9px 10px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.15s;
+  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
+  transition: transform 0.15s, opacity 0.15s;
   white-space: nowrap;
 }
 
 button.btn-drill-restart:hover:not(:disabled) {
-  background: #e2e8f0;
-  border-color: #94a3b8;
-  color: #334155;
+  transform: translateY(-1.5px);
+  opacity: 0.95;
 }
 
 button.btn-drill-restart:disabled {
-  opacity: 0.5;
+  background: #cbd5e1;
+  box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* 「こたえあわせ」ボタン：メイン（大きめ） */
