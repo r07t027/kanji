@@ -5,7 +5,8 @@ const audioBuffers = {};
 const SOUND_FILES = {
   correct: 'assets/audio/correct.mp3',
   wrong: 'assets/audio/wrong.mp3',
-  complete: 'assets/audio/complete.mp3'
+  complete: 'assets/audio/complete.mp3',
+  disappear: 'assets/audio/disappear.mp3' // ★ 追加：消滅・キラキラ効果音
 };
 
 export function getAudioContext() {
@@ -89,4 +90,9 @@ export function playFanfareSound() {
 
 export function playMistakeSound() {
   playBuffer('wrong');
+}
+
+// ★ 追加：克服文字消滅＆キラキラ演出用
+export function playDisappearSound() {
+  playBuffer('disappear');
 }

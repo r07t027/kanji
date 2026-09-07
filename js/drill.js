@@ -4,7 +4,7 @@
  */
 import { CanvasController } from './canvas.js';
 import { KanjiVGPlayer, prefetchKanjiVG } from './kanjivg.js';
-import { playCorrectSound, playMistakeSound, playFanfareSound, ensureAudioUnlocked } from './audio.js';
+import { playCorrectSound, playMistakeSound, playFanfareSound, playDisappearSound, ensureAudioUnlocked } from './audio.js';
 import { syncProgressSilently } from './logger.js'; // ★ 追加：即時同期用
 
 export class DrillManager {
@@ -199,7 +199,7 @@ export class DrillManager {
         tile.classList.add('is-cleared-target');
         tile.style.cursor = 'default';
 
-        // 0.8秒待機してからフェードアウト開始
+        // 克服した事実を認識させるため待機
         setTimeout(() => {
           tile.classList.add('is-fading-out');
 
@@ -208,12 +208,16 @@ export class DrillManager {
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
+            // ✨要素の生成
             const sparkle = document.createElement('div');
             sparkle.className = 'drill-floating-sparkle';
             sparkle.textContent = '✨';
             sparkle.style.left = `${centerX}px`;
             sparkle.style.top = `${centerY}px`;
             document.body.appendChild(sparkle);
+
+            // ★ ✨が出現したまさにこの瞬間に効果音を発音（0ms同期）
+            playDisappearSound();
 
             sparkle.addEventListener('animationend', () => {
               sparkle.remove();
