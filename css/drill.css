@@ -466,7 +466,7 @@ button.btn-drill-restart:disabled {
 }
 
 .drill-char-tile.is-fading-out {
-  animation: tileFadeOut 1.2s ease-out forwards;
+  animation: tileFadeOut 0.8s ease-out forwards;
   pointer-events: none;
 }
 
