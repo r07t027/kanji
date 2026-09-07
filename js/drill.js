@@ -280,6 +280,12 @@ export class DrillManager {
 
   _setLocked(locked) {
     this.isLocked = locked;
+
+    // ★ CanvasController 自体にもロック状態を伝達
+    if (this.canvasController) {
+      this.canvasController.setLocked(locked);
+    }
+
     if (this.canvasBox) {
       this.canvasBox.classList.toggle('is-locked', locked);
     }

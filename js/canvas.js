@@ -14,9 +14,15 @@ export class CanvasController {
     this.currentStroke = [];
     this.strokeCount = 0;
     this.isDrawing = false;
+    this.isLocked = false; // ★ 追加：操作ロックフラグ
 
     this._setupContext();
     this._bindEvents();
+  }
+
+  // ★ 追加：ロック状態を外部から切り替えるメソッド
+  setLocked(locked) {
+    this.isLocked = !!locked;
   }
 
   _setupContext() {
@@ -39,6 +45,9 @@ export class CanvasController {
   // キーボードショートカットの登録（Undo/Redo）
   initKeyboardShortcuts(onActionCallback) {
     window.addEventListener('keydown', (e) => {
+      // ★ ロック中はキーボード操作を一切受け付けない
+      if (this.isLocked) return;
+
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const isModifier = isMac ? e.metaKey : e.ctrlKey;
 
@@ -66,6 +75,9 @@ export class CanvasController {
   }
 
   _startDraw(e) {
+    // ★ ロック中はマウス・タッチ描画も開始させない
+    if (this.isLocked) return;
+
     e.preventDefault();
     this.isDrawing = true;
     const [x, y] = this._getPos(e);
@@ -75,7 +87,7 @@ export class CanvasController {
   }
 
   _moveDraw(e) {
-    if (!this.isDrawing) return;
+    if (!this.isDrawing || this.isLocked) return;
     e.preventDefault();
     const [x, y] = this._getPos(e);
     this.currentStroke.push([x, y]);
@@ -95,7 +107,7 @@ export class CanvasController {
   }
 
   undo() {
-    if (this.strokesData.length === 0) return;
+    if (this.isLocked || this.strokesData.length === 0) return; // ★ ガード
     const popped = this.strokesData.pop();
     this.redoStack.push(popped);
     this.strokeCount = this.strokesData.length;
@@ -104,7 +116,7 @@ export class CanvasController {
   }
 
   redo() {
-    if (this.redoStack.length === 0) return;
+    if (this.isLocked || this.redoStack.length === 0) return; // ★ ガード
     const restored = this.redoStack.pop();
     this.strokesData.push(restored);
     this.strokeCount = this.strokesData.length;
@@ -113,11 +125,11 @@ export class CanvasController {
   }
 
   canUndo() {
-    return this.strokesData.length > 0;
+    return !this.isLocked && this.strokesData.length > 0;
   }
 
   canRedo() {
-    return this.redoStack.length > 0;
+    return !this.isLocked && this.redoStack.length > 0;
   }
 
   _notifyChange() {
