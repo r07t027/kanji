@@ -76,7 +76,6 @@ export class DrillManager {
 
   open() {
     this.drillView.style.display = 'flex';
-    // 初期メッセージ
     if (this.speechTextEl) {
       this.speechTextEl.textContent = '３かい つづけて ただしく かけたら こくふくだ！ いっしょに がんばろう！';
     }
@@ -111,7 +110,6 @@ export class DrillManager {
 
     document.getElementById('btn-drill-back-list').addEventListener('click', () => {
       ensureAudioUnlocked();
-      // 通常の一覧復帰時は初期セリフに戻す
       if (this.speechTextEl) {
         this.speechTextEl.textContent = '３かい つづけて ただしく かけたら こくふくだ！ いっしょに がんばろう！';
       }
@@ -152,7 +150,7 @@ export class DrillManager {
     this.gridContainer.innerHTML = '';
     const targets = this.storage.getDrillTargets();
 
-    // 直前に克服した文字があれば、消滅エフェクトを見せるために一時的に一覧へ加える
+    // 克服した文字があれば消滅エフェクト用に先頭に一時表示
     const displayList = [...targets];
     if (this.lastClearedChar && !displayList.some(t => t.char === this.lastClearedChar)) {
       displayList.unshift({
@@ -189,7 +187,8 @@ export class DrillManager {
       `;
 
       if (t.isJustCleared) {
-        // ★ 克服した文字：少し待ってから縮小消滅アニメーションを発動
+        // ★ 克服した文字：クリック不可にし、1秒間しっかり見せてからゆっくり縮小消滅
+        tile.style.cursor = 'default';
         setTimeout(() => {
           tile.classList.add('is-disappearing');
           setTimeout(() => {
@@ -199,8 +198,8 @@ export class DrillManager {
               this.gridContainer.style.display = 'none';
               this.emptyMsg.style.display = 'flex';
             }
-          }, 650);
-        }, 400);
+          }, 900); // 0.9秒のアニメーション完了後に削除
+        }, 1000); // 1秒間キープ
       } else {
         tile.addEventListener('click', () => {
           ensureAudioUnlocked();
@@ -226,7 +225,8 @@ export class DrillManager {
     this.targetStrokeEl.textContent = `このじは ${this.targetStroke}かく です。`;
     this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
 
-    this._updateStreakAndModelUI();
+    this._updateCounterUI();
+    this._resetModelToVisible();
 
     this.canvasController.clear();
     this._setFeedback('', 'info');
@@ -239,7 +239,8 @@ export class DrillManager {
 
   _resetToBeginning() {
     this.successStreak = 0;
-    this._updateStreakAndModelUI();
+    this._updateCounterUI();
+    this._resetModelToVisible();
     this.canvasController.clear();
     this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
     this._setFeedback('', 'info');
@@ -271,27 +272,32 @@ export class DrillManager {
     }
   }
 
-  // ★ ドットカウンタ更新（ハンコなし、「こくふく！」のみ）
-  _updateStreakAndModelUI() {
+  // ドットカウンタ更新（お手本の変更はここでは行わない）
+  _updateCounterUI() {
     for (let i = 1; i <= 3; i++) {
       const dot = document.getElementById(`drill-dot-${i}`);
       dot.classList.toggle('checked', i <= this.successStreak);
     }
     const remaining = 3 - this.successStreak;
-    // ハンコを省き「こくふく！」のみ表示
     document.getElementById('drill-counter-text').textContent = remaining > 0 ? `あと ${remaining}かい！` : 'こくふく！';
+  }
 
+  // お手本を表示状態（KanjiVG）に戻す
+  _resetModelToVisible() {
+    this.modelBox.classList.remove('is-blind');
+    this.modelBox.title = 'タッチすると かきじゅんを みられるよ';
+    this.modelBox.innerHTML = '';
+    new KanjiVGPlayer(this.modelBox, this.currentChar, true);
+    this.modelHint.textContent = 'タッチすると かきじゅんが みられるよ';
+  }
+
+  // ★ 3回目（最終試行）で描画可能になったタイミングでお手本を「？」に切り替え
+  _applyBlindModelIfNeeded() {
     if (this.successStreak === 2) {
       this.modelBox.innerHTML = '<span class="drill-blind-icon">？</span>';
       this.modelBox.classList.add('is-blind');
       this.modelBox.title = 'さいごは おてほんなしで かいてみよう！';
       this.modelHint.textContent = 'ラスト！おてほんなしで チャレンジ！';
-    } else {
-      this.modelBox.classList.remove('is-blind');
-      this.modelBox.title = 'タッチすると かきじゅんを みられるよ';
-      this.modelBox.innerHTML = '';
-      new KanjiVGPlayer(this.modelBox, this.currentChar, true);
-      this.modelHint.textContent = 'タッチすると かきじゅんが みられるよ';
     }
   }
 
@@ -346,20 +352,19 @@ export class DrillManager {
 
       if (isAllSuccess) {
         this.successStreak++;
-        this._updateStreakAndModelUI();
+        this._updateCounterUI(); // カウンタのみ更新（お手本はまだ隠さない）
 
         if (this.successStreak >= 3) {
-          // ★ 3回連続正解（克服完了）
+          // 3回連続正解（克服完了）
           playFanfareSound();
           const clearedChar = this.currentChar;
           this.lastClearedChar = clearedChar;
           this.storage.markDrillCleared(clearedChar);
           this.onProgressChange();
 
-          // メッセージ欄はシンプルに「せいかい！」のみ
           this._setFeedback('せいかい！', 'success');
 
-          // ポップアップなし。3秒後に自動でモーダル一覧へ復帰
+          // 3秒後にモーダル一覧へ復帰
           setTimeout(() => {
             if (this.speechTextEl) {
               this.speechTextEl.textContent = `「${clearedChar}」を こくふくしたよ！このちょうしで がんばろう！`;
@@ -372,10 +377,14 @@ export class DrillManager {
           playCorrectSound();
           this._setFeedback('せいかい！', 'success');
 
+          // 3秒間しっかり「せいかい！」と書いた字・お手本を確認させてから次へ
           setTimeout(() => {
             this.canvasController.clear();
             this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
             this._setFeedback('', 'info');
+
+            // ★ ここで初めて、3回目なら「？」へ切り替えて描画ロックを解除！
+            this._applyBlindModelIfNeeded();
             this._setLocked(false);
             this._updateSubmitButton(false);
           }, 3000);

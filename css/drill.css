@@ -444,18 +444,23 @@ button.btn-drill-restart:disabled {
 }
 
 /* ========================================================
-   克服した漢字タイルの消滅エフェクト
+   克服した漢字タイルの消滅エフェクト（調整版）
    ======================================================== */
 @keyframes drillTileDisappear {
   0% {
     transform: scale(1);
     opacity: 1;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.1);
   }
-  30% {
-    transform: scale(1.12);
+  25% {
+    transform: scale(1.08) translateY(-4px);
     border-color: #16a34a;
-    box-shadow: 0 0 16px rgba(22, 163, 74, 0.4);
+    box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
     opacity: 1;
+  }
+  60% {
+    transform: scale(0.9) translateY(0);
+    opacity: 0.8;
   }
   100% {
     transform: scale(0);
@@ -467,11 +472,12 @@ button.btn-drill-restart:disabled {
 }
 
 .drill-char-tile.is-disappearing {
-  animation: drillTileDisappear 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: drillTileDisappear 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   pointer-events: none;
 }
 
 .drill-tile-badge.is-cleared {
   background: #dcfce7;
   color: #15803d;
+  border: 1px solid #86efac;
 }
