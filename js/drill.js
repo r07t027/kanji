@@ -190,26 +190,28 @@ _renderGrid() {
 
         // ① 0.8秒間そのまま表示して認識させる
         setTimeout(() => {
-          // ② 1.2秒かけてゆっくりフェードアウト開始
+          // ② 1.0秒かけて文字と枠をスーッと透明化
           tile.classList.add('is-fading');
 
-          // ③ フェードの後半（0.6秒後）に中央で「✨」を弾けさせる
+          // ③ タイルが完全に透明になった瞬間（1.0秒後）に「✨」を煌めかせる
           setTimeout(() => {
-            const sparkle = document.createElement('span');
-            sparkle.className = 'drill-sparkle-fx';
-            sparkle.textContent = '✨';
-            tile.appendChild(sparkle);
-          }, 600);
+            const overlay = document.createElement('div');
+            overlay.className = 'drill-sparkle-overlay';
+            overlay.innerHTML = '<span class="drill-sparkle-star">✨</span>';
+            tile.appendChild(overlay);
 
-          // ④ フェードアウト完了（1.2秒後）で要素を除去し、次の文字を詰める
-          setTimeout(() => {
-            tile.remove();
-            this.lastClearedChar = null;
-            if (this.storage.getDrillTargets().length === 0) {
-              this.gridContainer.style.display = 'none';
-              this.emptyMsg.style.display = 'flex';
-            }
-          }, 1250);
+            // ④ キラキラが弾け終わった後（0.65秒後）に要素を除去して詰める
+            setTimeout(() => {
+              tile.remove();
+              this.lastClearedChar = null;
+              if (this.storage.getDrillTargets().length === 0) {
+                this.gridContainer.style.display = 'none';
+                this.emptyMsg.style.display = 'flex';
+              }
+            }, 650);
+
+          }, 1000); // フェードアウト完了時
+
         }, 800);
 
       } else {

@@ -444,7 +444,7 @@ button.btn-drill-restart:disabled {
 }
 
 /* ========================================================
-   克服した漢字タイルのフェード消滅 ＆ キラリ演出
+   克服した漢字タイルのフェード消滅 ＆ 煌めき（✨）演出
    ======================================================== */
 .drill-char-tile.is-cleared-target {
   cursor: default !important;
@@ -453,40 +453,53 @@ button.btn-drill-restart:disabled {
   border-color: #16a34a !important;
   background: #f0fdf4 !important;
   box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
-  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+  transition: opacity 1.0s ease-out;
 }
 
-/* 1.2秒かけてゆっくり薄くなりながら消える */
+/* 枠と文字だけを完全に透明にする（サイズはそのまま） */
 .drill-char-tile.is-fading {
   opacity: 0 !important;
-  transform: scale(0.96); /* ごくわずかに奥へ引くだけで横潰れさせない */
   pointer-events: none;
 }
 
-/* 中央で弾けるキラキラアイコン */
-.drill-sparkle-fx {
+/* タイルが完全に消えた後に弾けるキラキラ親コンテナ */
+.drill-sparkle-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  font-size: 2.2rem;
-  line-height: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
-  z-index: 10;
-  animation: sparklePop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  z-index: 100;
+  opacity: 1 !important; /* 親の透明度に影響されない */
 }
 
-@keyframes sparklePop {
+/* 黄色く大きく弾けるキラキラ */
+.drill-sparkle-star {
+  font-size: 3.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.8)) drop-shadow(0 0 18px rgba(251, 191, 36, 0.6));
+  animation: sparklePopZoom 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes sparklePopZoom {
   0% {
-    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    transform: scale(0) rotate(-20deg);
     opacity: 0;
   }
-  50% {
-    transform: translate(-50%, -50%) scale(1.4) rotate(15deg);
+  40% {
+    transform: scale(1.35) rotate(10deg);
     opacity: 1;
   }
+  75% {
+    transform: scale(1.2) rotate(25deg);
+    opacity: 0.9;
+  }
   100% {
-    transform: translate(-50%, -50%) scale(1.6) rotate(30deg);
+    transform: scale(0.4) rotate(45deg);
     opacity: 0;
   }
 }
