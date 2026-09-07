@@ -275,17 +275,32 @@ export class DrillManager {
               sparkle.remove();
               tile.remove();
 
-              // バッチから完全除去
-              this.currentBatchList = this.currentBatchList.filter(c => c !== this.lastClearedChar);
+              // バッチから克服した文字を除去
+              const cleared = this.lastClearedChar;
+              this.currentBatchList = this.currentBatchList.filter(c => c !== cleared);
               this.lastClearedChar = null;
 
-              // 残りの文字がないか再チェック
+              // ★ バッチ内の文字がすべて消滅した場合の切り替え処理
               if (this.currentBatchList.length === 0) {
-                this._renderGrid();
+                const nextTargets = this._getSortedTargets();
+
+                if (nextTargets.length > 0) {
+                  // ① まだ苦手漢字が残っている場合：励ましメッセージと共に次の6文字を展開
+                  if (this.speechTextEl) {
+                    this.speechTextEl.textContent = 'いいちょうし！ さらに とっくんを つづけよう！';
+                  }
+                  this.currentBatchList = nextTargets.slice(0, 6).map(t => t.char);
+                  this._renderGrid();
+                } else {
+                  // ② 全ての苦手漢字がなくなった場合：空メッセージを表示
+                  if (this.speechTextEl) {
+                    this.speechTextEl.textContent = 'ぜんぶ ばっちり！このちょうしで がんばろう！';
+                  }
+                  this.gridContainer.style.display = 'none';
+                  this.emptyMsg.style.display = 'flex';
+                }
               }
             }, { once: true });
-
-          }, { once: true });
 
         }, 1200);
 
