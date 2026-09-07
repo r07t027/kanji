@@ -472,7 +472,7 @@ button.btn-drill-restart:disabled {
 }
 
 .drill-char-tile.is-disappearing {
-  animation: drillTileDisappear 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation: drillTileDisappear 2.0s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   pointer-events: none;
 }
 
