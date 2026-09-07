@@ -41,7 +41,7 @@ export class DrillManager {
     this.lastClearedChar = null; // 直前に克服した文字
     this.isLocked = false;
 
-    // ★ 今回の特訓セット（最大6文字）のスナップショット
+    // 今回の特訓セット（最大6文字）のスナップショット
     this.currentBatchList = [];
 
     // キャンバスコントローラー初期化 (260px)
@@ -85,7 +85,7 @@ export class DrillManager {
     }
   }
 
-  // ★ 優先度ソート（直近3連続✕を最優先）
+  // 優先度ソート（直近3連続✕を最優先）
   _getSortedTargets() {
     const targets = this.storage.getDrillTargets();
     return targets.sort((a, b) => {
@@ -105,19 +105,17 @@ export class DrillManager {
       const aMistakes = getConsecutiveMistakes(aHistory);
       const bMistakes = getConsecutiveMistakes(bHistory);
 
-      // 第1優先：直近の連続ミス数（3連続✕がトップ）
       if (bMistakes !== aMistakes) {
         return bMistakes - aMistakes;
       }
 
-      // 第2優先：総不正解率
       const aFalseCount = aHistory.filter(h => h === false).length;
       const bFalseCount = bHistory.filter(h => h === false).length;
       return bFalseCount - aFalseCount;
     });
   }
 
-  // メニューから特訓を開いたとき（新しい6文字バッチを生成）
+  // メニューから特訓を開いたとき
   open() {
     this.drillView.style.display = 'flex';
     if (this.speechTextEl) {
@@ -210,19 +208,17 @@ export class DrillManager {
       return targetCharSet.has(char) || char === this.lastClearedChar;
     });
 
-    // バッチ内の文字が全てクリアされた場合の処理
+    // バッチ内の文字が0件になった場合の初期ガード
     if (displayChars.length === 0) {
-      if (currentTargets.length > 0) {
-        // まだ他に苦手漢字が残っている場合：次の上位6文字を展開
+      const nextTargets = this._getSortedTargets();
+      if (nextTargets.length > 0) {
         if (this.speechTextEl) {
-          this.speechTextEl.textContent = 'いいちょうし！ このまま つぎの とっくんを つづけるよ！';
+          this.speechTextEl.textContent = 'いいちょうし！ さらに とっくんを つづけよう！';
         }
-        const sorted = this._getSortedTargets();
-        this.currentBatchList = sorted.slice(0, 6).map(t => t.char);
+        this.currentBatchList = nextTargets.slice(0, 6).map(t => t.char);
         this._renderGrid();
         return;
       } else {
-        // 本当に苦手漢字がゼロになった場合
         this.gridContainer.style.display = 'none';
         this.emptyMsg.style.display = 'flex';
         return;
@@ -244,7 +240,6 @@ export class DrillManager {
       const badgeText = isJustCleared ? 'こくふく！' : 'とっくんする';
       const badgeClass = isJustCleared ? 'drill-tile-badge is-cleared' : 'drill-tile-badge';
 
-      // ✕◯✕のテキストを削除し、漢字と「とっくんする」ボタンのみ表示
       tile.innerHTML = `
         <span class="drill-tile-char">${char}</span>
         <span class="${badgeClass}">${badgeText}</span>
@@ -280,7 +275,7 @@ export class DrillManager {
               this.currentBatchList = this.currentBatchList.filter(c => c !== cleared);
               this.lastClearedChar = null;
 
-              // ★ バッチ内の文字がすべて消滅した場合の切り替え処理
+              // ★ 1セット（バッチ内）の文字が全て消滅した瞬間の次セット展開処理
               if (this.currentBatchList.length === 0) {
                 const nextTargets = this._getSortedTargets();
 
@@ -302,6 +297,8 @@ export class DrillManager {
               }
             }, { once: true });
 
+          }, { once: true });
+
         }, 1200);
 
       } else {
@@ -315,7 +312,7 @@ export class DrillManager {
     });
   }
 
-  // ② 1文字特訓の開始
+  // 1文字特訓の開始
   startDrillForChar(char) {
     if (this.menuView) this.menuView.style.display = 'none';
 
