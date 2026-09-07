@@ -125,7 +125,7 @@ export class DrillManager {
       this._setFeedback('', 'info');
     });
 
-    // 「はじめから」ボタン押下時
+    // 「はじめから」ボタン押下時（ここで初めてカウントをリセットして再開）
     if (this.btnRestart) {
       this.btnRestart.addEventListener('click', () => {
         ensureAudioUnlocked();
@@ -204,14 +204,14 @@ export class DrillManager {
     this.practiceCard.style.display = 'flex';
   }
 
-  // 1回目からリスタートする処理（パス救済）
+  // 「はじめから」ボタン押下によるリスタート処理
   _resetToBeginning() {
     this.successStreak = 0;
     this._updateStreakAndModelUI();
     this.canvasController.clear();
     this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
     this._setFeedback('', 'info');
-    this._setLocked(false);
+    this._setLocked(false); // ロック解除して最初から書けるようにする
     this._updateSubmitButton(false);
   }
 
@@ -223,7 +223,7 @@ export class DrillManager {
     document.getElementById('btn-drill-undo').disabled = locked || !this.canvasController.canUndo();
     document.getElementById('btn-drill-redo').disabled = locked || !this.canvasController.canRedo();
     document.getElementById('btn-drill-reset').disabled = locked || (this.canvasController.strokeCount === 0);
-    if (this.btnRestart) this.btnRestart.disabled = locked;
+    // 「はじめから」ボタンは常に操作可能（locked の影響を受けない）
   }
 
   _onCanvasChange(strokeCount, canUndo, canRedo) {
@@ -308,7 +308,7 @@ export class DrillManager {
     };
 
     try {
-      const { isAllSuccess, feedbackHtml } = await this.validator.validateQuestion(
+      const { isAllSuccess, questionLogDetail } = await this.validator.validateQuestion(
         mockQuestion,
         [inputData]
       );
@@ -347,19 +347,28 @@ export class DrillManager {
         }
 
       } else {
-        // 不正解：カウントリセット & 「1文字目:」を除去して理由のみ表示
+        // ★ 不正解時：カウンタはリセットせずそのまま保持
         playMistakeSound();
-        this.successStreak = 0;
-        this._updateStreakAndModelUI();
 
-        let cleanFeedback = feedbackHtml || 'おしい！おてほんを たしかめて もういちど かこう。';
-        cleanFeedback = cleanFeedback.replace(/^[0-9]+文字目[:：]\s*/g, '');
+        // メッセージをシンプルかつひらがなベースに最適化
+        let cleanFeedback = 'おしい！もういちど かくにんしよう。';
+        const charDetail = (questionLogDetail && questionLogDetail.chars) ? questionLogDetail.chars[0] : null;
+
+        if (charDetail) {
+          if (charDetail.error === 'empty') {
+            cleanFeedback = 'じを かいてみてね。';
+          } else if (charDetail.error === 'stroke_mismatch') {
+            cleanFeedback = 'かくすうが ちがうよ。';
+          } else if (charDetail.error === 'char_mismatch') {
+            cleanFeedback = 'ちがう じを かいているかも？';
+          }
+        }
 
         this._setFeedback(cleanFeedback, 'mistake');
 
-        // 不正解時はすぐに書き直せるようにロック解除
-        this._setLocked(false);
-        this._updateSubmitButton(true);
+        // ★ キャンバスと「こたえあわせ」ボタンはロックしたまま維持（「はじめから」ボタンのみ受付）
+        this._setLocked(true);
+        this._updateSubmitButton(false);
       }
 
     } catch (err) {
