@@ -5,6 +5,7 @@
 import { CanvasController } from './canvas.js';
 import { KanjiVGPlayer, prefetchKanjiVG } from './kanjivg.js';
 import { playCorrectSound, playMistakeSound, playFanfareSound, ensureAudioUnlocked } from './audio.js';
+import { syncProgressSilently } from './logger.js'; // ★ 追加：即時同期用
 
 export class DrillManager {
   constructor(options = {}) {
@@ -38,12 +39,19 @@ export class DrillManager {
     this.targetStroke = 0;
     this.successStreak = 0; // 連続正解数 (0〜3)
     this.lastClearedChar = null; // 消滅アニメーション対象の漢字
+    this.isLocked = false; // ★ 描画ロック状態フラグ
 
     // キャンバスコントローラー初期化 (260px)
     this.canvasController = new CanvasController(
       document.getElementById('drill-draw-canvas'),
       (strokeCount, strokesData, canUndo, canRedo) => this._onCanvasChange(strokeCount, canUndo, canRedo)
     );
+
+    // ★ 特訓モード用キーボードショートカット (Ctrl/Cmd + Z, Y)
+    this.canvasController.initKeyboardShortcuts(() => {
+      if (this.isLocked) return; // ロック中はショートカット無効
+      ensureAudioUnlocked();
+    });
 
     this._bindEvents();
   }
@@ -90,7 +98,6 @@ export class DrillManager {
     this.onClose();
   }
 
-  // ① 苦手漢字一覧カード
   showList() {
     if (this.menuView) this.menuView.style.display = 'flex';
 
@@ -117,14 +124,17 @@ export class DrillManager {
     });
 
     document.getElementById('btn-drill-undo').addEventListener('click', () => {
+      if (this.isLocked) return;
       ensureAudioUnlocked();
       this.canvasController.undo();
     });
     document.getElementById('btn-drill-redo').addEventListener('click', () => {
+      if (this.isLocked) return;
       ensureAudioUnlocked();
       this.canvasController.redo();
     });
     document.getElementById('btn-drill-reset').addEventListener('click', () => {
+      if (this.isLocked) return;
       ensureAudioUnlocked();
       this.canvasController.clear();
       this._updateSubmitButton(false);
@@ -146,7 +156,7 @@ export class DrillManager {
     }
   }
 
-_renderGrid() {
+  _renderGrid() {
     this.gridContainer.innerHTML = '';
     const targets = this.storage.getDrillTargets();
 
@@ -189,18 +199,15 @@ _renderGrid() {
         tile.classList.add('is-cleared-target');
         tile.style.cursor = 'default';
 
-        // 克服した事実を認識させるため0.8秒待機
+        // 0.8秒待機してからフェードアウト開始
         setTimeout(() => {
-          // ① 文字タイルをなめらかにフェードアウト開始（1.0秒）
           tile.classList.add('is-fading-out');
 
           tile.addEventListener('animationend', () => {
-            // フェードアウトが完全に終わった後、タイルの中心座標を取得
             const rect = tile.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            // ② ✨要素を生成してフェードアウトアニメーション開始（1.0秒）
             const sparkle = document.createElement('div');
             sparkle.className = 'drill-floating-sparkle';
             sparkle.textContent = '✨';
@@ -208,11 +215,8 @@ _renderGrid() {
             sparkle.style.top = `${centerY}px`;
             document.body.appendChild(sparkle);
 
-            // ✨のアニメーション終了を待ってからDOMを整理
             sparkle.addEventListener('animationend', () => {
               sparkle.remove();
-
-              // ③ タイルを削除し、残りの克服文字を詰めて表示
               tile.remove();
               this.lastClearedChar = null;
 
@@ -275,6 +279,7 @@ _renderGrid() {
   }
 
   _setLocked(locked) {
+    this.isLocked = locked;
     if (this.canvasBox) {
       this.canvasBox.classList.toggle('is-locked', locked);
     }
@@ -284,6 +289,7 @@ _renderGrid() {
   }
 
   _onCanvasChange(strokeCount, canUndo, canRedo) {
+    if (this.isLocked) return;
     document.getElementById('btn-drill-undo').disabled = !canUndo;
     document.getElementById('btn-drill-redo').disabled = !canRedo;
     document.getElementById('btn-drill-reset').disabled = (strokeCount === 0);
@@ -298,7 +304,6 @@ _renderGrid() {
     }
   }
 
-  // ドットカウンタ更新（お手本の変更はここでは行わない）
   _updateCounterUI() {
     for (let i = 1; i <= 3; i++) {
       const dot = document.getElementById(`drill-dot-${i}`);
@@ -308,7 +313,6 @@ _renderGrid() {
     document.getElementById('drill-counter-text').textContent = remaining > 0 ? `あと ${remaining}かい！` : 'こくふく！';
   }
 
-  // お手本を表示状態（KanjiVG）に戻す
   _resetModelToVisible() {
     this.modelBox.classList.remove('is-blind');
     this.modelBox.title = 'タッチすると かきじゅんを みられるよ';
@@ -317,7 +321,6 @@ _renderGrid() {
     this.modelHint.textContent = 'タッチすると かきじゅんが みられるよ';
   }
 
-  // ★ 3回目（最終試行）で描画可能になったタイミングでお手本を「？」に切り替え
   _applyBlindModelIfNeeded() {
     if (this.successStreak === 2) {
       this.modelBox.innerHTML = '<span class="drill-blind-icon">？</span>';
@@ -378,15 +381,22 @@ _renderGrid() {
 
       if (isAllSuccess) {
         this.successStreak++;
-        this._updateCounterUI(); // カウンタのみ更新（お手本はまだ隠さない）
+        this._updateCounterUI();
 
         if (this.successStreak >= 3) {
-          // 3回連続正解（克服完了）
+          // ★ 3回連続正解（克服完了！）
           playFanfareSound();
           const clearedChar = this.currentChar;
           this.lastClearedChar = clearedChar;
           this.storage.markDrillCleared(clearedChar);
           this.onProgressChange();
+
+          // ★ 最速同期：正解判定の瞬間にスプレッドシートへ即時バックグラウンド書き込みを発火
+          const currentUser = this.storage.getCurrentUser();
+          if (currentUser) {
+            const progress = this.storage.getProgress();
+            syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+          }
 
           this._setFeedback('せいかい！', 'success');
 
@@ -403,13 +413,11 @@ _renderGrid() {
           playCorrectSound();
           this._setFeedback('せいかい！', 'success');
 
-          // 3秒間しっかり「せいかい！」と書いた字・お手本を確認させてから次へ
           setTimeout(() => {
             this.canvasController.clear();
             this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
             this._setFeedback('', 'info');
 
-            // ★ ここで初めて、3回目なら「？」へ切り替えて描画ロックを解除！
             this._applyBlindModelIfNeeded();
             this._setLocked(false);
             this._updateSubmitButton(false);
