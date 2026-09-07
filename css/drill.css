@@ -444,40 +444,49 @@ button.btn-drill-restart:disabled {
 }
 
 /* ========================================================
-   克服した漢字タイルの消滅エフェクト（調整版）
+   克服した漢字タイルのフェード消滅 ＆ キラリ演出
    ======================================================== */
-@keyframes drillTileDisappear {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.1);
-  }
-  25% {
-    transform: scale(1.08) translateY(-4px);
-    border-color: #16a34a;
-    box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
-    opacity: 1;
-  }
-  60% {
-    transform: scale(0.9) translateY(0);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(0);
-    opacity: 0;
-    margin: 0;
-    padding: 0;
-    max-width: 0;
-  }
+.drill-char-tile.is-cleared-target {
+  cursor: default !important;
+  position: relative;
+  overflow: visible;
+  border-color: #16a34a !important;
+  background: #f0fdf4 !important;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
 }
 
-.drill-char-tile.is-disappearing {
-  animation: drillTileDisappear 2.0s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+/* 1.2秒かけてゆっくり薄くなりながら消える */
+.drill-char-tile.is-fading {
+  opacity: 0 !important;
+  transform: scale(0.96); /* ごくわずかに奥へ引くだけで横潰れさせない */
   pointer-events: none;
 }
 
-.drill-tile-badge.is-cleared {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #86efac;
+/* 中央で弾けるキラキラアイコン */
+.drill-sparkle-fx {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 2.2rem;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 10;
+  animation: sparklePop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes sparklePop {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.4) rotate(15deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.6) rotate(30deg);
+    opacity: 0;
+  }
 }

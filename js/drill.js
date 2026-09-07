@@ -146,11 +146,10 @@ export class DrillManager {
     }
   }
 
-  _renderGrid() {
+_renderGrid() {
     this.gridContainer.innerHTML = '';
     const targets = this.storage.getDrillTargets();
 
-    // 克服した文字があれば消滅エフェクト用に先頭に一時表示
     const displayList = [...targets];
     if (this.lastClearedChar && !displayList.some(t => t.char === this.lastClearedChar)) {
       displayList.unshift({
@@ -187,10 +186,22 @@ export class DrillManager {
       `;
 
       if (t.isJustCleared) {
-        // ★ 克服した文字：クリック不可にし、1秒間しっかり見せてからゆっくり縮小消滅
-        tile.style.cursor = 'default';
+        tile.classList.add('is-cleared-target');
+
+        // ① 0.8秒間そのまま表示して認識させる
         setTimeout(() => {
-          tile.classList.add('is-disappearing');
+          // ② 1.2秒かけてゆっくりフェードアウト開始
+          tile.classList.add('is-fading');
+
+          // ③ フェードの後半（0.6秒後）に中央で「✨」を弾けさせる
+          setTimeout(() => {
+            const sparkle = document.createElement('span');
+            sparkle.className = 'drill-sparkle-fx';
+            sparkle.textContent = '✨';
+            tile.appendChild(sparkle);
+          }, 600);
+
+          // ④ フェードアウト完了（1.2秒後）で要素を除去し、次の文字を詰める
           setTimeout(() => {
             tile.remove();
             this.lastClearedChar = null;
@@ -198,8 +209,9 @@ export class DrillManager {
               this.gridContainer.style.display = 'none';
               this.emptyMsg.style.display = 'flex';
             }
-          }, 900); // 0.9秒のアニメーション完了後に削除
-        }, 1000); // 1秒間キープ
+          }, 1250);
+        }, 800);
+
       } else {
         tile.addEventListener('click', () => {
           ensureAudioUnlocked();
