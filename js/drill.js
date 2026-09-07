@@ -188,29 +188,38 @@ _renderGrid() {
       if (t.isJustCleared) {
         tile.classList.add('is-cleared-target');
 
-        // ① 0.8秒間そのまま表示して認識させる
+        // ① 0.8秒間しっかり表示して認識させる
         setTimeout(() => {
-          // ② 1.0秒かけて文字と枠をスーッと透明化
+          // ② 0.8秒かけてタイルが自然にフェードアウト
           tile.classList.add('is-fading');
 
-          // ③ タイルが完全に透明になった瞬間（1.0秒後）に「✨」を煌めかせる
+          // ③ タイルが完全に消えた瞬間（0.8秒後）に「✨」を発動
           setTimeout(() => {
-            const overlay = document.createElement('div');
-            overlay.className = 'drill-sparkle-overlay';
-            overlay.innerHTML = '<span class="drill-sparkle-star">✨</span>';
-            tile.appendChild(overlay);
+            // タイルの画面上の中心座標を取得
+            const rect = tile.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
 
-            // ④ キラキラが弾け終わった後（0.65秒後）に要素を除去して詰める
+            // 親の影響を受けない独立したキラキラ要素を作成
+            const sparkle = document.createElement('div');
+            sparkle.className = 'drill-floating-sparkle';
+            sparkle.textContent = '✨';
+            sparkle.style.left = `${centerX}px`;
+            sparkle.style.top = `${centerY}px`;
+            document.body.appendChild(sparkle);
+
+            // ④ キラキラが弾け終わるタイミング（0.75秒後）でタイルを除去して詰める
             setTimeout(() => {
+              sparkle.remove();
               tile.remove();
               this.lastClearedChar = null;
               if (this.storage.getDrillTargets().length === 0) {
                 this.gridContainer.style.display = 'none';
                 this.emptyMsg.style.display = 'flex';
               }
-            }, 650);
+            }, 750);
 
-          }, 1000); // フェードアウト完了時
+          }, 800);
 
         }, 800);
 
