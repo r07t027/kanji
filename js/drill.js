@@ -5,7 +5,7 @@
 import { CanvasController } from './canvas.js';
 import { KanjiVGPlayer, prefetchKanjiVG } from './kanjivg.js';
 import { playCorrectSound, playMistakeSound, playFanfareSound, playDisappearSound, ensureAudioUnlocked } from './audio.js';
-import { syncProgressSilently } from './logger.js'; // ★ 追加：即時同期用
+import { syncProgressSilently } from './logger.js';
 
 export class DrillManager {
   constructor(options = {}) {
@@ -38,8 +38,11 @@ export class DrillManager {
     this.currentChar = null;
     this.targetStroke = 0;
     this.successStreak = 0; // 連続正解数 (0〜3)
-    this.lastClearedChar = null; // 消滅アニメーション対象の漢字
-    this.isLocked = false; // ★ 描画ロック状態フラグ
+    this.lastClearedChar = null; // 直前に克服した文字
+    this.isLocked = false;
+
+    // ★ 今回の特訓セット（最大6文字）のスナップショット
+    this.currentBatchList = [];
 
     // キャンバスコントローラー初期化 (260px)
     this.canvasController = new CanvasController(
@@ -47,9 +50,9 @@ export class DrillManager {
       (strokeCount, strokesData, canUndo, canRedo) => this._onCanvasChange(strokeCount, canUndo, canRedo)
     );
 
-    // ★ 特訓モード用キーボードショートカット (Ctrl/Cmd + Z, Y)
+    // キーボードショートカット
     this.canvasController.initKeyboardShortcuts(() => {
-      if (this.isLocked) return; // ロック中はショートカット無効
+      if (this.isLocked) return;
       ensureAudioUnlocked();
     });
 
@@ -82,11 +85,49 @@ export class DrillManager {
     }
   }
 
+  // ★ 優先度ソート（直近3連続✕を最優先）
+  _getSortedTargets() {
+    const targets = this.storage.getDrillTargets();
+    return targets.sort((a, b) => {
+      const aHistory = a.history || [];
+      const bHistory = b.history || [];
+
+      // 直近の連続不正解数（末尾からの連続false数）
+      const getConsecutiveMistakes = (hist) => {
+        let count = 0;
+        for (let i = hist.length - 1; i >= 0; i--) {
+          if (hist[i] === false) count++;
+          else break;
+        }
+        return count;
+      };
+
+      const aMistakes = getConsecutiveMistakes(aHistory);
+      const bMistakes = getConsecutiveMistakes(bHistory);
+
+      // 第1優先：直近の連続ミス数（3連続✕がトップ）
+      if (bMistakes !== aMistakes) {
+        return bMistakes - aMistakes;
+      }
+
+      // 第2優先：総不正解率
+      const aFalseCount = aHistory.filter(h => h === false).length;
+      const bFalseCount = bHistory.filter(h => h === false).length;
+      return bFalseCount - aFalseCount;
+    });
+  }
+
+  // メニューから特訓を開いたとき（新しい6文字バッチを生成）
   open() {
     this.drillView.style.display = 'flex';
     if (this.speechTextEl) {
       this.speechTextEl.textContent = '３かい つづけて ただしく かけたら こくふくだ！ いっしょに がんばろう！';
     }
+
+    // 優先度上位6文字を今回のバッチとして固定
+    const sorted = this._getSortedTargets();
+    this.currentBatchList = sorted.slice(0, 6).map(t => t.char);
+
     this.showList();
   }
 
@@ -94,6 +135,7 @@ export class DrillManager {
     this.drillView.style.display = 'none';
     this.drillView.classList.remove('is-modal-overlay', 'is-fullscreen-practice');
     if (this.menuView) this.menuView.style.display = 'flex';
+    this.currentBatchList = [];
     this.updateBadgeCount();
     this.onClose();
   }
@@ -158,48 +200,60 @@ export class DrillManager {
 
   _renderGrid() {
     this.gridContainer.innerHTML = '';
-    const targets = this.storage.getDrillTargets();
 
-    const displayList = [...targets];
-    if (this.lastClearedChar && !displayList.some(t => t.char === this.lastClearedChar)) {
-      displayList.unshift({
-        char: this.lastClearedChar,
-        history: [true, true, true],
-        isJustCleared: true
-      });
-    }
+    // 現在のストレージ上の苦手漢字を取得
+    const currentTargets = this.storage.getDrillTargets();
+    const targetCharSet = new Set(currentTargets.map(t => t.char));
 
-    if (displayList.length === 0) {
-      this.gridContainer.style.display = 'none';
-      this.emptyMsg.style.display = 'flex';
-      return;
+    // バッチ内の文字で、まだ未克服の文字のみを抽出（直前にクリアした文字はエフェクト用に含める）
+    const displayChars = this.currentBatchList.filter(char => {
+      return targetCharSet.has(char) || char === this.lastClearedChar;
+    });
+
+    // バッチ内の文字が全てクリアされた場合の処理
+    if (displayChars.length === 0) {
+      if (currentTargets.length > 0) {
+        // まだ他に苦手漢字が残っている場合：次の上位6文字を展開
+        if (this.speechTextEl) {
+          this.speechTextEl.textContent = 'いいちょうし！ このまま つぎの とっくんを つづけるよ！';
+        }
+        const sorted = this._getSortedTargets();
+        this.currentBatchList = sorted.slice(0, 6).map(t => t.char);
+        this._renderGrid();
+        return;
+      } else {
+        // 本当に苦手漢字がゼロになった場合
+        this.gridContainer.style.display = 'none';
+        this.emptyMsg.style.display = 'flex';
+        return;
+      }
     }
 
     this.emptyMsg.style.display = 'none';
     this.gridContainer.style.display = 'grid';
 
-    prefetchKanjiVG(displayList.map(t => t.char));
+    prefetchKanjiVG(displayChars);
 
-    displayList.forEach(t => {
+    displayChars.forEach(char => {
+      const isJustCleared = (char === this.lastClearedChar);
+
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'drill-char-tile';
 
-      const historyIcons = t.history.map(h => (h ? '◯' : '✕')).join(' ');
-      const badgeText = t.isJustCleared ? 'こくふく！' : 'とっくん';
-      const badgeClass = t.isJustCleared ? 'drill-tile-badge is-cleared' : 'drill-tile-badge';
+      const badgeText = isJustCleared ? 'こくふく！' : 'とっくんする';
+      const badgeClass = isJustCleared ? 'drill-tile-badge is-cleared' : 'drill-tile-badge';
 
+      // ✕◯✕のテキストを削除し、漢字と「とっくんする」ボタンのみ表示
       tile.innerHTML = `
-        <span class="drill-tile-char">${t.char}</span>
+        <span class="drill-tile-char">${char}</span>
         <span class="${badgeClass}">${badgeText}</span>
-        <span class="drill-tile-history">${historyIcons}</span>
       `;
 
-      if (t.isJustCleared) {
+      if (isJustCleared) {
         tile.classList.add('is-cleared-target');
         tile.style.cursor = 'default';
 
-        // 克服した事実を認識させるため待機
         setTimeout(() => {
           tile.classList.add('is-fading-out');
 
@@ -208,7 +262,6 @@ export class DrillManager {
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            // ✨要素の生成
             const sparkle = document.createElement('div');
             sparkle.className = 'drill-floating-sparkle';
             sparkle.textContent = '✨';
@@ -216,17 +269,19 @@ export class DrillManager {
             sparkle.style.top = `${centerY}px`;
             document.body.appendChild(sparkle);
 
-            // ★ ✨が出現したまさにこの瞬間に効果音を発音（0ms同期）
             playDisappearSound();
 
             sparkle.addEventListener('animationend', () => {
               sparkle.remove();
               tile.remove();
+
+              // バッチから完全除去
+              this.currentBatchList = this.currentBatchList.filter(c => c !== this.lastClearedChar);
               this.lastClearedChar = null;
 
-              if (this.storage.getDrillTargets().length === 0) {
-                this.gridContainer.style.display = 'none';
-                this.emptyMsg.style.display = 'flex';
+              // 残りの文字がないか再チェック
+              if (this.currentBatchList.length === 0) {
+                this._renderGrid();
               }
             }, { once: true });
 
@@ -237,7 +292,7 @@ export class DrillManager {
       } else {
         tile.addEventListener('click', () => {
           ensureAudioUnlocked();
-          this.startDrillForChar(t.char);
+          this.startDrillForChar(char);
         });
       }
 
@@ -284,12 +339,9 @@ export class DrillManager {
 
   _setLocked(locked) {
     this.isLocked = locked;
-
-    // ★ CanvasController 自体にもロック状態を伝達
     if (this.canvasController) {
       this.canvasController.setLocked(locked);
     }
-
     if (this.canvasBox) {
       this.canvasBox.classList.toggle('is-locked', locked);
     }
@@ -394,14 +446,14 @@ export class DrillManager {
         this._updateCounterUI();
 
         if (this.successStreak >= 3) {
-          // ★ 3回連続正解（克服完了！）
+          // 3回連続正解（克服完了）
           playFanfareSound();
           const clearedChar = this.currentChar;
           this.lastClearedChar = clearedChar;
           this.storage.markDrillCleared(clearedChar);
           this.onProgressChange();
 
-          // ★ 最速同期：正解判定の瞬間にスプレッドシートへ即時バックグラウンド書き込みを発火
+          // スプレッドシートへ即時同期
           const currentUser = this.storage.getCurrentUser();
           if (currentUser) {
             const progress = this.storage.getProgress();
