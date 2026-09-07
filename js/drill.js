@@ -187,20 +187,20 @@ _renderGrid() {
 
       if (t.isJustCleared) {
         tile.classList.add('is-cleared-target');
+        tile.style.cursor = 'default';
 
-        // ① 0.8秒間しっかり表示して認識させる
+        // 克服した事実を認識させるため0.8秒待機
         setTimeout(() => {
-          // ② 0.8秒かけてタイルが自然にフェードアウト
-          tile.classList.add('is-fading');
+          // ① 文字タイルをなめらかにフェードアウト開始（1.0秒）
+          tile.classList.add('is-fading-out');
 
-          // ③ タイルが完全に消えた瞬間（0.8秒後）に「✨」を発動
-          setTimeout(() => {
-            // タイルの画面上の中心座標を取得
+          tile.addEventListener('animationend', () => {
+            // フェードアウトが完全に終わった後、タイルの中心座標を取得
             const rect = tile.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            // 親の影響を受けない独立したキラキラ要素を作成
+            // ② ✨要素を生成してフェードアウトアニメーション開始（1.0秒）
             const sparkle = document.createElement('div');
             sparkle.className = 'drill-floating-sparkle';
             sparkle.textContent = '✨';
@@ -208,18 +208,21 @@ _renderGrid() {
             sparkle.style.top = `${centerY}px`;
             document.body.appendChild(sparkle);
 
-            // ④ キラキラが弾け終わるタイミング（0.75秒後）でタイルを除去して詰める
-            setTimeout(() => {
+            // ✨のアニメーション終了を待ってからDOMを整理
+            sparkle.addEventListener('animationend', () => {
               sparkle.remove();
+
+              // ③ タイルを削除し、残りの克服文字を詰めて表示
               tile.remove();
               this.lastClearedChar = null;
+
               if (this.storage.getDrillTargets().length === 0) {
                 this.gridContainer.style.display = 'none';
                 this.emptyMsg.style.display = 'flex';
               }
-            }, 750);
+            }, { once: true });
 
-          }, 800);
+          }, { once: true });
 
         }, 800);
 
