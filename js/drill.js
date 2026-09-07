@@ -23,11 +23,14 @@ export class DrillManager {
     this.emptyMsg = document.getElementById('drill-empty-msg');
     this.badgeCountEl = document.getElementById('drill-badge-count');
 
-    // お手本・画数要素
+    // お手本・画数・ロック・アクション要素
     this.modelBox = document.getElementById('drill-model-box');
     this.modelHint = document.getElementById('drill-model-hint');
     this.targetStrokeEl = document.getElementById('drill-stroke-target');
     this.currentStrokeEl = document.getElementById('drill-canvas-status');
+    this.canvasBox = document.getElementById('drill-canvas-box');
+    this.btnRestart = document.getElementById('btn-drill-restart');
+    this.btnCheck = document.getElementById('btn-drill-check');
 
     // 練習中ステート
     this.currentChar = null;
@@ -122,10 +125,21 @@ export class DrillManager {
       this._setFeedback('', 'info');
     });
 
-    document.getElementById('btn-drill-check').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this._handleCheck();
-    });
+    // 「はじめから」ボタン押下時
+    if (this.btnRestart) {
+      this.btnRestart.addEventListener('click', () => {
+        ensureAudioUnlocked();
+        this._resetToBeginning();
+      });
+    }
+
+    // 「こたえあわせ」ボタン押下時
+    if (this.btnCheck) {
+      this.btnCheck.addEventListener('click', () => {
+        ensureAudioUnlocked();
+        this._handleCheck();
+      });
+    }
   }
 
   _renderGrid() {
@@ -182,11 +196,34 @@ export class DrillManager {
     this._updateStreakAndModelUI();
 
     this.canvasController.clear();
-    this._setFeedback('', 'info'); // 開始時の余計なメッセージは削除
+    this._setFeedback('', 'info');
+    this._setLocked(false);
     this._updateSubmitButton(false);
 
     this.listCard.style.display = 'none';
     this.practiceCard.style.display = 'flex';
+  }
+
+  // 1回目からリスタートする処理（パス救済）
+  _resetToBeginning() {
+    this.successStreak = 0;
+    this._updateStreakAndModelUI();
+    this.canvasController.clear();
+    this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
+    this._setFeedback('', 'info');
+    this._setLocked(false);
+    this._updateSubmitButton(false);
+  }
+
+  // 描画および操作ボタンのロック/アンロック制御
+  _setLocked(locked) {
+    if (this.canvasBox) {
+      this.canvasBox.classList.toggle('is-locked', locked);
+    }
+    document.getElementById('btn-drill-undo').disabled = locked || !this.canvasController.canUndo();
+    document.getElementById('btn-drill-redo').disabled = locked || !this.canvasController.canRedo();
+    document.getElementById('btn-drill-reset').disabled = locked || (this.canvasController.strokeCount === 0);
+    if (this.btnRestart) this.btnRestart.disabled = locked;
   }
 
   _onCanvasChange(strokeCount, canUndo, canRedo) {
@@ -199,8 +236,9 @@ export class DrillManager {
   }
 
   _updateSubmitButton(enabled) {
-    const btn = document.getElementById('btn-drill-check');
-    btn.disabled = !enabled;
+    if (this.btnCheck) {
+      this.btnCheck.disabled = !enabled;
+    }
   }
 
   // 連続正解数に応じてお手本とお知らせを出し分け（3回目はブラインド）
@@ -214,7 +252,7 @@ export class DrillManager {
 
     // 3回目（過去2回正解・あと1回）はお手本を隠して自力テスト
     if (this.successStreak === 2) {
-      this.modelBox.innerHTML = '<span class="drill-blind-icon">❓</span>';
+      this.modelBox.innerHTML = '<span class="drill-blind-icon">？</span>';
       this.modelBox.classList.add('is-blind');
       this.modelBox.title = 'さいごは おてほんなしで かいてみよう！';
       this.modelHint.textContent = 'ラスト！おてほんなしで チャレンジ！';
@@ -227,11 +265,17 @@ export class DrillManager {
     }
   }
 
+  // メッセージ表示（高さを維持したまま visibility を制御）
   _setFeedback(text, type = 'info') {
     const msgEl = document.getElementById('drill-feedback-msg');
+    if (!text) {
+      msgEl.textContent = '';
+      msgEl.style.visibility = 'hidden';
+      return;
+    }
     msgEl.innerHTML = text;
     msgEl.className = 'drill-feedback-msg ' + (type !== 'info' ? type : '');
-    msgEl.style.display = text ? 'block' : 'none';
+    msgEl.style.visibility = 'visible';
   }
 
   _lookupStrokeCount(char) {
@@ -252,9 +296,9 @@ export class DrillManager {
 
   // 解答判定処理
   async _handleCheck() {
-    const btn = document.getElementById('btn-drill-check');
-    btn.disabled = true;
-    btn.textContent = 'かくにん中...';
+    this._updateSubmitButton(false);
+    this.btnCheck.textContent = 'かくにん中...';
+    this._setLocked(true); // 判定開始とともにキャンバス操作を完全にロック
 
     const inputData = this.canvasController.getData();
 
@@ -269,7 +313,7 @@ export class DrillManager {
         [inputData]
       );
 
-      btn.textContent = 'こたえあわせ';
+      this.btnCheck.textContent = 'こたえあわせ';
 
       if (isAllSuccess) {
         this.successStreak++;
@@ -289,36 +333,40 @@ export class DrillManager {
           }, 1500);
 
         } else {
-          // 1回目・2回目の正解：3秒待ってから次へ
+          // 1回目・2回目の正解：3秒間ロックを維持して余韻を表示
           playCorrectSound();
           this._setFeedback('せいかい！', 'success');
 
           setTimeout(() => {
             this.canvasController.clear();
             this.currentStrokeEl.textContent = 'いまの かくすう：0かく';
-            this._setFeedback('', 'info'); // メッセージをクリア
+            this._setFeedback('', 'info');
+            this._setLocked(false); // 次の描画のためにロック解除
             this._updateSubmitButton(false);
-          }, 3000); // 通常問題と同じ3秒待機
+          }, 3000);
         }
 
       } else {
-        // 不正解：カウントリセット & 「1文字目:」を削除して理由のみ表示
+        // 不正解：カウントリセット & 「1文字目:」を除去して理由のみ表示
         playMistakeSound();
         this.successStreak = 0;
         this._updateStreakAndModelUI();
 
         let cleanFeedback = feedbackHtml || 'おしい！おてほんを たしかめて もういちど かこう。';
-        // 「1文字目:」「1文字目：」の不要な接頭辞を除去
         cleanFeedback = cleanFeedback.replace(/^[0-9]+文字目[:：]\s*/g, '');
 
         this._setFeedback(cleanFeedback, 'mistake');
-        btn.disabled = false;
+
+        // 不正解時はすぐに書き直せるようにロック解除
+        this._setLocked(false);
+        this._updateSubmitButton(true);
       }
 
     } catch (err) {
       console.error('特訓判定エラー:', err);
-      btn.textContent = 'こたえあわせ';
-      btn.disabled = false;
+      this.btnCheck.textContent = 'こたえあわせ';
+      this._setLocked(false);
+      this._updateSubmitButton(true);
       this._setFeedback('通信エラーが発生しました。', 'mistake');
     }
   }

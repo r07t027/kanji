@@ -335,7 +335,6 @@
     <!-- 2. 1文字特化 練習カード（1文字選択時に表示） -->
     <div id="drill-practice-card" class="drill-card drill-practice-card" style="display: none;">
       <div class="drill-header-row">
-        <!-- ★ カンニング防止：漢字名を出さず固定表示 -->
         <div class="drill-practice-target-title">とっくんモード</div>
         <button type="button" id="btn-drill-back-list" class="btn-back-menu">いちらんに もどる</button>
       </div>
@@ -343,8 +342,8 @@
       <div class="drill-practice-body">
         <!-- 左部：お手本 & 筆順再生 & カウンター -->
         <div class="drill-model-pane">
+          <!-- 「せいかい」文字を削除し、ドットと残り回数のみにシンプル化 -->
           <div class="drill-counter-box">
-            <span class="drill-counter-label">せいかい</span>
             <div class="drill-dots-container">
               <span class="drill-dot" id="drill-dot-1"></span>
               <span class="drill-dot" id="drill-dot-2"></span>
@@ -357,11 +356,11 @@
           <div class="drill-model-hint" id="drill-model-hint">タッチすると かきじゅんが みられるよ</div>
         </div>
 
-        <!-- 右部：シンプルキャンバス & 2行画数表示 & 判定 -->
+        <!-- 右部：シンプルキャンバス & 2行画数表示 & 2ボタン並列 -->
         <div class="drill-canvas-pane">
           <div class="canvas-row-wrapper">
             <button id="btn-drill-undo" class="btn-history" title="1かくもどる" disabled>1かくもどる</button>
-            <div class="box">
+            <div class="box" id="drill-canvas-box">
               <canvas id="drill-draw-canvas" width="260" height="260"></canvas>
               <button type="button" id="btn-drill-reset" class="btn-canvas-eraser" title="ぜんぶけす" disabled>
                 <span class="eraser-icon">🧹</span>
@@ -370,17 +369,26 @@
             <button id="btn-drill-redo" class="btn-history" title="1かくすすむ" disabled>1かくすすむ</button>
           </div>
 
-          <!-- 通常問題と同じ2行画数パネル（視線移動なし） -->
+          <!-- 通常問題と同じ2行画数パネル -->
           <div class="info-panel drill-info-panel">
             <div id="drill-stroke-target" class="stroke-info-line" style="color: #1e40af;">このじは ０かく です。</div>
             <div id="drill-canvas-status" class="stroke-info-line">いまの かくすう：０かく</div>
           </div>
 
-          <div class="drill-feedback-msg" id="drill-feedback-msg" style="display: none;"></div>
+          <!-- 高さを固定したメッセージ表示エリア（レイアウトシフト防止） -->
+          <div class="drill-feedback-container">
+            <div class="drill-feedback-msg" id="drill-feedback-msg"></div>
+          </div>
 
-          <button type="button" id="btn-drill-check" class="btn-check-main drill-submit-btn" disabled>
-            こたえあわせ
-          </button>
+          <!-- 「はじめから」と「こたえあわせ」の2ボタン並列エリア -->
+          <div class="drill-action-row">
+            <button type="button" id="btn-drill-restart" class="btn-drill-restart" title="とっくんを 1かいめから やりなおす">
+              はじめから
+            </button>
+            <button type="button" id="btn-drill-check" class="btn-check-main drill-submit-btn" disabled>
+              こたえあわせ
+            </button>
+          </div>
         </div>
       </div>
     </div>
