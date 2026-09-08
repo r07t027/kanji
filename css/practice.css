@@ -46,6 +46,7 @@
   display: block;
 }
 
+/* 全画面共通の「メニューへ もどる」ボタンスタイル */
 button.btn-back-menu {
   background: #eceff1;
   color: #455a64;
@@ -55,10 +56,12 @@ button.btn-back-menu {
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  transition: all 0.15s;
 }
 
 button.btn-back-menu:hover {
   background: #cfd8dc;
+  color: #263238;
 }
 
 .unit-title {

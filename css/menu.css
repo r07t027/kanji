@@ -52,7 +52,7 @@
   object-fit: contain;
 }
 
-/* ヘッダー用のかきまる挑戦オープンボタン（アイコン単体表示で省スペース化） */
+/* ヘッダー用のかきまる挑戦オープンボタン */
 button.btn-header-challenge {
   display: flex;
   align-items: center;
@@ -80,7 +80,7 @@ button.btn-header-challenge:hover {
   object-fit: contain;
 }
 
-/* ユーザー情報バー：左寄せに変更 */
+/* ユーザー情報バー：左寄せ */
 .user-info-bar {
   display: flex;
   flex-direction: column;
@@ -423,20 +423,11 @@ button.btn-challenge-accept:hover {
   opacity: 0.95;
 }
 
-button.btn-challenge-decline {
+/* 挑戦状内の「メニューへ もどる」ボタン（btn-back-menu と完全統一） */
+button.challenge-btn-back {
   flex: 1;
-  background: #eceff1;
-  color: #546e7a;
-  border: 1.5px solid #cfd8dc;
-  font-size: 1.05rem;
+  font-size: 1rem;
   padding: 14px 18px;
   border-radius: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-button.btn-challenge-decline:hover {
-  background: #cfd8dc;
-  color: #263238;
+  white-space: nowrap;
 }
