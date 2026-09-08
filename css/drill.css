@@ -318,6 +318,15 @@ button.btn-menu-drill:hover {
   cursor: pointer;
   position: relative;
   transition: transform 0.15s, background-color 0.15s;
+  padding: 8px;
+}
+
+/* ★ お手本SVGを枠いっぱいに大きく表示 */
+.drill-model-box svg {
+  width: 100%;
+  height: 100%;
+  max-width: 160px;
+  max-height: 160px;
 }
 
 .drill-model-box:hover:not(.is-blind) {
@@ -340,11 +349,12 @@ button.btn-menu-drill:hover {
 }
 
 .drill-model-hint {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: bold;
   color: #00796b;
   text-align: center;
   min-height: 1.2rem;
+  white-space: nowrap;
 }
 
 /* キャンバスペイン */
@@ -392,30 +402,30 @@ button.btn-menu-drill:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px; /* ボタン間の間隔 */
+  gap: 12px;
   width: 100%;
   max-width: 290px;
   margin-top: 4px;
 }
 
-/* 「はじめから」ボタン：小ぶりな紫グラデーション（通常問題の「パス」と完全統一） */
+/* 「はじめから」ボタン：こたえをみるボタンと同じ小さめサイズに統一 */
 button.btn-drill-restart {
-  flex: 0 0 88px;
+  flex: 0 0 auto;
   background: linear-gradient(135deg, #7c3aed, #8b5cf6);
   border: none;
   color: #ffffff;
-  font-size: 0.88rem;
+  font-size: 0.75rem;
   font-weight: bold;
-  padding: 9px 10px;
-  border-radius: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
   transition: transform 0.15s, opacity 0.15s;
   white-space: nowrap;
 }
 
 button.btn-drill-restart:hover:not(:disabled) {
-  transform: translateY(-1.5px);
+  transform: translateY(-1px);
   opacity: 0.95;
 }
 
@@ -444,7 +454,7 @@ button.btn-drill-restart:disabled {
   box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
 }
 
-/* ① 文字と枠がなめらかにフェードアウト（1秒） */
+/* ① 文字と枠がなめらかにフェードアウト */
 @keyframes tileFadeOut {
   0% {
     opacity: 1;
@@ -461,7 +471,7 @@ button.btn-drill-restart:disabled {
   pointer-events: none;
 }
 
-/* ② ✨が中央に出現し、回転・拡大しながらゆっくりフェードアウト（1秒） */
+/* ② ✨が中央に出現し、回転・拡大しながらゆっくりフェードアウト */
 @keyframes sparklePopAndFade {
   0% {
     opacity: 0;

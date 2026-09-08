@@ -387,10 +387,10 @@ export class DrillManager {
 
   _resetModelToVisible() {
     this.modelBox.classList.remove('is-blind');
-    this.modelBox.title = 'かんじを タッチして かきじゅんを たしかめよう';
+    this.modelBox.title = 'タッチして かきじゅんを たしかめよう';
     this.modelBox.innerHTML = '';
     new KanjiVGPlayer(this.modelBox, this.currentChar, true);
-    this.modelHint.textContent = 'かんじを タッチして かきじゅんを たしかめよう';
+    this.modelHint.textContent = 'タッチして かきじゅんを たしかめよう';
   }
 
   _applyBlindModelIfNeeded() {

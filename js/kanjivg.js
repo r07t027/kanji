@@ -96,7 +96,7 @@ export class KanjiVGPlayer {
 
       if (this.isInteractive) {
         this.container.classList.add('interactive');
-        this.container.title = 'タッチして かきじゅんを たしかめよう';
+        this.container.title = 'かんじを タッチして かきじゅんを たしかめよう';
 
         this.container.addEventListener('click', () => this.play());
         this.container.addEventListener('touchstart', (e) => {
