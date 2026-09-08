@@ -564,7 +564,7 @@ class KanjiApp {
   }
 
   // パス処理（初回試行時かつ漢字のみ誤答としてローカル記録）
-  handlePass() {
+  async handlePass() {
     const q = this.getCurrentQuestion();
     if (!q) return;
 
@@ -572,8 +572,10 @@ class KanjiApp {
       return;
     }
 
-    // お手本画面に遷移したタイミングで不正解音（wrong.mp3）を再生
+    // confirm() が閉じた直後のオーディオ一時停止状態を確実に復帰してから再生
+    ensureAudioUnlocked();
     playMistakeSound();
+
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
 
     if (!this.hasAttemptedFirst) {

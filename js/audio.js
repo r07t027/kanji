@@ -27,10 +27,10 @@ async function loadSound(name, url) {
   }
 }
 
-export function ensureAudioUnlocked() {
+export async function ensureAudioUnlocked() {
   const ctx = getAudioContext();
   if (ctx && ctx.state === 'suspended') {
-    ctx.resume();
+    await ctx.resume();
   }
 }
 
