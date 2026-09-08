@@ -266,6 +266,8 @@ export class DrillManager {
 
             playDisappearSound();
 
+            // js/drill.js (_renderGrid 内)
+
             sparkle.addEventListener('animationend', () => {
               sparkle.remove();
               tile.remove();
@@ -275,19 +277,24 @@ export class DrillManager {
               this.currentBatchList = this.currentBatchList.filter(c => c !== cleared);
               this.lastClearedChar = null;
 
-              // ★ 1セット（バッチ内）の文字が全て消滅した瞬間の次セット展開処理
+              // 1セット（バッチ内）の文字が全て消滅した場合
               if (this.currentBatchList.length === 0) {
                 const nextTargets = this._getSortedTargets();
 
                 if (nextTargets.length > 0) {
-                  // ① まだ苦手漢字が残っている場合：励ましメッセージと共に次の6文字を展開
+                  // ① まずセリフだけを切り替えて、子供に達成感と余韻を感じさせる
                   if (this.speechTextEl) {
                     this.speechTextEl.textContent = 'いいちょうし！ さらに とっくんを つづけよう！';
                   }
-                  this.currentBatchList = nextTargets.slice(0, 6).map(t => t.char);
-                  this._renderGrid();
+
+                  // ② 1.2秒の「間」を取ってから、新しい6文字のセットを展開！
+                  setTimeout(() => {
+                    this.currentBatchList = nextTargets.slice(0, 6).map(t => t.char);
+                    this._renderGrid();
+                  }, 1200);
+
                 } else {
-                  // ② 全ての苦手漢字がなくなった場合：空メッセージを表示
+                  // 全部の苦手漢字をクリアした場合
                   if (this.speechTextEl) {
                     this.speechTextEl.textContent = 'ぜんぶ ばっちり！このちょうしで がんばろう！';
                   }
@@ -296,7 +303,6 @@ export class DrillManager {
                 }
               }
             }, { once: true });
-
           }, { once: true });
 
         }, 1200);
