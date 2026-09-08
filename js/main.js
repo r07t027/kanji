@@ -568,10 +568,11 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     if (!q) return;
 
-    if (!confirm('このもんだいを パスして おてほんを みますか？')) {
+    if (!confirm('このもんだいの こたえを みますか？')) {
       return;
     }
 
+    // お手本画面に遷移したタイミングで不正解音（wrong.mp3）を再生
     playMistakeSound();
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
 
@@ -588,12 +589,14 @@ class KanjiApp {
     }
 
     const falseResults = new Array((q.targets || []).length).fill(false);
+    // isPass = true を渡し、「あなたのこたえ」と下部テキストを非表示にする
     this.ui.showResultView(
       false,
-      'パスしました。おてほんを かくにんしよう。',
+      '',
       (q.targets || []).map(t => t.char),
       this.userInputs,
-      falseResults
+      falseResults,
+      true
     );
     this.ui.updateCheckButtonState(true);
   }

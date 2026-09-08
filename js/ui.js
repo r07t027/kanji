@@ -14,6 +14,7 @@ const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
 class ResultViewController {
   constructor() {
     this.resultComparisonArea = document.getElementById('result-comparison-area');
+    this.userCardEl = document.querySelector('.compare-card.user-card');
     this.correctCardTitleEl = document.getElementById('correct-card-title');
     this.correctCharsContainer = document.getElementById('correct-chars-container');
     this.correctHintTextEl = document.getElementById('correct-hint-text');
@@ -32,18 +33,39 @@ class ResultViewController {
     }
     if (this.resultLabelEl) {
       this.resultLabelEl.textContent = '';
+      this.resultLabelEl.style.display = 'block';
+    }
+    if (this.userCardEl) {
+      this.userCardEl.style.display = 'block';
     }
     if (this.btnRestartAll) {
       this.btnRestartAll.style.display = 'none';
     }
   }
 
-  render(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
-    this._renderUserCanvases(userInputs, charResults);
+  render(isAllSuccess, messageHtml, targetChars, userInputs, charResults, isPass = false) {
+    if (isPass) {
+      if (this.userCardEl) {
+        this.userCardEl.style.display = 'none';
+      }
+    } else {
+      if (this.userCardEl) {
+        this.userCardEl.style.display = 'block';
+      }
+      this._renderUserCanvases(userInputs, charResults);
+    }
+
     this._renderCorrectChars(targetChars, isAllSuccess);
 
-    this.resultLabelEl.innerHTML = messageHtml;
-    this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
+    if (isPass) {
+      this.resultLabelEl.innerHTML = '';
+      this.resultLabelEl.style.display = 'none';
+    } else {
+      this.resultLabelEl.style.display = 'block';
+      this.resultLabelEl.innerHTML = messageHtml;
+      this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
+    }
+
     this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
 
     if (this.resultComparisonArea) {
@@ -397,10 +419,10 @@ export class UIController {
   // ========================================================
   // 結果画面表示
   // ========================================================
-  showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults) {
+  showResultView(isAllSuccess, messageHtml, targetChars, userInputs, charResults, isPass = false) {
     if (this.drawingContainer) {
       this.drawingContainer.style.display = 'none';
     }
-    this.resultView.render(isAllSuccess, messageHtml, targetChars, userInputs, charResults);
+    this.resultView.render(isAllSuccess, messageHtml, targetChars, userInputs, charResults, isPass);
   }
 }
