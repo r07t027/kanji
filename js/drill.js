@@ -115,7 +115,7 @@ export class DrillManager {
     });
   }
 
-  // 特訓モーダルを開いたとき（playSoundがtrueの新規オープン時のみdrill.mp3を鳴らす）
+  // 特訓モーダルを開いたとき
   open(playSound = true) {
     this.drillView.style.display = 'flex';
     if (this.speechTextEl) {
@@ -126,8 +126,11 @@ export class DrillManager {
     const sorted = this._getSortedTargets();
     this.currentBatchList = sorted.slice(0, 6).map(t => t.char);
 
+    // ★ モーダルカードが拡大から元の大きさに落ち着いた瞬間（0.3s）に鳴らす
     if (playSound) {
-      playDrillSound();
+      setTimeout(() => {
+        playDrillSound();
+      }, 300);
     }
 
     this.showList();

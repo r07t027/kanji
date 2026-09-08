@@ -114,7 +114,7 @@ class KanjiApp {
   // 起動時のポップアップ連動（特訓があれば特訓を最優先、なければ挑戦状）
   checkDailyPopups() {
     if (Storage.shouldShowDrillPopupToday() && this.drillManager) {
-      // 苦手漢字があり今日まだ閉じていない場合：特訓を最優先で表示（drill.mp3が鳴る）
+      // 苦手漢字があり今日まだ閉じていない場合：特訓を最優先で表示（落ち着いた瞬間に音が鳴る）
       this.drillManager.open(true);
       this.checkDailyChallenge(false);
     } else {
@@ -136,8 +136,11 @@ class KanjiApp {
       if (shouldPopup && allowPopup) {
         overlay.style.display = 'flex';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
-        // ★ 挑戦状モーダルが新規オープンした瞬間に drill.mp3 を再生
-        playDrillSound();
+        
+        // ★ 挑戦状モーダルが拡大から元の大きさに落ち着いた瞬間（0.32s）に鳴らす
+        setTimeout(() => {
+          playDrillSound();
+        }, 320);
       } else {
         overlay.style.display = 'none';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
@@ -202,7 +205,6 @@ class KanjiApp {
       btnMenuDrill.addEventListener('click', () => {
         ensureAudioUnlocked();
         if (this.drillManager) {
-          // 手動でモーダルを開くので音を鳴らす (true)
           this.drillManager.open(true);
         }
       });
@@ -238,8 +240,11 @@ class KanjiApp {
         ensureAudioUnlocked();
         document.getElementById('challenge-modal-overlay').style.display = 'flex';
         btnHeaderChallenge.style.display = 'none';
-        // 手動でモーダルを開いた瞬間にも drill.mp3 を再生
-        playDrillSound();
+        
+        // ★ 手動で開いた時も、元の大きさに落ち着いた瞬間に鳴らす
+        setTimeout(() => {
+          playDrillSound();
+        }, 320);
       });
     }
 
@@ -582,7 +587,7 @@ class KanjiApp {
     }
   }
 
-  // 「こたえをみる」処理（ダイアログなしで即座にお手本画面へ遷移）
+  // 「こたえをみる」処理
   handlePass() {
     const q = this.getCurrentQuestion();
     if (!q) return;
@@ -615,7 +620,7 @@ class KanjiApp {
     this.ui.updateCheckButtonState(true);
   }
 
-  // 解答判定処理（初回試行時のみ苦手判定を記録）
+  // 解答判定処理
   async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();
