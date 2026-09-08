@@ -40,6 +40,7 @@ class ResultViewController {
     }
     if (this.btnRestartAll) {
       this.btnRestartAll.style.display = 'none';
+      this.btnRestartAll.textContent = 'もういちど';
     }
   }
 
@@ -69,7 +70,11 @@ class ResultViewController {
       this.resultLabelEl.className = 'result-label ' + (isAllSuccess ? 'success' : 'mistake');
     }
 
-    this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
+    // 復帰ボタンの文言出し分け（答えを見る経由なら「おぼえた！」、通常の誤答なら「もういちど」）
+    if (this.btnRestartAll) {
+      this.btnRestartAll.textContent = isPass ? 'おぼえた！' : 'もういちど';
+      this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
+    }
 
     if (this.resultComparisonArea) {
       this.resultComparisonArea.style.display = 'flex';
