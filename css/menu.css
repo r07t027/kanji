@@ -102,6 +102,7 @@ button.btn-header-challenge:hover {
 
 .user-actions-group {
   display: flex;
+  align-items: center;
   gap: 6px;
 }
 
@@ -115,6 +116,9 @@ button.btn-header-challenge:hover {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-user-action:hover {
@@ -122,9 +126,20 @@ button.btn-header-challenge:hover {
   color: #1e293b;
 }
 
+/* 絵文字単体アイコンボタン（🖐️, 🔑, 🎶）の正方形レイアウト */
+.btn-user-action.btn-icon-action {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
 .btn-user-action.btn-action-logout {
   color: #dc2626;
   border-color: #fecaca;
+  height: 28px;
+  padding: 0 10px;
 }
 
 .btn-user-action.btn-action-logout:hover {
