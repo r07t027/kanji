@@ -461,13 +461,16 @@ export class DrillManager {
 
       this.btnCheck.textContent = 'こたえあわせ';
 
+      // js/drill.js (_handleCheck メソッド内)
+
       if (isAllSuccess) {
         this.successStreak++;
         this._updateCounterUI();
 
         if (this.successStreak >= 3) {
-          // 3回連続正解（克服完了）
-          playFanfareSound();
+          // ★ 3回目正解時も通常の正解音 (correct.mp3) を鳴らす
+          playCorrectSound();
+          
           const clearedChar = this.currentChar;
           this.lastClearedChar = clearedChar;
           this.storage.markDrillCleared(clearedChar);
