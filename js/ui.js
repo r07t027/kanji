@@ -4,6 +4,7 @@
  */
 import { KAKIMARU_IMAGES, CIRCLED_NUMBERS } from './messages.js';
 import { KanjiVGPlayer } from './kanjivg.js';
+import { playMistakeSound } from './audio.js';
 
 // 漢字判定用正規表現
 const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
@@ -44,6 +45,7 @@ class ResultViewController {
   }
 
   render(isAllSuccess, messageHtml, targetChars, userInputs, charResults, isPass = false) {
+    // 「こたえをみる」時は「あなたのこたえ」カードを完全非表示
     if (isPass) {
       if (this.userCardEl) {
         this.userCardEl.style.display = 'none';
@@ -55,8 +57,10 @@ class ResultViewController {
       this._renderUserCanvases(userInputs, charResults);
     }
 
+    // お手本を描画
     this._renderCorrectChars(targetChars, isAllSuccess);
 
+    // 「こたえをみる」時はメッセージテキストも完全非表示
     if (isPass) {
       this.resultLabelEl.innerHTML = '';
       this.resultLabelEl.style.display = 'none';
@@ -68,8 +72,14 @@ class ResultViewController {
 
     this.btnRestartAll.style.display = isAllSuccess ? 'none' : 'inline-block';
 
+    // お手本画面をDOM上で表示
     if (this.resultComparisonArea) {
       this.resultComparisonArea.style.display = 'flex';
+    }
+
+    // ★ お手本画面に遷移したまさにこの瞬間に wrong.mp3 を再生
+    if (isPass) {
+      playMistakeSound();
     }
   }
 

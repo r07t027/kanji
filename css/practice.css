@@ -471,7 +471,7 @@ canvas#draw-canvas {
   height: 46px;
 }
 
-/* 最下部アクションボタングループ（パス ＆ こたえあわせ） */
+/* 最下部アクションボタングループ（こたえをみる ＆ こたえあわせ） */
 .submit-action-row {
   display: flex;
   gap: 16px;
@@ -507,7 +507,7 @@ button.btn-check-main:disabled {
   cursor: not-allowed;
 }
 
-/* パスボタン（左・小ぶり・紫） */
+/* こたえをみるボタン（左・小ぶり・紫） */
 button.btn-pass-sub {
   flex: 0 0 auto;
   min-width: 104px;

@@ -563,18 +563,14 @@ class KanjiApp {
     }
   }
 
-  // パス処理（初回試行時かつ漢字のみ誤答としてローカル記録）
-  async handlePass() {
+  // 「こたえをみる」処理（初回試行時かつ漢字のみ誤答としてローカル記録）
+  handlePass() {
     const q = this.getCurrentQuestion();
     if (!q) return;
 
     if (!confirm('このもんだいの こたえを みますか？')) {
       return;
     }
-
-    // confirm() が閉じた直後のオーディオ一時停止状態を確実に復帰してから再生
-    ensureAudioUnlocked();
-    playMistakeSound();
 
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
 
@@ -591,7 +587,8 @@ class KanjiApp {
     }
 
     const falseResults = new Array((q.targets || []).length).fill(false);
-    // isPass = true を渡し、「あなたのこたえ」と下部テキストを非表示にする
+
+    // お手本画面に切り替える（第6引数 isPass = true により、ui.js 内でお手本表示と同時に wrong.mp3 が鳴動）
     this.ui.showResultView(
       false,
       '',
