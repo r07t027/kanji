@@ -199,16 +199,13 @@ export class DrillManager {
   _renderGrid() {
     this.gridContainer.innerHTML = '';
 
-    // 現在のストレージ上の苦手漢字を取得
     const currentTargets = this.storage.getDrillTargets();
     const targetCharSet = new Set(currentTargets.map(t => t.char));
 
-    // バッチ内の文字で、まだ未克服の文字のみを抽出（直前にクリアした文字はエフェクト用に含める）
     const displayChars = this.currentBatchList.filter(char => {
       return targetCharSet.has(char) || char === this.lastClearedChar;
     });
 
-    // バッチ内の文字が0件になった場合の初期ガード
     if (displayChars.length === 0) {
       const nextTargets = this._getSortedTargets();
       if (nextTargets.length > 0) {
@@ -266,36 +263,29 @@ export class DrillManager {
 
             playDisappearSound();
 
-            // js/drill.js (_renderGrid 内)
-
             sparkle.addEventListener('animationend', () => {
               sparkle.remove();
               tile.remove();
 
-              // バッチから克服した文字を除去
               const cleared = this.lastClearedChar;
               this.currentBatchList = this.currentBatchList.filter(c => c !== cleared);
               this.lastClearedChar = null;
 
-              // 1セット（バッチ内）の文字が全て消滅した場合
               if (this.currentBatchList.length === 0) {
                 const nextTargets = this._getSortedTargets();
 
                 if (nextTargets.length > 0) {
-                  // ① セリフ切り替えと同時にファンファーレ音（全問正解音）を再生！
                   if (this.speechTextEl) {
                     this.speechTextEl.textContent = 'いいちょうし！ さらに とっくんを つづけよう！';
                   }
                   playFanfareSound();
 
-                  // ② ファンファーレの余韻を感じながら、1.5秒後に次の6文字を展開
                   setTimeout(() => {
                     this.currentBatchList = nextTargets.slice(0, 6).map(t => t.char);
                     this._renderGrid();
                   }, 1500);
 
                 } else {
-                  // 全部の苦手漢字をクリアした完全制覇時
                   if (this.speechTextEl) {
                     this.speechTextEl.textContent = 'ぜんぶ ばっちり！このちょうしで がんばろう！';
                   }
@@ -397,10 +387,10 @@ export class DrillManager {
 
   _resetModelToVisible() {
     this.modelBox.classList.remove('is-blind');
-    this.modelBox.title = 'タッチすると かきじゅんを みられるよ';
+    this.modelBox.title = 'かんじを タッチして かきじゅんを たしかめよう';
     this.modelBox.innerHTML = '';
     new KanjiVGPlayer(this.modelBox, this.currentChar, true);
-    this.modelHint.textContent = 'タッチすると かきじゅんが みられるよ';
+    this.modelHint.textContent = 'かんじを タッチして かきじゅんを たしかめよう';
   }
 
   _applyBlindModelIfNeeded() {
@@ -461,14 +451,11 @@ export class DrillManager {
 
       this.btnCheck.textContent = 'こたえあわせ';
 
-      // js/drill.js (_handleCheck メソッド内)
-
       if (isAllSuccess) {
         this.successStreak++;
         this._updateCounterUI();
 
         if (this.successStreak >= 3) {
-          // ★ 3回目正解時も通常の正解音 (correct.mp3) を鳴らす
           playCorrectSound();
           
           const clearedChar = this.currentChar;
@@ -476,7 +463,6 @@ export class DrillManager {
           this.storage.markDrillCleared(clearedChar);
           this.onProgressChange();
 
-          // スプレッドシートへ即時同期
           const currentUser = this.storage.getCurrentUser();
           if (currentUser) {
             const progress = this.storage.getProgress();
@@ -485,7 +471,6 @@ export class DrillManager {
 
           this._setFeedback('せいかい！', 'success');
 
-          // 3秒後にモーダル一覧へ復帰
           setTimeout(() => {
             if (this.speechTextEl) {
               this.speechTextEl.textContent = `「${clearedChar}」を こくふくしたよ！このちょうしで がんばろう！`;
@@ -494,7 +479,6 @@ export class DrillManager {
           }, 3000);
 
         } else {
-          // 1回目・2回目の正解
           playCorrectSound();
           this._setFeedback('せいかい！', 'success');
 
@@ -510,7 +494,6 @@ export class DrillManager {
         }
 
       } else {
-        // 不正解時
         playMistakeSound();
 
         let cleanFeedback = 'おしい！もういちど かくにんしよう。';
