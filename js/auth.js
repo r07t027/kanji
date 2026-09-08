@@ -60,6 +60,41 @@ export class AuthManager {
       modal.style.display = 'none';
       this.checkHandModeSetup();
       this.onUserAuthenticated(this.currentUser, this.clearedSets);
+
+      // ★ 重要：キャッシュで素早く開いた後、スプレッドシートの最新データを裏で受信して同期更新する
+      if (this.prefetchPromise) {
+        this.prefetchPromise.then(prefetchRes => {
+          if (prefetchRes && prefetchRes.success && prefetchRes.progressMap) {
+            const latestProgress = prefetchRes.progressMap[this.currentUser.userId];
+            const latestAuth = prefetchRes.authMap ? prefetchRes.authMap[this.currentUser.userId] : null;
+
+            if (latestAuth) {
+              this.currentUser = latestAuth;
+              Storage.setCurrentUser(this.currentUser);
+              this.applyUserData();
+            }
+
+            if (latestProgress) {
+              // スプレッドシート側の最新進捗をローカルストレージへマージ・上書き
+              const currentLocal = Storage.getProgress();
+              const mergedProgress = {
+                ...currentLocal,
+                clearedSets: latestProgress.clearedSets || {},
+                charStats: latestProgress.charStats || {}
+              };
+              Storage.setProgress(mergedProgress);
+
+              const rawNewCleared = mergedProgress.clearedSets;
+              this.clearedSets = Array.isArray(rawNewCleared)
+                ? rawNewCleared
+                : (rawNewCleared && typeof rawNewCleared === 'object' ? Object.keys(rawNewCleared) : []);
+
+              // 最新進捗（苦手文字数・クリア状態）を画面に即座に反映
+              this.onUserAuthenticated(this.currentUser, this.clearedSets);
+            }
+          }
+        }).catch(err => console.warn('バックグラウンド最新進捗同期失敗:', err));
+      }
       return;
     }
 
@@ -145,10 +180,10 @@ export class AuthManager {
           ? rawCleared
           : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
 
+        // スプレッドシートから取得した最新の進捗・苦手文字を保存
         Storage.setCurrentUser(this.currentUser);
         Storage.setProgress(userProgress);
 
-        // スプレッドシートから取得した音設定をローカルへ反映
         const soundMode = matchedUser.soundMode || 'on';
         Storage.setSoundEnabled(soundMode !== 'off');
 
@@ -193,7 +228,6 @@ export class AuthManager {
     }
   }
 
-  // ==================== 音のON/OFF初期化 ＆ 反映 ====================
   applySoundSetting() {
     const isEnabled = Storage.getSoundEnabled();
     setAudioMuted(!isEnabled);
@@ -205,7 +239,6 @@ export class AuthManager {
     }
   }
 
-  // ==================== 設定モーダル制御 ====================
   openHandModal(isInitial = false) {
     const handModal = document.getElementById('hand-modal');
     const btnClose = document.getElementById('btn-close-hand-modal');
@@ -281,7 +314,6 @@ export class AuthManager {
     }
   }
 
-  // ==================== 音のON/OFF設定モーダル ====================
   openSoundModal() {
     const soundModal = document.getElementById('sound-modal');
     const soundMsg = document.getElementById('sound-modal-msg');
@@ -325,11 +357,9 @@ export class AuthManager {
     soundMsg.className = 'login-error-msg pin-status-feedback is-saving';
     soundMsg.style.display = 'flex';
 
-    // ローカル状態およびAudioControllerへ即時反映
     Storage.setSoundEnabled(newEnabled);
     this.applySoundSetting();
 
-    // ★ スプレッドシート MASTER G列へ保存
     let apiSuccess = true;
     if (this.currentUser) {
       const res = await updateSoundModeApi(this.currentUser.userId, mode);
@@ -351,7 +381,6 @@ export class AuthManager {
         choiceButtons.forEach(btn => btn.disabled = false);
       }, 3000);
     } else {
-      // 失敗時ロールバック
       Storage.setSoundEnabled(currentlyEnabled);
       this.applySoundSetting();
 
