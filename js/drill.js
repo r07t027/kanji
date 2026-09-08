@@ -282,22 +282,24 @@ export class DrillManager {
                 const nextTargets = this._getSortedTargets();
 
                 if (nextTargets.length > 0) {
-                  // ① まずセリフだけを切り替えて、子供に達成感と余韻を感じさせる
+                  // ① セリフ切り替えと同時にファンファーレ音（全問正解音）を再生！
                   if (this.speechTextEl) {
                     this.speechTextEl.textContent = 'いいちょうし！ さらに とっくんを つづけよう！';
                   }
+                  playFanfareSound();
 
-                  // ② 1.2秒の「間」を取ってから、新しい6文字のセットを展開！
+                  // ② ファンファーレの余韻を感じながら、1.5秒後に次の6文字を展開
                   setTimeout(() => {
                     this.currentBatchList = nextTargets.slice(0, 6).map(t => t.char);
                     this._renderGrid();
-                  }, 1200);
+                  }, 1500);
 
                 } else {
-                  // 全部の苦手漢字をクリアした場合
+                  // 全部の苦手漢字をクリアした完全制覇時
                   if (this.speechTextEl) {
                     this.speechTextEl.textContent = 'ぜんぶ ばっちり！このちょうしで がんばろう！';
                   }
+                  playFanfareSound();
                   this.gridContainer.style.display = 'none';
                   this.emptyMsg.style.display = 'flex';
                 }
