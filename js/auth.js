@@ -48,22 +48,14 @@ export class AuthManager {
 
     // 1. ローカルキャッシュからの自動復元チェック
     const savedUser = Storage.getCurrentUser();
-    const savedProgress = Storage.getProgress();
-    if (savedUser && savedProgress) {
+    if (savedUser) {
       this.currentUser = savedUser;
-      const rawCleared = savedProgress.clearedSets;
-      this.clearedSets = Array.isArray(rawCleared)
-        ? rawCleared
-        : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
-
-      this.applyUserData();
       modal.style.display = 'none';
-      this.checkHandModeSetup();
-      this.onUserAuthenticated(this.currentUser, this.clearedSets);
 
-      // ★ 重要：キャッシュで素早く開いた後、スプレッドシートの最新データを裏で受信して同期更新する
+      // スプレッドシート側の最新データを確実に待機して完全同期
       if (this.prefetchPromise) {
-        this.prefetchPromise.then(prefetchRes => {
+        try {
+          const prefetchRes = await this.prefetchPromise;
           if (prefetchRes && prefetchRes.success && prefetchRes.progressMap) {
             const latestProgress = prefetchRes.progressMap[this.currentUser.userId];
             const latestAuth = prefetchRes.authMap ? prefetchRes.authMap[this.currentUser.userId] : null;
@@ -71,11 +63,10 @@ export class AuthManager {
             if (latestAuth) {
               this.currentUser = latestAuth;
               Storage.setCurrentUser(this.currentUser);
-              this.applyUserData();
             }
 
             if (latestProgress) {
-              // スプレッドシート側の最新進捗をローカルストレージへマージ・上書き
+              // スプレッドシート側の最新進捗（苦手漢字統計・クリア単元）で完全に上書き同期
               const currentLocal = Storage.getProgress();
               const mergedProgress = {
                 ...currentLocal,
@@ -83,22 +74,27 @@ export class AuthManager {
                 charStats: latestProgress.charStats || {}
               };
               Storage.setProgress(mergedProgress);
-
-              const rawNewCleared = mergedProgress.clearedSets;
-              this.clearedSets = Array.isArray(rawNewCleared)
-                ? rawNewCleared
-                : (rawNewCleared && typeof rawNewCleared === 'object' ? Object.keys(rawNewCleared) : []);
-
-              // 最新進捗（苦手文字数・クリア状態）を画面に即座に反映
-              this.onUserAuthenticated(this.currentUser, this.clearedSets);
             }
           }
-        }).catch(err => console.warn('バックグラウンド最新進捗同期失敗:', err));
+        } catch (e) {
+          console.warn('最新データ同期失敗（オフラインフォールバック）:', e);
+        }
       }
+
+      // 最新化されたローカルストレージから進捗を展開
+      const finalProgress = Storage.getProgress();
+      const rawCleared = finalProgress.clearedSets;
+      this.clearedSets = Array.isArray(rawCleared)
+        ? rawCleared
+        : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
+
+      this.applyUserData();
+      this.checkHandModeSetup();
+      this.onUserAuthenticated(this.currentUser, this.clearedSets);
       return;
     }
 
-    // 2. ローカル静的名簿（data/users.json）の読み込み
+    // 2. 新規ログイン時：ローカル静的名簿（data/users.json）の読み込み
     selectClass.innerHTML = '<option value="">よみこみ中...</option>';
     selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
     selectUser.disabled = true;
@@ -180,7 +176,6 @@ export class AuthManager {
           ? rawCleared
           : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
 
-        // スプレッドシートから取得した最新の進捗・苦手文字を保存
         Storage.setCurrentUser(this.currentUser);
         Storage.setProgress(userProgress);
 
@@ -468,7 +463,6 @@ export class AuthManager {
   }
 
   _bindModalEvents() {
-    // 利き手設定
     document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
     document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
       document.getElementById('hand-modal').style.display = 'none';
@@ -477,7 +471,6 @@ export class AuthManager {
       btn.addEventListener('click', () => this.saveHandMode(btn.dataset.hand));
     });
 
-    // 音設定
     const btnToggleSound = document.getElementById('btn-toggle-sound');
     if (btnToggleSound) {
       btnToggleSound.addEventListener('click', () => this.openSoundModal());
@@ -492,13 +485,11 @@ export class AuthManager {
       btn.addEventListener('click', () => this.saveSoundMode(btn.dataset.sound));
     });
 
-    // パスワード変更
     document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
     document.getElementById('btn-cancel-pin').addEventListener('click', () => {
       document.getElementById('pin-modal').style.display = 'none';
     });
 
-    // ログアウト
     document.getElementById('btn-logout').addEventListener('click', () => {
       if (confirm('ログアウトしますか？')) {
         this.logout();
