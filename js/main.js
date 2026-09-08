@@ -64,6 +64,14 @@ class KanjiApp {
     this.init();
   }
 
+  // ローディング画面を閉じる
+  hideLoadingScreen() {
+    const loadingScreen = document.getElementById('app-loading-screen');
+    if (loadingScreen) {
+      loadingScreen.classList.add('is-hidden');
+    }
+  }
+
   async init() {
     initAudioUnlock();
 
@@ -91,6 +99,7 @@ class KanjiApp {
     this.bindEvents();
 
     try {
+      // 1. 問題データの取得
       const res = await fetch('data/grade5_questions.json');
       this.gradeData = await res.json();
       this.challengeManager = new ChallengeManager(this.gradeData, Storage);
@@ -100,10 +109,10 @@ class KanjiApp {
       this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
     }
 
-    // ★ 認証＆スプレッドシートの最新データ同期が完全に終わるのを待機
+    // 2. 認証 ＆ スプレッドシート最新データの完全同期待機
     await this.auth.initAuthFlow();
 
-    // 最新データ同期完了後にメニューとバッジを確実に再同期
+    // 3. データが100%揃った状態でメニューと苦手バッジを描画
     if (this.gradeData) {
       this.menu.setData(this.gradeData, this.auth.getClearedSets());
       if (this.drillManager) {
@@ -111,7 +120,10 @@ class KanjiApp {
       }
     }
 
-    // 最後に最新データに基づいてポップアップ判定を実行
+    // 4. すべての準備が整った瞬間にローディング画面を消去
+    this.hideLoadingScreen();
+
+    // 5. 最新データに基づいて日次ポップアップ判定を実行
     this.checkDailyPopups();
   }
 
@@ -569,7 +581,6 @@ class KanjiApp {
     }
   }
 
-  // 「こたえをみる」処理
   handlePass() {
     const q = this.getCurrentQuestion();
     if (!q) return;
@@ -602,7 +613,6 @@ class KanjiApp {
     this.ui.updateCheckButtonState(true);
   }
 
-  // 解答判定処理
   async handleCheck() {
     this.saveCurrentDrawing();
     const q = this.getCurrentQuestion();

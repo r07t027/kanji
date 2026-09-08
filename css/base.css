@@ -17,7 +17,75 @@ body {
   justify-content: center;
 }
 
-/* 共通アニメーション */
+/* ========================================================
+   全画面 起動ローディングオーバーレイ
+   ======================================================== */
+.app-loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f4f9fd;
+  z-index: 3000; /* すべての要素の最前面 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+}
+
+.app-loading-screen.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* 水色基調の回転スピナー */
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e0f2fe;
+  border-top-color: #0284c7;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-text {
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: #0369a1;
+  letter-spacing: 1px;
+  animation: pulseText 1.4s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseText {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========================================================
+   共通アニメーション
+   ======================================================== */
 @keyframes fadeIn {
   from {
     opacity: 0;
