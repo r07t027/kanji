@@ -3,7 +3,7 @@
  * ユーザー認証、設定モーダル（利き手・音・PIN）、セッション管理モジュール
  */
 import { ensureAudioUnlocked, setAudioMuted } from './audio.js';
-import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, updateHandModeApi, updatePinApi } from './logger.js';
+import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, updateHandModeApi, updateSoundModeApi, updatePinApi } from './logger.js';
 import { Storage } from './storage.js';
 
 export class AuthManager {
@@ -16,7 +16,7 @@ export class AuthManager {
     this.onHandModeChanged = options.onHandModeChanged || (() => {});
 
     this._bindModalEvents();
-    this.applySoundSetting(); // 音設定の初期化復元
+    this.applySoundSetting();
   }
 
   setPrefetchPromise(promise) {
@@ -148,6 +148,10 @@ export class AuthManager {
         Storage.setCurrentUser(this.currentUser);
         Storage.setProgress(userProgress);
 
+        // スプレッドシートから取得した音設定をローカルへ反映
+        const soundMode = matchedUser.soundMode || 'on';
+        Storage.setSoundEnabled(soundMode !== 'off');
+
         this.applyUserData();
         modal.style.display = 'none';
         this.checkHandModeSetup();
@@ -175,6 +179,11 @@ export class AuthManager {
 
     const handMode = this.currentUser.handMode || 'right';
     this.onHandModeChanged(handMode === 'left');
+
+    if (this.currentUser.soundMode) {
+      Storage.setSoundEnabled(this.currentUser.soundMode !== 'off');
+    }
+    this.applySoundSetting();
   }
 
   checkHandModeSetup() {
@@ -293,7 +302,7 @@ export class AuthManager {
     soundModal.style.display = 'flex';
   }
 
-  saveSoundMode(mode) {
+  async saveSoundMode(mode) {
     const soundModal = document.getElementById('sound-modal');
     const soundMsg = document.getElementById('sound-modal-msg');
     const btnRow = document.getElementById('sound-modal-btn-row');
@@ -302,7 +311,6 @@ export class AuthManager {
     const currentlyEnabled = Storage.getSoundEnabled();
     const newEnabled = (mode === 'on');
 
-    // 既に選択されている設定と同じなら何もしない
     if (currentlyEnabled === newEnabled) {
       return;
     }
@@ -317,11 +325,22 @@ export class AuthManager {
     soundMsg.className = 'login-error-msg pin-status-feedback is-saving';
     soundMsg.style.display = 'flex';
 
-    // ローカル永続化 ＆ オーディオコントローラーへ即時反映
+    // ローカル状態およびAudioControllerへ即時反映
     Storage.setSoundEnabled(newEnabled);
     this.applySoundSetting();
 
-    setTimeout(() => {
+    // ★ スプレッドシート MASTER G列へ保存
+    let apiSuccess = true;
+    if (this.currentUser) {
+      const res = await updateSoundModeApi(this.currentUser.userId, mode);
+      apiSuccess = res && res.success;
+      if (apiSuccess) {
+        this.currentUser.soundMode = mode;
+        Storage.setCurrentUser(this.currentUser);
+      }
+    }
+
+    if (apiSuccess) {
       soundMsg.textContent = 'おとを へんこうしました。';
       soundMsg.className = 'login-error-msg pin-status-feedback is-success';
 
@@ -331,7 +350,23 @@ export class AuthManager {
         btnRow.style.display = 'flex';
         choiceButtons.forEach(btn => btn.disabled = false);
       }, 3000);
-    }, 400);
+    } else {
+      // 失敗時ロールバック
+      Storage.setSoundEnabled(currentlyEnabled);
+      this.applySoundSetting();
+
+      soundMsg.textContent = 'ほぞんできませんでした。';
+      soundMsg.className = 'login-error-msg pin-status-feedback is-error';
+
+      setTimeout(() => {
+        soundMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.toggle('active', btn.dataset.sound === (currentlyEnabled ? 'on' : 'off'));
+        });
+      }, 1800);
+    }
   }
 
   openPinModal() {

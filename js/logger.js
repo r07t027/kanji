@@ -48,12 +48,17 @@ export async function updateHandModeApi(userId, handMode) {
   return await callApi('updateHandMode', { userId, handMode });
 }
 
+// ★ 追加：音のON/OFFをスプレッドシートG列へ保存
+export async function updateSoundModeApi(userId, soundMode) {
+  return await callApi('updateSoundMode', { userId, soundMode });
+}
+
 export async function updatePinApi(userId, newPin) {
   return await callApi('updatePin', { userId, newPin });
 }
 
 /**
- * 学習完了時の保存（backend.gs の payload.charStats と完全に一致させる）
+ * 学習完了時の保存
  */
 export async function saveProgressAndLogs(userId, setId, isSetCleared, charStats, logRecords) {
   return await callApi('saveProgressAndLog', {
