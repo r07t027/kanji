@@ -6,7 +6,8 @@ const SOUND_FILES = {
   correct: 'assets/audio/correct.mp3',
   wrong: 'assets/audio/wrong.mp3',
   complete: 'assets/audio/complete.mp3',
-  disappear: 'assets/audio/disappear.mp3' // ★ 追加：消滅・キラキラ効果音
+  disappear: 'assets/audio/disappear.mp3',
+  drill: 'assets/audio/drill.mp3' // ★ 追加：モーダルオープン音
 };
 
 export function getAudioContext() {
@@ -27,10 +28,10 @@ async function loadSound(name, url) {
   }
 }
 
-export async function ensureAudioUnlocked() {
+export function ensureAudioUnlocked() {
   const ctx = getAudioContext();
   if (ctx && ctx.state === 'suspended') {
-    await ctx.resume();
+    ctx.resume();
   }
 }
 
@@ -92,7 +93,11 @@ export function playMistakeSound() {
   playBuffer('wrong');
 }
 
-// ★ 追加：克服文字消滅＆キラキラ演出用
 export function playDisappearSound() {
   playBuffer('disappear');
+}
+
+// ★ 追加：特訓・挑戦状モーダル出現音
+export function playDrillSound() {
+  playBuffer('drill');
 }

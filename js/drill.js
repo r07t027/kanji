@@ -4,7 +4,7 @@
  */
 import { CanvasController } from './canvas.js';
 import { KanjiVGPlayer, prefetchKanjiVG } from './kanjivg.js';
-import { playCorrectSound, playMistakeSound, playFanfareSound, playDisappearSound, ensureAudioUnlocked } from './audio.js';
+import { playCorrectSound, playMistakeSound, playFanfareSound, playDisappearSound, playDrillSound, ensureAudioUnlocked } from './audio.js';
 import { syncProgressSilently } from './logger.js';
 
 export class DrillManager {
@@ -115,8 +115,8 @@ export class DrillManager {
     });
   }
 
-  // 特訓を開いたとき
-  open() {
+  // 特訓モーダルを開いたとき（playSoundがtrueの新規オープン時のみdrill.mp3を鳴らす）
+  open(playSound = true) {
     this.drillView.style.display = 'flex';
     if (this.speechTextEl) {
       this.speechTextEl.textContent = '３かい つづけて ただしく かけたら こくふくだ！ いっしょに がんばろう！';
@@ -125,6 +125,10 @@ export class DrillManager {
     // 優先度上位6文字を今回のバッチとして固定
     const sorted = this._getSortedTargets();
     this.currentBatchList = sorted.slice(0, 6).map(t => t.char);
+
+    if (playSound) {
+      playDrillSound();
+    }
 
     this.showList();
   }
@@ -152,7 +156,6 @@ export class DrillManager {
   _bindEvents() {
     document.getElementById('btn-drill-close-list').addEventListener('click', () => {
       ensureAudioUnlocked();
-      // その日はもう起動時自動ポップアップを出さないよう日付を記録
       if (this.storage) {
         this.storage.recordDrillDismissToday();
       }

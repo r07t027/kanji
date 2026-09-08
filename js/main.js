@@ -2,7 +2,7 @@
  * main.js
  * アプリケーション統合・エントリーポイント
  */
-import { initAudioUnlock, ensureAudioUnlocked, playCorrectSound, playFanfareSound, playMistakeSound } from './audio.js';
+import { initAudioUnlock, ensureAudioUnlocked, playCorrectSound, playFanfareSound, playMistakeSound, playDrillSound } from './audio.js';
 import { CanvasController } from './canvas.js';
 import { UIController } from './ui.js';
 import { prefetchAllDataAsync, saveProgressAndLogs, syncProgressSilently } from './logger.js';
@@ -86,7 +86,7 @@ class KanjiApp {
           this.hasUnsavedSessionChanges = false;
         }
 
-        // ★ 特訓終了後、続けて「かきまるからの挑戦状」の判定・表示へ
+        // 特訓終了後、続けて「かきまるからの挑戦状」の判定・表示へ
         this.checkDailyChallenge();
       },
       onProgressChange: () => {
@@ -114,9 +114,8 @@ class KanjiApp {
   // 起動時のポップアップ連動（特訓があれば特訓を最優先、なければ挑戦状）
   checkDailyPopups() {
     if (Storage.shouldShowDrillPopupToday() && this.drillManager) {
-      // 苦手漢字があり今日まだ閉じていない場合：特訓を最優先で表示
-      this.drillManager.open();
-      // 特訓表示中は挑戦状ヘッダーボタンも更新
+      // 苦手漢字があり今日まだ閉じていない場合：特訓を最優先で表示（drill.mp3が鳴る）
+      this.drillManager.open(true);
       this.checkDailyChallenge(false);
     } else {
       // 特訓がない（または既に閉じた）場合：挑戦状の判定を行う
@@ -137,6 +136,8 @@ class KanjiApp {
       if (shouldPopup && allowPopup) {
         overlay.style.display = 'flex';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
+        // ★ 挑戦状モーダルが新規オープンした瞬間に drill.mp3 を再生
+        playDrillSound();
       } else {
         overlay.style.display = 'none';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
@@ -201,7 +202,8 @@ class KanjiApp {
       btnMenuDrill.addEventListener('click', () => {
         ensureAudioUnlocked();
         if (this.drillManager) {
-          this.drillManager.open();
+          // 手動でモーダルを開くので音を鳴らす (true)
+          this.drillManager.open(true);
         }
       });
     }
@@ -216,7 +218,7 @@ class KanjiApp {
       });
     }
 
-    // 挑戦状モーダルアクション（あとに する）
+    // 挑戦状モーダルアクション（メニューへ もどる）
     const btnChallengeDecline = document.getElementById('btn-challenge-decline');
     if (btnChallengeDecline) {
       btnChallengeDecline.addEventListener('click', () => {
@@ -229,17 +231,19 @@ class KanjiApp {
       });
     }
 
-    // ヘッダーの挑戦状オープンボタン（再ポップアップ）
+    // ヘッダーの挑戦状オープンボタン（手動再ポップアップ）
     const btnHeaderChallenge = document.getElementById('btn-header-challenge');
     if (btnHeaderChallenge) {
       btnHeaderChallenge.addEventListener('click', () => {
         ensureAudioUnlocked();
         document.getElementById('challenge-modal-overlay').style.display = 'flex';
         btnHeaderChallenge.style.display = 'none';
+        // 手動でモーダルを開いた瞬間にも drill.mp3 を再生
+        playDrillSound();
       });
     }
 
-    // デバッグ用：1日1回の制限リセット（挑戦状・特訓スキップの両方をリセット）
+    // デバッグ用：1日1回の制限リセット
     const btnDebugReset = document.getElementById('btn-debug-reset-challenge');
     if (btnDebugReset) {
       btnDebugReset.addEventListener('click', () => {
