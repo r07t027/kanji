@@ -47,8 +47,8 @@ class KanjiApp {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
           if (this.drillManager) this.drillManager.updateBadgeCount();
         }
-        // ログイン成功時にも即座に挑戦状の判定を実行
-        this.checkDailyChallenge();
+        // ログイン成功時にポップアップチェーン（特訓 ➜ 挑戦状）を実行
+        this.checkDailyPopups();
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -85,6 +85,9 @@ class KanjiApp {
           }
           this.hasUnsavedSessionChanges = false;
         }
+
+        // ★ 特訓終了後、続けて「かきまるからの挑戦状」の判定・表示へ
+        this.checkDailyChallenge();
       },
       onProgressChange: () => {
         this.hasUnsavedSessionChanges = true;
@@ -105,11 +108,24 @@ class KanjiApp {
     }
 
     await this.auth.initAuthFlow();
-    this.checkDailyChallenge();
+    this.checkDailyPopups();
   }
 
-  // 1日1回の挑戦状の出現判定 & ヘッダーボタンの表示切り替え（モーダル方式）
-  checkDailyChallenge() {
+  // 起動時のポップアップ連動（特訓があれば特訓を最優先、なければ挑戦状）
+  checkDailyPopups() {
+    if (Storage.shouldShowDrillPopupToday() && this.drillManager) {
+      // 苦手漢字があり今日まだ閉じていない場合：特訓を最優先で表示
+      this.drillManager.open();
+      // 特訓表示中は挑戦状ヘッダーボタンも更新
+      this.checkDailyChallenge(false);
+    } else {
+      // 特訓がない（または既に閉じた）場合：挑戦状の判定を行う
+      this.checkDailyChallenge(true);
+    }
+  }
+
+  // 1日1回の挑戦状の出現判定 & ヘッダーボタンの表示切り替え
+  checkDailyChallenge(allowPopup = true) {
     const overlay = document.getElementById('challenge-modal-overlay');
     const btnHeaderChallenge = document.getElementById('btn-header-challenge');
     if (!overlay) return;
@@ -118,7 +134,7 @@ class KanjiApp {
 
     if (canChallenge) {
       const shouldPopup = this.challengeManager.shouldShowPopupToday();
-      if (shouldPopup) {
+      if (shouldPopup && allowPopup) {
         overlay.style.display = 'flex';
         if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
       } else {
@@ -223,14 +239,14 @@ class KanjiApp {
       });
     }
 
-    // デバッグ用：1日1回の制限リセット
+    // デバッグ用：1日1回の制限リセット（挑戦状・特訓スキップの両方をリセット）
     const btnDebugReset = document.getElementById('btn-debug-reset-challenge');
     if (btnDebugReset) {
       btnDebugReset.addEventListener('click', () => {
         ensureAudioUnlocked();
         Storage.resetChallengeLimit();
-        this.checkDailyChallenge();
-        alert('1日1回の制限をリセットしました！');
+        this.checkDailyPopups();
+        alert('1日1回の制限（特訓・挑戦状）をリセットしました！');
       });
     }
 
@@ -249,7 +265,7 @@ class KanjiApp {
         this.isChallengeMode = false;
         this.ui.showMenuView();
         this.menu.render();
-        this.checkDailyChallenge();
+        this.checkDailyPopups();
         if (this.drillManager) this.drillManager.updateBadgeCount();
       } else {
         this.startNextSet();
@@ -260,7 +276,7 @@ class KanjiApp {
       this.isChallengeMode = false;
       this.ui.showMenuView();
       this.menu.render();
-      this.checkDailyChallenge();
+      this.checkDailyPopups();
       if (this.drillManager) this.drillManager.updateBadgeCount();
     });
 
@@ -285,7 +301,7 @@ class KanjiApp {
     this.isChallengeMode = false;
     this.ui.showMenuView();
     this.menu.render();
-    this.checkDailyChallenge();
+    this.checkDailyPopups();
     if (this.drillManager) this.drillManager.updateBadgeCount();
   }
 
@@ -332,7 +348,7 @@ class KanjiApp {
     } else {
       this.ui.showMenuView();
       this.menu.render();
-      this.checkDailyChallenge();
+      this.checkDailyPopups();
       if (this.drillManager) this.drillManager.updateBadgeCount();
     }
   }
@@ -350,11 +366,10 @@ class KanjiApp {
 
   loadQuestion(qIndex) {
     this.currentQIndex = qIndex;
-    this.hasAttemptedFirst = false; // 新しい問題に入ったので初回判定フラグをリセット
+    this.hasAttemptedFirst = false;
     const q = this.getCurrentQuestion();
     if (!q) return;
 
-    // お手本SVGのバックグラウンド先読み（描画中に取得完了させる）
     if (q.targets && Array.isArray(q.targets)) {
       const chars = q.targets.map(t => t.char);
       prefetchKanjiVG(chars);
@@ -568,7 +583,6 @@ class KanjiApp {
     const q = this.getCurrentQuestion();
     if (!q) return;
 
-    // 即座に wrong.mp3 を再生
     playMistakeSound();
     this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
 
@@ -586,7 +600,6 @@ class KanjiApp {
 
     const falseResults = new Array((q.targets || []).length).fill(false);
 
-    // お手本画面を表示（isPass = true）
     this.ui.showResultView(
       false,
       '',
@@ -618,7 +631,6 @@ class KanjiApp {
         questionLogDetail
       } = await this.validator.validateQuestion(q, this.userInputs);
 
-      // 初回試行の場合のみ正誤統計（charStats）をローカルに記録
       if (!this.hasAttemptedFirst) {
         const targets = q.targets || [];
         const existingStats = Storage.getProgress().charStats || {};
@@ -659,7 +671,6 @@ class KanjiApp {
 
             this.ui.showAllClear(this.isChallengeMode, displayName);
 
-            // 通常モード時のみセットクリア記録を更新してGASへ送信
             if (!this.isChallengeMode) {
               const currentSetId = this.menu.getSelectedSetId();
               this.auth.addClearedSet(currentSetId);
@@ -676,7 +687,6 @@ class KanjiApp {
                 );
               }
             } else {
-              // 挑戦モード時も最新の charStats を確実に裏で同期
               const currentUser = this.auth.getCurrentUser();
               if (currentUser) {
                 const progress = Storage.getProgress();

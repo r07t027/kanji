@@ -115,7 +115,7 @@ export class DrillManager {
     });
   }
 
-  // メニューから特訓を開いたとき
+  // 特訓を開いたとき
   open() {
     this.drillView.style.display = 'flex';
     if (this.speechTextEl) {
@@ -152,6 +152,10 @@ export class DrillManager {
   _bindEvents() {
     document.getElementById('btn-drill-close-list').addEventListener('click', () => {
       ensureAudioUnlocked();
+      // その日はもう起動時自動ポップアップを出さないよう日付を記録
+      if (this.storage) {
+        this.storage.recordDrillDismissToday();
+      }
       this.close();
     });
 

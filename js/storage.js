@@ -49,11 +49,12 @@ export const Storage = {
         clearedSets: clearedSetsObj,
         charStats: progress.charStats || {},
         lastChallengeDate: progress.lastChallengeDate || '',
-        lastDismissDate: progress.lastDismissDate || ''
+        lastDismissDate: progress.lastDismissDate || '',
+        lastDrillDismissDate: progress.lastDrillDismissDate || '' // 特訓モーダル本日辞退日
       };
     } catch (e) {
       console.warn('進捗情報の復元に失敗しました:', e);
-      return { clearedSets: {}, charStats: {}, lastChallengeDate: '', lastDismissDate: '' };
+      return { clearedSets: {}, charStats: {}, lastChallengeDate: '', lastDismissDate: '', lastDrillDismissDate: '' };
     }
   },
 
@@ -77,10 +78,9 @@ export const Storage = {
    * - 漢字以外は除外
    * - 一度も間違えていない初見正解（true）は記録しない（苦手漢字のみを対象とする）
    * - 過去に間違えたことがある漢字は、復習・克服状況を更新するため true も記録する
-   * - ★ 不正解（false）時は、特訓完了フラグ（drillCleared）を false にリセット
+   * - 不正解（false）時は、特訓完了フラグ（drillCleared）を false にリセット
    */
   recordCharAttempt(char, isSuccess) {
-    // ひらがな・カタカナ・記号などは除外し、漢字のみを対象とする
     if (!char || !KANJI_REGEX.test(char)) {
       return;
     }
@@ -92,12 +92,10 @@ export const Storage = {
 
     const existingStat = progress.charStats[char];
 
-    // 初めて書く漢字で、正解（true）の場合は苦手リストに登録不要
     if (!existingStat && isSuccess) {
       return;
     }
 
-    // 初めての間違い（false）、または既に苦手リストに入っている漢字の更新
     if (!existingStat) {
       progress.charStats[char] = {
         history: [],
@@ -113,7 +111,6 @@ export const Storage = {
     }
     stat.lastAttempt = new Date().toISOString();
 
-    // 再び間違えた場合は特訓完了フラグをリセットして特訓対象へ復活
     if (!isSuccess) {
       stat.drillCleared = false;
     }
@@ -122,7 +119,7 @@ export const Storage = {
   },
 
   /**
-   * ★ 特訓対象の漢字一覧を取得
+   * 特訓対象の漢字一覧を取得
    * 直近が不正解（未克服）かつ、まだ特訓完了（drillCleared: true）していない文字を返す
    */
   getDrillTargets() {
@@ -136,7 +133,6 @@ export const Storage = {
       if (history.length === 0) return;
 
       const lastResult = history[history.length - 1];
-      // 直近が不正解 かつ 特訓未完了のもの
       if (lastResult === false && stat.drillCleared !== true) {
         targets.push({
           char,
@@ -146,13 +142,12 @@ export const Storage = {
       }
     });
 
-    // 最終試行日時が新しい順にソート
     targets.sort((a, b) => new Date(b.lastAttempt).getTime() - new Date(a.lastAttempt).getTime());
     return targets;
   },
 
   /**
-   * ★ 特訓で3回連続正解した漢字に drillCleared: true を付与
+   * 特訓で3回連続正解した漢字に drillCleared: true を付与
    */
   markDrillCleared(char) {
     if (!char) return;
@@ -179,11 +174,29 @@ export const Storage = {
     this.setProgress(progress);
   },
 
-  // 動作確認用：1日1回の挑戦制限（挑戦日・辞退日）をリセット
+  // 特訓モーダルを「メニューへ もどる」で閉じた日付を記録
+  recordDrillDismissToday() {
+    const progress = this.getProgress();
+    const today = new Date().toISOString().split('T')[0];
+    progress.lastDrillDismissDate = today;
+    this.setProgress(progress);
+  },
+
+  // 今日の特訓自動ポップアップを出すべきか判定
+  shouldShowDrillPopupToday() {
+    const targets = this.getDrillTargets();
+    if (targets.length === 0) return false;
+    const progress = this.getProgress();
+    const today = new Date().toISOString().split('T')[0];
+    return progress.lastDrillDismissDate !== today;
+  },
+
+  // 動作確認用：1日1回の制限（挑戦日・辞退日・特訓辞退日）をリセット
   resetChallengeLimit() {
     const progress = this.getProgress();
     progress.lastChallengeDate = '';
     progress.lastDismissDate = '';
+    progress.lastDrillDismissDate = '';
     this.setProgress(progress);
   },
 
