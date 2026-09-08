@@ -1,8 +1,8 @@
 /**
  * auth.js
- * ユーザー認証、設定モーダル（利き手・PIN）、セッション管理モジュール
+ * ユーザー認証、設定モーダル（利き手・音・PIN）、セッション管理モジュール
  */
-import { ensureAudioUnlocked } from './audio.js';
+import { ensureAudioUnlocked, setAudioMuted } from './audio.js';
 import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, updateHandModeApi, updatePinApi } from './logger.js';
 import { Storage } from './storage.js';
 
@@ -16,6 +16,7 @@ export class AuthManager {
     this.onHandModeChanged = options.onHandModeChanged || (() => {});
 
     this._bindModalEvents();
+    this.applySoundSetting(); // 音設定の初期化復元
   }
 
   setPrefetchPromise(promise) {
@@ -183,6 +184,18 @@ export class AuthManager {
     }
   }
 
+  // ==================== 音のON/OFF初期化 ＆ 反映 ====================
+  applySoundSetting() {
+    const isEnabled = Storage.getSoundEnabled();
+    setAudioMuted(!isEnabled);
+
+    const btnToggleSound = document.getElementById('btn-toggle-sound');
+    if (btnToggleSound) {
+      btnToggleSound.textContent = isEnabled ? '🎶' : '🔇';
+      btnToggleSound.title = isEnabled ? 'おと: ON' : 'おと: OFF';
+    }
+  }
+
   // ==================== 設定モーダル制御 ====================
   openHandModal(isInitial = false) {
     const handModal = document.getElementById('hand-modal');
@@ -196,7 +209,7 @@ export class AuthManager {
     btnClose.style.display = isInitial ? 'none' : 'block';
 
     const currentHand = this.currentUser?.handMode || 'right';
-    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
+    document.querySelectorAll('.btn-hand-choice:not(.btn-sound-choice)').forEach(btn => {
       btn.disabled = false;
       btn.classList.toggle('active', btn.dataset.hand === currentHand);
     });
@@ -209,17 +222,14 @@ export class AuthManager {
 
     const currentHand = this.currentUser.handMode || 'right';
     const handModal = document.getElementById('hand-modal');
-    const btnClose = document.getElementById('btn-close-hand-modal');
     const handMsg = document.getElementById('hand-modal-msg');
     const btnRow = document.getElementById('hand-modal-btn-row');
-    const choiceButtons = document.querySelectorAll('.btn-hand-choice');
+    const choiceButtons = document.querySelectorAll('.btn-hand-choice:not(.btn-sound-choice)');
 
-    // 既に選択されている手と同じ場合は何もしない
     if (currentHand === mode) {
       return;
     }
 
-    // 選択ボタンのアクティブ表示更新 & ボタン類をロック
     choiceButtons.forEach(btn => {
       btn.disabled = true;
       btn.classList.toggle('active', btn.dataset.hand === mode);
@@ -260,6 +270,68 @@ export class AuthManager {
         });
       }, 1800);
     }
+  }
+
+  // ==================== 音のON/OFF設定モーダル ====================
+  openSoundModal() {
+    const soundModal = document.getElementById('sound-modal');
+    const soundMsg = document.getElementById('sound-modal-msg');
+    const btnRow = document.getElementById('sound-modal-btn-row');
+
+    soundMsg.textContent = '';
+    soundMsg.style.display = 'none';
+    btnRow.style.display = 'flex';
+
+    const isEnabled = Storage.getSoundEnabled();
+    const currentVal = isEnabled ? 'on' : 'off';
+
+    document.querySelectorAll('.btn-sound-choice').forEach(btn => {
+      btn.disabled = false;
+      btn.classList.toggle('active', btn.dataset.sound === currentVal);
+    });
+
+    soundModal.style.display = 'flex';
+  }
+
+  saveSoundMode(mode) {
+    const soundModal = document.getElementById('sound-modal');
+    const soundMsg = document.getElementById('sound-modal-msg');
+    const btnRow = document.getElementById('sound-modal-btn-row');
+    const choiceButtons = document.querySelectorAll('.btn-sound-choice');
+
+    const currentlyEnabled = Storage.getSoundEnabled();
+    const newEnabled = (mode === 'on');
+
+    // 既に選択されている設定と同じなら何もしない
+    if (currentlyEnabled === newEnabled) {
+      return;
+    }
+
+    choiceButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.classList.toggle('active', btn.dataset.sound === mode);
+    });
+
+    btnRow.style.display = 'none';
+    soundMsg.textContent = 'ほぞんちゅう…';
+    soundMsg.className = 'login-error-msg pin-status-feedback is-saving';
+    soundMsg.style.display = 'flex';
+
+    // ローカル永続化 ＆ オーディオコントローラーへ即時反映
+    Storage.setSoundEnabled(newEnabled);
+    this.applySoundSetting();
+
+    setTimeout(() => {
+      soundMsg.textContent = 'おとを へんこうしました。';
+      soundMsg.className = 'login-error-msg pin-status-feedback is-success';
+
+      setTimeout(() => {
+        soundModal.style.display = 'none';
+        soundMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => btn.disabled = false);
+      }, 3000);
+    }, 400);
   }
 
   openPinModal() {
@@ -332,19 +404,37 @@ export class AuthManager {
   }
 
   _bindModalEvents() {
+    // 利き手設定
     document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
     document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
       document.getElementById('hand-modal').style.display = 'none';
     });
-    document.querySelectorAll('.btn-hand-choice').forEach(btn => {
+    document.querySelectorAll('.btn-hand-choice:not(.btn-sound-choice)').forEach(btn => {
       btn.addEventListener('click', () => this.saveHandMode(btn.dataset.hand));
     });
 
+    // 音設定
+    const btnToggleSound = document.getElementById('btn-toggle-sound');
+    if (btnToggleSound) {
+      btnToggleSound.addEventListener('click', () => this.openSoundModal());
+    }
+    const btnCloseSound = document.getElementById('btn-close-sound-modal');
+    if (btnCloseSound) {
+      btnCloseSound.addEventListener('click', () => {
+        document.getElementById('sound-modal').style.display = 'none';
+      });
+    }
+    document.querySelectorAll('.btn-sound-choice').forEach(btn => {
+      btn.addEventListener('click', () => this.saveSoundMode(btn.dataset.sound));
+    });
+
+    // パスワード変更
     document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
     document.getElementById('btn-cancel-pin').addEventListener('click', () => {
       document.getElementById('pin-modal').style.display = 'none';
     });
 
+    // ログアウト
     document.getElementById('btn-logout').addEventListener('click', () => {
       if (confirm('ログアウトしますか？')) {
         this.logout();

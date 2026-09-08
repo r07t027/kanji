@@ -1,14 +1,23 @@
 // Web Audio API による MP3 プリロード & 低遅延再生
 let audioCtx = null;
 const audioBuffers = {};
+let isMuted = false; // ★ 追加：完全ミュートフラグ
 
 const SOUND_FILES = {
   correct: 'assets/audio/correct.mp3',
   wrong: 'assets/audio/wrong.mp3',
   complete: 'assets/audio/complete.mp3',
   disappear: 'assets/audio/disappear.mp3',
-  drill: 'assets/audio/drill.mp3' // ★ 追加：モーダルオープン音
+  drill: 'assets/audio/drill.mp3'
 };
+
+export function setAudioMuted(muted) {
+  isMuted = !!muted;
+}
+
+export function isAudioMuted() {
+  return isMuted;
+}
 
 export function getAudioContext() {
   if (!audioCtx) {
@@ -29,6 +38,7 @@ async function loadSound(name, url) {
 }
 
 export function ensureAudioUnlocked() {
+  if (isMuted) return; // ミュート時は何もしない
   const ctx = getAudioContext();
   if (ctx && ctx.state === 'suspended') {
     ctx.resume();
@@ -68,6 +78,9 @@ export function initAudioUnlock() {
 }
 
 function playBuffer(name) {
+  // ★ 音を鳴らさない設定の時は即座にリターン（完全無音）
+  if (isMuted) return;
+
   const ctx = getAudioContext();
   if (!ctx || !audioBuffers[name]) return;
 
@@ -97,7 +110,6 @@ export function playDisappearSound() {
   playBuffer('disappear');
 }
 
-// ★ 追加：特訓・挑戦状モーダル出現音
 export function playDrillSound() {
   playBuffer('drill');
 }

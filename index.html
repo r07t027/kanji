@@ -74,6 +74,30 @@
     </div>
   </div>
 
+  <!-- ==================== 音のON/OFF設定モーダル ==================== -->
+  <div id="sound-modal" class="login-modal-overlay" style="display: none;">
+    <div class="login-card small-modal-card">
+      <h2 class="modal-sub-title">おとを ならす？</h2>
+      <p class="modal-sub-desc">あとから いつでも かえられるよ！</p>
+      
+      <div class="hand-modal-selector">
+        <button type="button" class="btn-hand-choice btn-sound-choice" data-sound="on">
+          <span class="hand-choice-icon">🔊</span>
+          <span class="hand-choice-text">ならす</span>
+        </button>
+        <button type="button" class="btn-hand-choice btn-sound-choice" data-sound="off">
+          <span class="hand-choice-icon">🔇</span>
+          <span class="hand-choice-text">ならさない</span>
+        </button>
+      </div>
+
+      <div id="sound-modal-msg" class="login-error-msg pin-status-feedback" style="display: none;"></div>
+      <div id="sound-modal-btn-row" class="modal-btn-row" style="justify-content: center;">
+        <button type="button" id="btn-close-sound-modal" class="btn-modal-cancel">とじる</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== パスワード変更モーダル ==================== -->
   <div id="pin-modal" class="login-modal-overlay" style="display: none;">
     <div class="login-card small-modal-card">
