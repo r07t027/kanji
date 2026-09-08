@@ -62,7 +62,7 @@ export class AuthManager {
       return;
     }
 
-    // 2. ローカル静的名簿（data/users.json）の読み込み（以前の元通りの処理）
+    // 2. ローカル静的名簿（data/users.json）の読み込み
     selectClass.innerHTML = '<option value="">よみこみ中...</option>';
     selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
     selectUser.disabled = true;
@@ -211,10 +211,15 @@ export class AuthManager {
     const pinModal = document.getElementById('pin-modal');
     const inputNewPin = document.getElementById('input-new-pin');
     const pinMsg = document.getElementById('pin-modal-msg');
+    const btnRow = document.querySelector('#pin-modal .modal-btn-row');
     const btnSave = document.getElementById('btn-save-pin');
 
     inputNewPin.value = '';
+    inputNewPin.disabled = false;
+    pinMsg.textContent = '';
     pinMsg.style.display = 'none';
+    pinMsg.className = 'login-error-msg pin-status-feedback';
+    btnRow.style.display = 'flex';
     btnSave.disabled = true;
     btnSave.textContent = 'ほぞんする';
 
@@ -224,20 +229,45 @@ export class AuthManager {
 
     btnSave.onclick = async () => {
       const newPin = inputNewPin.value.trim();
-      btnSave.disabled = true;
-      btnSave.textContent = 'ほぞんちゅう...';
+      if (newPin.length !== 4) return;
+
+      // 1. ボタンを非表示にし、入力欄をロックして「ほぞんちゅう…」を表示
+      inputNewPin.disabled = true;
+      btnRow.style.display = 'none';
+      pinMsg.textContent = 'ほぞんちゅう…';
+      pinMsg.className = 'login-error-msg pin-status-feedback is-saving';
+      pinMsg.style.display = 'flex';
 
       const res = await updatePinApi(this.currentUser.userId, newPin);
-      if (res.success) {
+
+      if (res && res.success) {
+        // 2. 保存成功時：メッセージ表示後3秒待って自動で閉じる
         this.currentUser.pin = newPin;
         Storage.setCurrentUser(this.currentUser);
-        pinModal.style.display = 'none';
-        alert('パスワードを へんこうしました！');
+
+        pinMsg.textContent = 'パスワードを へんこうしました。';
+        pinMsg.className = 'login-error-msg pin-status-feedback is-success';
+
+        setTimeout(() => {
+          pinModal.style.display = 'none';
+          inputNewPin.disabled = false;
+          btnRow.style.display = 'flex';
+          pinMsg.style.display = 'none';
+        }, 3000);
+
       } else {
-        pinMsg.textContent = 'へんこう できませんでした。';
-        pinMsg.style.display = 'block';
-        btnSave.disabled = false;
-        btnSave.textContent = 'ほぞんする';
+        // 3. 保存失敗時：メッセージ表示後、再びボタンを表示して再入力可能に
+        pinMsg.textContent = 'ほぞんできませんでした。';
+        pinMsg.className = 'login-error-msg pin-status-feedback is-error';
+
+        setTimeout(() => {
+          pinMsg.style.display = 'none';
+          btnRow.style.display = 'flex';
+          btnSave.disabled = false;
+          btnSave.textContent = 'ほぞんする';
+          inputNewPin.disabled = false;
+          inputNewPin.focus();
+        }, 1800);
       }
     };
 
