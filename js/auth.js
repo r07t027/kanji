@@ -187,10 +187,17 @@ export class AuthManager {
   openHandModal(isInitial = false) {
     const handModal = document.getElementById('hand-modal');
     const btnClose = document.getElementById('btn-close-hand-modal');
+    const handMsg = document.getElementById('hand-modal-msg');
+    const btnRow = document.getElementById('hand-modal-btn-row');
+
+    handMsg.textContent = '';
+    handMsg.style.display = 'none';
+    btnRow.style.display = 'flex';
     btnClose.style.display = isInitial ? 'none' : 'block';
 
     const currentHand = this.currentUser?.handMode || 'right';
     document.querySelectorAll('.btn-hand-choice').forEach(btn => {
+      btn.disabled = false;
       btn.classList.toggle('active', btn.dataset.hand === currentHand);
     });
 
@@ -199,12 +206,60 @@ export class AuthManager {
 
   async saveHandMode(mode) {
     if (!this.currentUser) return;
-    this.currentUser.handMode = mode;
-    this.onHandModeChanged(mode === 'left');
 
-    Storage.setCurrentUser(this.currentUser);
-    document.getElementById('hand-modal').style.display = 'none';
-    await updateHandModeApi(this.currentUser.userId, mode);
+    const currentHand = this.currentUser.handMode || 'right';
+    const handModal = document.getElementById('hand-modal');
+    const btnClose = document.getElementById('btn-close-hand-modal');
+    const handMsg = document.getElementById('hand-modal-msg');
+    const btnRow = document.getElementById('hand-modal-btn-row');
+    const choiceButtons = document.querySelectorAll('.btn-hand-choice');
+
+    // 既に選択されている手と同じ場合は何もしない
+    if (currentHand === mode) {
+      return;
+    }
+
+    // 選択ボタンのアクティブ表示更新 & ボタン類をロック
+    choiceButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.classList.toggle('active', btn.dataset.hand === mode);
+    });
+
+    btnRow.style.display = 'none';
+    handMsg.textContent = 'ほぞんちゅう…';
+    handMsg.className = 'login-error-msg pin-status-feedback is-saving';
+    handMsg.style.display = 'flex';
+
+    const res = await updateHandModeApi(this.currentUser.userId, mode);
+
+    if (res && res.success) {
+      this.currentUser.handMode = mode;
+      this.onHandModeChanged(mode === 'left');
+      Storage.setCurrentUser(this.currentUser);
+
+      handMsg.textContent = 'ききてを へんこうしました。';
+      handMsg.className = 'login-error-msg pin-status-feedback is-success';
+
+      setTimeout(() => {
+        handModal.style.display = 'none';
+        handMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => btn.disabled = false);
+      }, 3000);
+
+    } else {
+      handMsg.textContent = 'ほぞんできませんでした。';
+      handMsg.className = 'login-error-msg pin-status-feedback is-error';
+
+      setTimeout(() => {
+        handMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.toggle('active', btn.dataset.hand === currentHand);
+        });
+      }, 1800);
+    }
   }
 
   openPinModal() {
@@ -231,7 +286,6 @@ export class AuthManager {
       const newPin = inputNewPin.value.trim();
       if (newPin.length !== 4) return;
 
-      // 1. ボタンを非表示にし、入力欄をロックして「ほぞんちゅう…」を表示
       inputNewPin.disabled = true;
       btnRow.style.display = 'none';
       pinMsg.textContent = 'ほぞんちゅう…';
@@ -241,7 +295,6 @@ export class AuthManager {
       const res = await updatePinApi(this.currentUser.userId, newPin);
 
       if (res && res.success) {
-        // 2. 保存成功時：メッセージ表示後3秒待って自動で閉じる
         this.currentUser.pin = newPin;
         Storage.setCurrentUser(this.currentUser);
 
@@ -256,7 +309,6 @@ export class AuthManager {
         }, 3000);
 
       } else {
-        // 3. 保存失敗時：メッセージ表示後、再びボタンを表示して再入力可能に
         pinMsg.textContent = 'ほぞんできませんでした。';
         pinMsg.className = 'login-error-msg pin-status-feedback is-error';
 
