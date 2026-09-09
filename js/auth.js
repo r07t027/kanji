@@ -3,7 +3,7 @@
  * ユーザー認証、設定モーダル（利き手・音・PIN）、セッション管理モジュール
  */
 import { ensureAudioUnlocked, setAudioMuted } from './audio.js';
-import { fetchClassAndUsersFromLocal, prefetchAllDataAsync, updateHandModeApi, updateSoundModeApi, updatePinApi } from './logger.js';
+import { prefetchAllDataAsync, updateHandModeApi, updateSoundModeApi, updatePinApi } from './logger.js';
 import { Storage } from './storage.js';
 
 export class AuthManager {
@@ -66,7 +66,6 @@ export class AuthManager {
             }
 
             if (latestProgress) {
-              // スプレッドシート側の最新進捗（苦手漢字統計・クリア単元）で完全に上書き同期
               const currentLocal = Storage.getProgress();
               const mergedProgress = {
                 ...currentLocal,
@@ -81,7 +80,6 @@ export class AuthManager {
         }
       }
 
-      // 最新化されたローカルストレージから進捗を展開
       const finalProgress = Storage.getProgress();
       const rawCleared = finalProgress.clearedSets;
       this.clearedSets = Array.isArray(rawCleared)
@@ -94,21 +92,31 @@ export class AuthManager {
       return;
     }
 
-    // 2. 新規ログイン時：ローカル静的名簿（data/users.json）の読み込み
+    // 2. 新規ログイン時：スプレッドシート（prefetchAllData）から名簿を直接取得・展開
     selectClass.innerHTML = '<option value="">よみこみ中...</option>';
     selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
     selectUser.disabled = true;
 
-    const res = await fetchClassAndUsersFromLocal();
-    if (!res.success || !res.users || res.users.length === 0) {
+    let prefetchRes = null;
+    try {
+      prefetchRes = await this.prefetchPromise;
+    } catch (e) {
+      prefetchRes = null;
+    }
+
+    if (!prefetchRes || !prefetchRes.success || !prefetchRes.authMap) {
       selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
       modal.style.display = 'flex';
       return;
     }
 
-    const { classes, users } = res;
-    selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
+    const { authMap, progressMap } = prefetchRes;
+    const allUsers = Object.values(authMap);
 
+    // クラス一覧の抽出（重複排除 & ソート）
+    const classes = Array.from(new Set(allUsers.map(u => u.className).filter(Boolean))).sort();
+
+    selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
     classes.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c;
@@ -129,7 +137,10 @@ export class AuthManager {
       }
 
       selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
-      const filteredUsers = users.filter(u => u.className === selectedClass);
+      const filteredUsers = allUsers
+        .filter(u => u.className === selectedClass)
+        .sort((a, b) => Number(a.studentNo || 0) - Number(b.studentNo || 0));
+
       filteredUsers.forEach(u => {
         const opt = document.createElement('option');
         opt.value = u.userId;
@@ -154,18 +165,7 @@ export class AuthManager {
 
       const selectedUserId = selectUser.value;
       const enteredPin = inputPin.value.trim();
-      const prefetchRes = await this.prefetchPromise;
 
-      if (!prefetchRes || !prefetchRes.success) {
-        errorMsg.textContent = 'データの接続に失敗しました。もう一度お試しください。';
-        errorMsg.style.display = 'block';
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'ログインする';
-        this.prefetchPromise = prefetchAllDataAsync();
-        return;
-      }
-
-      const { authMap, progressMap } = prefetchRes;
       const matchedUser = authMap[selectedUserId];
 
       if (matchedUser && matchedUser.pin === enteredPin) {
