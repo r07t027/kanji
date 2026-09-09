@@ -42,8 +42,9 @@ class KanjiApp {
     this.auth = new AuthManager({
       prefetchPromise: this.prefetchPromise,
       showLoading: () => this.showLoadingScreen(),
-      onUserAuthenticated: async (user, clearedSets) => {
-        await this.onLoginCompleted(clearedSets);
+      onLoginSuccess: async (clearedSets) => {
+        // 新規ログインボタン押下後の完了処理
+        await this.renderMenuAndShowPopups(clearedSets);
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -109,18 +110,22 @@ class KanjiApp {
     this.bindEvents();
 
     try {
+      // 1. 問題データとスプレッドシート通信を並行取得
       const [questionsRes, prefetchRes] = await Promise.all([
         fetch('data/grade5_questions.json').then(r => r.json()),
         this.prefetchPromise
       ]);
 
       this.gradeData = questionsRes;
-      this.challengeManager = new ChallengeManager(this.gradeData, Storage);
-      this.drillManager.setGradeData(this.gradeData);
 
-      const isAutoLoggedIn = await this.auth.initAuthFlow(prefetchRes);
+      // 2. 認証・データ復元処理
+      const authResult = await this.auth.initAuthFlow(prefetchRes);
 
-      if (!isAutoLoggedIn) {
+      if (authResult.isLoggedIn) {
+        // 自動ログイン時：メニューと両アイコンを完全描画してからモーダルを出す
+        await this.renderMenuAndShowPopups(authResult.clearedSets);
+      } else {
+        // 未ログイン時：ログイン画面を出すためにローディングを解除
         await this.hideLoadingScreen();
       }
 
@@ -131,48 +136,47 @@ class KanjiApp {
     }
   }
 
-  // ログイン完了時の処理
-  async onLoginCompleted(clearedSets) {
-    if (this.gradeData) {
-      // 1. メニュー画面の単元ボタンや進捗を構築
-      this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
-      
-      // 2. 特訓道着アイコンの表示・バッジ数を確定
-      if (this.drillManager) {
-        this.drillManager.updateBadgeCount();
-      }
+  /**
+   * メニュー画面とヘッダーアイコン（特訓＋かきまる）を完全に描画し切ってから、
+   * ローディングを消し、その後にモーダルを表示する完全制御メソッド
+   */
+  async renderMenuAndShowPopups(clearedSets) {
+    if (!this.gradeData) return;
 
-      // 3. かきまる挑戦アイコンの表示状態をあらかじめ確定（モーダルはまだ開かない）
-      this.updateChallengeHeaderButtonOnly();
+    // 1. マネージャーの初期化
+    this.challengeManager = new ChallengeManager(this.gradeData, Storage);
+    this.drillManager.setGradeData(this.gradeData);
+
+    // 2. メニューの単元ボタンを描画
+    this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+
+    // 3. ★ 背面のヘッダーアイコン2つを同時に表示確定させる
+    // ① 特訓道着アイコンの表示更新
+    this.drillManager.updateBadgeCount();
+
+    // ② かきまる挑戦アイコンの表示更新（モーダル判定ではなくアイコンの表示判定）
+    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
+    if (btnHeaderChallenge) {
+      const canChallenge = this.challengeManager.canChallengeToday();
+      btnHeaderChallenge.style.display = canChallenge ? 'flex' : 'none';
     }
 
-    // 4. ローディング幕を閉じる
+    // 4. 背面のアイコン群が完全に揃った状態でローディング画面を消滅させる
     await this.hideLoadingScreen();
 
-    // 5. 背面のすべてのアイコンが完全に描画された直後、安定した状態でモーダルを表示
+    // 5. すべてのアイコンが視覚的に安定して表示された直後にモーダルを開く
     requestAnimationFrame(() => {
       this.checkDailyPopups();
     });
   }
 
-  // 背面ヘッダー用：かきまるアイコンの表示/非表示のみを先に確定させるメソッド
-  updateChallengeHeaderButtonOnly() {
-    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
-    if (!btnHeaderChallenge || !this.challengeManager) return;
-
-    const canChallenge = this.challengeManager.canChallengeToday();
-    btnHeaderChallenge.style.display = canChallenge ? 'flex' : 'none';
-  }
-
-  // 起動時のポップアップ表示
   checkDailyPopups() {
     const shouldShowDrill = Storage.shouldShowDrillPopupToday();
 
     if (shouldShowDrill && this.drillManager) {
-      // 特訓を最優先で表示（背面のアイコン群はすでに完璧に揃っている状態）
+      // 特訓を最優先で表示（背面のアイコン群はすでに綺麗に揃っている）
       this.drillManager.open(true);
     } else {
-      // 特訓がない場合は挑戦状の判定・表示へ
       this.checkDailyChallenge(true);
     }
   }
