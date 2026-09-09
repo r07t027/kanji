@@ -46,6 +46,7 @@ class KanjiApp {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
           if (this.drillManager) this.drillManager.updateBadgeCount();
         }
+        // ★ ログイン完了時（セッション開始時）にのみ起動時ポップアップ判定を実行
         this.checkDailyPopups();
       },
       onHandModeChanged: (isLeftHanded) => {
@@ -124,6 +125,7 @@ class KanjiApp {
     }
   }
 
+  // ★ 起動・ログイン時専用のポップアップ判定（単元クリア後などは呼ばない）
   checkDailyPopups() {
     if (!this.auth.getCurrentUser()) return;
 
@@ -266,24 +268,26 @@ class KanjiApp {
         this.startSet(this.menu.getSelectedSetId());
       }
     });
+
+    // ★ 修正：クリア画面から次の単元に進む際、checkDailyPopups は呼ばない
     document.getElementById('btn-clear-next').addEventListener('click', () => {
       ensureAudioUnlocked();
       if (this.isChallengeMode) {
         this.isChallengeMode = false;
         this.ui.showMenuView();
         this.menu.render();
-        this.checkDailyPopups();
         if (this.drillManager) this.drillManager.updateBadgeCount();
       } else {
         this.startNextSet();
       }
     });
+
+    // ★ 修正：クリア画面からメニューに戻る際、checkDailyPopups は呼ばずバッジ数のみ更新
     document.getElementById('btn-clear-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.isChallengeMode = false;
       this.ui.showMenuView();
       this.menu.render();
-      this.checkDailyPopups();
       if (this.drillManager) this.drillManager.updateBadgeCount();
     });
 
@@ -293,6 +297,7 @@ class KanjiApp {
     });
   }
 
+  // ★ 修正：問題解答中に「メニューへもどる」を押した際、checkDailyPopups は呼ばない
   handleBackToMenu() {
     if (this.hasUnsavedSessionChanges) {
       const currentUser = this.auth.getCurrentUser();
@@ -307,7 +312,6 @@ class KanjiApp {
     this.currentSessionLogs = [];
     this.ui.showMenuView();
     this.menu.render();
-    this.checkDailyPopups();
     if (this.drillManager) this.drillManager.updateBadgeCount();
   }
 
@@ -352,7 +356,6 @@ class KanjiApp {
     } else {
       this.ui.showMenuView();
       this.menu.render();
-      this.checkDailyPopups();
       if (this.drillManager) this.drillManager.updateBadgeCount();
     }
   }
@@ -690,7 +693,6 @@ class KanjiApp {
                 );
               }
             } else {
-              // かきまるチャレンジの全問クリア時もLOGシートに記録
               if (currentUser) {
                 await saveProgressAndLogs(
                   currentUser.userId,
