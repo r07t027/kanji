@@ -37,10 +37,7 @@ class KanjiApp {
     this.ui = new UIController();
     this.validator = new AnswerValidator(2);
 
-    this.prefetchPromise = prefetchAllDataAsync();
-
     this.auth = new AuthManager({
-      prefetchPromise: this.prefetchPromise,
       showLoading: () => this.showLoadingScreen(),
       onLoginSuccess: (clearedSets) => {
         this.renderMenuAndShowPopups(clearedSets);
@@ -70,14 +67,14 @@ class KanjiApp {
     }
   }
 
-  // 確実にローディング幕を消去する
   hideLoadingScreen() {
     const loadingScreen = document.getElementById('app-loading-screen');
-    if (!loadingScreen) return;
-    loadingScreen.classList.add('is-hidden');
-    setTimeout(() => {
-      loadingScreen.style.display = 'none';
-    }, 300);
+    if (loadingScreen) {
+      loadingScreen.classList.add('is-hidden');
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+      }, 250);
+    }
   }
 
   async init() {
@@ -106,10 +103,10 @@ class KanjiApp {
     this.bindEvents();
 
     try {
-      // 1. 問題データ ＆ スプレッドシート通信を並行取得
+      // 1. 問題データとスプレッドシート通信を1回だけ取得
       const [questionsRes, prefetchRes] = await Promise.all([
         fetch('data/grade5_questions.json').then(r => r.json()),
-        this.prefetchPromise
+        prefetchAllDataAsync()
       ]);
 
       this.gradeData = questionsRes;
@@ -117,8 +114,8 @@ class KanjiApp {
       // 2. 認証・データ復元処理
       const authResult = await this.auth.initAuthFlow(prefetchRes);
 
-      if (authResult.isLoggedIn) {
-        // 自動ログイン時：メニューを描画して完了処理へ
+      if (authResult && authResult.isLoggedIn) {
+        // 自動ログイン時：メニューを描画してポップアップへ
         this.renderMenuAndShowPopups(authResult.clearedSets);
       } else {
         // 未ログイン時：ログイン画面を出すためにローディングを解除
@@ -126,8 +123,7 @@ class KanjiApp {
       }
 
     } catch (e) {
-      console.error('起動同期エラー:', e);
-      await this.auth.initAuthFlow(null);
+      console.error('起動エラー:', e);
       this.hideLoadingScreen();
     }
   }
