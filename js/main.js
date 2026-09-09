@@ -42,9 +42,8 @@ class KanjiApp {
     this.auth = new AuthManager({
       prefetchPromise: this.prefetchPromise,
       showLoading: () => this.showLoadingScreen(),
-      onLoginSuccess: async (clearedSets) => {
-        // 新規ログインボタン押下後の完了処理
-        await this.renderMenuAndShowPopups(clearedSets);
+      onLoginSuccess: (clearedSets) => {
+        this.renderMenuAndShowPopups(clearedSets);
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -71,17 +70,14 @@ class KanjiApp {
     }
   }
 
-  async hideLoadingScreen() {
+  // 確実にローディング幕を消去する
+  hideLoadingScreen() {
     const loadingScreen = document.getElementById('app-loading-screen');
     if (!loadingScreen) return;
-
-    return new Promise(resolve => {
-      loadingScreen.classList.add('is-hidden');
-      setTimeout(() => {
-        loadingScreen.style.display = 'none';
-        resolve();
-      }, 320);
-    });
+    loadingScreen.classList.add('is-hidden');
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+    }, 300);
   }
 
   async init() {
@@ -110,7 +106,7 @@ class KanjiApp {
     this.bindEvents();
 
     try {
-      // 1. 問題データとスプレッドシート通信を並行取得
+      // 1. 問題データ ＆ スプレッドシート通信を並行取得
       const [questionsRes, prefetchRes] = await Promise.all([
         fetch('data/grade5_questions.json').then(r => r.json()),
         this.prefetchPromise
@@ -122,25 +118,25 @@ class KanjiApp {
       const authResult = await this.auth.initAuthFlow(prefetchRes);
 
       if (authResult.isLoggedIn) {
-        // 自動ログイン時：メニューと両アイコンを完全描画してからモーダルを出す
-        await this.renderMenuAndShowPopups(authResult.clearedSets);
+        // 自動ログイン時：メニューを描画して完了処理へ
+        this.renderMenuAndShowPopups(authResult.clearedSets);
       } else {
         // 未ログイン時：ログイン画面を出すためにローディングを解除
-        await this.hideLoadingScreen();
+        this.hideLoadingScreen();
       }
 
     } catch (e) {
       console.error('起動同期エラー:', e);
       await this.auth.initAuthFlow(null);
-      await this.hideLoadingScreen();
+      this.hideLoadingScreen();
     }
   }
 
   /**
    * メニュー画面とヘッダーアイコン（特訓＋かきまる）を完全に描画し切ってから、
-   * ローディングを消し、その後にモーダルを表示する完全制御メソッド
+   * ローディングを消去し、アイコンが出揃った安定状態でモーダルを表示する
    */
-  async renderMenuAndShowPopups(clearedSets) {
+  renderMenuAndShowPopups(clearedSets) {
     if (!this.gradeData) return;
 
     // 1. マネージャーの初期化
@@ -150,31 +146,28 @@ class KanjiApp {
     // 2. メニューの単元ボタンを描画
     this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
 
-    // 3. ★ 背面のヘッダーアイコン2つを同時に表示確定させる
-    // ① 特訓道着アイコンの表示更新
+    // 3. 背面のヘッダーアイコン2つを同時に表示確定
     this.drillManager.updateBadgeCount();
 
-    // ② かきまる挑戦アイコンの表示更新（モーダル判定ではなくアイコンの表示判定）
     const btnHeaderChallenge = document.getElementById('btn-header-challenge');
     if (btnHeaderChallenge) {
       const canChallenge = this.challengeManager.canChallengeToday();
       btnHeaderChallenge.style.display = canChallenge ? 'flex' : 'none';
     }
 
-    // 4. 背面のアイコン群が完全に揃った状態でローディング画面を消滅させる
-    await this.hideLoadingScreen();
+    // 4. ローディング画面を閉じる
+    this.hideLoadingScreen();
 
-    // 5. すべてのアイコンが視覚的に安定して表示された直後にモーダルを開く
-    requestAnimationFrame(() => {
+    // 5. すべてのアイコンが視覚的に出揃った直後にモーダルを開く
+    setTimeout(() => {
       this.checkDailyPopups();
-    });
+    }, 150);
   }
 
   checkDailyPopups() {
     const shouldShowDrill = Storage.shouldShowDrillPopupToday();
 
     if (shouldShowDrill && this.drillManager) {
-      // 特訓を最優先で表示（背面のアイコン群はすでに綺麗に揃っている）
       this.drillManager.open(true);
     } else {
       this.checkDailyChallenge(true);
