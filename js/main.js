@@ -37,10 +37,15 @@ class KanjiApp {
     this.ui = new UIController();
     this.validator = new AnswerValidator(2);
 
+    const prefetchPromise = prefetchAllDataAsync();
+
     this.auth = new AuthManager({
-      showLoading: () => this.showLoadingScreen(),
-      onLoginSuccess: (clearedSets) => {
-        this.renderMenuAndShowPopups(clearedSets);
+      prefetchPromise,
+      onUserAuthenticated: (user, clearedSets) => {
+        if (this.gradeData) {
+          this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+          if (this.drillManager) this.drillManager.updateBadgeCount();
+        }
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -59,21 +64,13 @@ class KanjiApp {
     this.init();
   }
 
-  showLoadingScreen() {
-    const loadingScreen = document.getElementById('app-loading-screen');
-    if (loadingScreen) {
-      loadingScreen.style.display = 'flex';
-      loadingScreen.classList.remove('is-hidden');
-    }
-  }
-
   hideLoadingScreen() {
     const loadingScreen = document.getElementById('app-loading-screen');
     if (loadingScreen) {
       loadingScreen.classList.add('is-hidden');
       setTimeout(() => {
         loadingScreen.style.display = 'none';
-      }, 250);
+      }, 300);
     }
   }
 
@@ -103,68 +100,32 @@ class KanjiApp {
     this.bindEvents();
 
     try {
-      // 1. 問題データとスプレッドシート通信を1回だけ取得
-      const [questionsRes, prefetchRes] = await Promise.all([
-        fetch('data/grade5_questions.json').then(r => r.json()),
-        prefetchAllDataAsync()
-      ]);
-
-      this.gradeData = questionsRes;
-
-      // 2. 認証・データ復元処理
-      const authResult = await this.auth.initAuthFlow(prefetchRes);
-
-      if (authResult && authResult.isLoggedIn) {
-        // 自動ログイン時：メニューを描画してポップアップへ
-        this.renderMenuAndShowPopups(authResult.clearedSets);
-      } else {
-        // 未ログイン時：ログイン画面を出すためにローディングを解除
-        this.hideLoadingScreen();
-      }
-
+      const res = await fetch('data/grade5_questions.json');
+      this.gradeData = await res.json();
+      this.challengeManager = new ChallengeManager(this.gradeData, Storage);
+      this.drillManager.setGradeData(this.gradeData);
     } catch (e) {
-      console.error('起動エラー:', e);
-      this.hideLoadingScreen();
-    }
-  }
-
-  /**
-   * メニュー画面とヘッダーアイコン（特訓＋かきまる）を完全に描画し切ってから、
-   * ローディングを消去し、アイコンが出揃った安定状態でモーダルを表示する
-   */
-  renderMenuAndShowPopups(clearedSets) {
-    if (!this.gradeData) return;
-
-    // 1. マネージャーの初期化
-    this.challengeManager = new ChallengeManager(this.gradeData, Storage);
-    this.drillManager.setGradeData(this.gradeData);
-
-    // 2. メニューの単元ボタンを描画
-    this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
-
-    // 3. 背面のヘッダーアイコン2つを同時に表示確定
-    this.drillManager.updateBadgeCount();
-
-    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
-    if (btnHeaderChallenge) {
-      const canChallenge = this.challengeManager.canChallengeToday();
-      btnHeaderChallenge.style.display = canChallenge ? 'flex' : 'none';
+      console.error('問題データの読み込みに失敗しました:', e);
+      this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
     }
 
-    // 4. ローディング画面を閉じる
+    await this.auth.initAuthFlow();
+
+    if (this.gradeData) {
+      this.menu.setData(this.gradeData, this.auth.getClearedSets());
+      if (this.drillManager) {
+        this.drillManager.updateBadgeCount();
+      }
+    }
+
     this.hideLoadingScreen();
-
-    // 5. すべてのアイコンが視覚的に出揃った直後にモーダルを開く
-    setTimeout(() => {
-      this.checkDailyPopups();
-    }, 150);
+    this.checkDailyPopups();
   }
 
   checkDailyPopups() {
-    const shouldShowDrill = Storage.shouldShowDrillPopupToday();
-
-    if (shouldShowDrill && this.drillManager) {
+    if (Storage.shouldShowDrillPopupToday() && this.drillManager) {
       this.drillManager.open(true);
+      this.checkDailyChallenge(false);
     } else {
       this.checkDailyChallenge(true);
     }

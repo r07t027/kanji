@@ -1,764 +1,498 @@
 /**
- * main.js
- * アプリケーション統合・エントリーポイント
+ * auth.js
+ * ユーザー認証、設定モーダル（利き手・音・PIN）、セッション管理モジュール
  */
-import { initAudioUnlock, ensureAudioUnlocked, playCorrectSound, playFanfareSound, playMistakeSound, playDrillSound } from './audio.js';
-import { CanvasController } from './canvas.js';
-import { UIController } from './ui.js';
-import { prefetchAllDataAsync, saveProgressAndLogs, syncProgressSilently } from './logger.js';
-import { AuthManager } from './auth.js';
-import { MenuManager } from './menu.js';
-import { AnswerValidator } from './validator.js';
-import { shuffleArray, getInputAdvice, getRetryAdvice, getPraiseMessage, getMistakeMessage } from './messages.js';
-import { ChallengeManager } from './challenge.js';
+import { ensureAudioUnlocked, setAudioMuted } from './audio.js';
+import { updateHandModeApi, updateSoundModeApi, updatePinApi, prefetchAllDataAsync } from './logger.js';
 import { Storage } from './storage.js';
-import { prefetchKanjiVG } from './kanjivg.js';
-import { DrillManager } from './drill.js';
 
-const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+export class AuthManager {
+  constructor(options = {}) {
+    this.currentUser = null;
+    this.clearedSets = [];
+    this.prefetchPromise = options.prefetchPromise || null;
 
-class KanjiApp {
-  constructor() {
-    this.gradeData = null;
-    this.currentSet = null;
-    this.currentQuestions = [];
-    this.currentQIndex = 0;
-    this.currentCharIndex = 0;
-    this.userInputs = [];
+    this.onUserAuthenticated = options.onUserAuthenticated || (() => {});
+    this.onHandModeChanged = options.onHandModeChanged || (() => {});
 
-    this.currentSessionLogs = [];
-    this.isChallengeMode = false;
-    this.challengeManager = null;
-    this.drillManager = null;
-
-    this.hasAttemptedFirst = false;
-    this.hasUnsavedSessionChanges = false;
-
-    this.ui = new UIController();
-    this.validator = new AnswerValidator(2);
-
-    this.prefetchPromise = prefetchAllDataAsync();
-
-    this.auth = new AuthManager({
-      prefetchPromise: this.prefetchPromise,
-      showLoading: () => this.showLoadingScreen(),
-      onUserAuthenticated: async (user, clearedSets) => {
-        await this.onLoginCompleted(clearedSets);
-      },
-      onHandModeChanged: (isLeftHanded) => {
-        this.ui.setHandedness(isLeftHanded);
-      }
-    });
-
-    this.menu = new MenuManager({
-      onSetSelected: (setId) => {}
-    });
-
-    this.canvasController = new CanvasController(
-      document.getElementById('draw-canvas'),
-      (strokeCount, strokesData, canUndo, canRedo) => this.onCanvasChange(strokeCount, strokesData, canUndo, canRedo)
-    );
-
-    this.init();
+    this._bindModalEvents();
+    this.applySoundSetting();
   }
 
-  showLoadingScreen() {
-    const loadingScreen = document.getElementById('app-loading-screen');
-    if (loadingScreen) {
-      loadingScreen.style.display = 'flex';
-      loadingScreen.classList.remove('is-hidden');
+  setPrefetchPromise(promise) {
+    this.prefetchPromise = promise;
+  }
+
+  getCurrentUser() {
+    return this.currentUser;
+  }
+
+  getClearedSets() {
+    if (this.clearedSets && typeof this.clearedSets === 'object' && !Array.isArray(this.clearedSets)) {
+      return Object.keys(this.clearedSets);
     }
+    return Array.isArray(this.clearedSets) ? this.clearedSets : [];
   }
 
-  async hideLoadingScreen() {
-    const loadingScreen = document.getElementById('app-loading-screen');
-    if (!loadingScreen) return;
-
-    return new Promise(resolve => {
-      loadingScreen.classList.add('is-hidden');
-      setTimeout(() => {
-        loadingScreen.style.display = 'none';
-        resolve();
-      }, 320);
-    });
+  addClearedSet(setId) {
+    this.clearedSets = Storage.saveClearedSet(setId);
   }
 
-  async init() {
-    initAudioUnlock();
+  async initAuthFlow() {
+    const modal = document.getElementById('login-modal');
+    const selectClass = document.getElementById('select-class');
+    const selectUser = document.getElementById('select-user');
+    const inputPin = document.getElementById('input-pin');
+    const btnSubmit = document.getElementById('btn-submit-login');
+    const errorMsg = document.getElementById('login-error-msg');
 
-    this.drillManager = new DrillManager({
-      storage: Storage,
-      validator: this.validator,
-      gradeData: null,
-      onClose: () => {
-        if (this.hasUnsavedSessionChanges) {
-          const currentUser = this.auth.getCurrentUser();
-          if (currentUser) {
-            const progress = Storage.getProgress();
-            syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+    // 1. ローカルキャッシュからの自動復元チェック
+    const savedUser = Storage.getCurrentUser();
+    if (savedUser) {
+      this.currentUser = savedUser;
+      modal.style.display = 'none';
+
+      // スプレッドシート側の最新データを待機して同期
+      if (this.prefetchPromise) {
+        try {
+          const prefetchRes = await this.prefetchPromise;
+          if (prefetchRes && prefetchRes.success && prefetchRes.progressMap) {
+            const latestProgress = prefetchRes.progressMap[this.currentUser.userId];
+            const latestAuth = prefetchRes.authMap ? prefetchRes.authMap[this.currentUser.userId] : null;
+
+            if (latestAuth) {
+              this.currentUser = latestAuth;
+              Storage.setCurrentUser(this.currentUser);
+            }
+
+            if (latestProgress) {
+              const currentLocal = Storage.getProgress();
+              const mergedProgress = {
+                ...currentLocal,
+                clearedSets: latestProgress.clearedSets || {},
+                charStats: latestProgress.charStats || {}
+              };
+              Storage.setProgress(mergedProgress);
+            }
           }
-          this.hasUnsavedSessionChanges = false;
+        } catch (e) {
+          console.warn('最新データ同期失敗:', e);
         }
-        this.checkDailyChallenge();
-      },
-      onProgressChange: () => {
-        this.hasUnsavedSessionChanges = true;
-      }
-    });
-
-    this.bindEvents();
-
-    try {
-      const [questionsRes, prefetchRes] = await Promise.all([
-        fetch('data/grade5_questions.json').then(r => r.json()),
-        this.prefetchPromise
-      ]);
-
-      this.gradeData = questionsRes;
-      this.challengeManager = new ChallengeManager(this.gradeData, Storage);
-      this.drillManager.setGradeData(this.gradeData);
-
-      const isAutoLoggedIn = await this.auth.initAuthFlow(prefetchRes);
-
-      if (!isAutoLoggedIn) {
-        await this.hideLoadingScreen();
       }
 
-    } catch (e) {
-      console.error('起動同期エラー:', e);
-      await this.auth.initAuthFlow(null);
-      await this.hideLoadingScreen();
-    }
-  }
+      const finalProgress = Storage.getProgress();
+      const rawCleared = finalProgress.clearedSets;
+      this.clearedSets = Array.isArray(rawCleared)
+        ? rawCleared
+        : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
 
-  // ログイン完了時の処理
-  async onLoginCompleted(clearedSets) {
-    if (this.gradeData) {
-      // 1. メニュー画面の単元ボタンや進捗を構築
-      this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
-      
-      // 2. 特訓道着アイコンの表示・バッジ数を確定
-      if (this.drillManager) {
-        this.drillManager.updateBadgeCount();
-      }
-
-      // 3. かきまる挑戦アイコンの表示状態をあらかじめ確定（モーダルはまだ開かない）
-      this.updateChallengeHeaderButtonOnly();
-    }
-
-    // 4. ローディング幕を閉じる
-    await this.hideLoadingScreen();
-
-    // 5. 背面のすべてのアイコンが完全に描画された直後、安定した状態でモーダルを表示
-    requestAnimationFrame(() => {
-      this.checkDailyPopups();
-    });
-  }
-
-  // 背面ヘッダー用：かきまるアイコンの表示/非表示のみを先に確定させるメソッド
-  updateChallengeHeaderButtonOnly() {
-    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
-    if (!btnHeaderChallenge || !this.challengeManager) return;
-
-    const canChallenge = this.challengeManager.canChallengeToday();
-    btnHeaderChallenge.style.display = canChallenge ? 'flex' : 'none';
-  }
-
-  // 起動時のポップアップ表示
-  checkDailyPopups() {
-    const shouldShowDrill = Storage.shouldShowDrillPopupToday();
-
-    if (shouldShowDrill && this.drillManager) {
-      // 特訓を最優先で表示（背面のアイコン群はすでに完璧に揃っている状態）
-      this.drillManager.open(true);
-    } else {
-      // 特訓がない場合は挑戦状の判定・表示へ
-      this.checkDailyChallenge(true);
-    }
-  }
-
-  checkDailyChallenge(allowPopup = true) {
-    const overlay = document.getElementById('challenge-modal-overlay');
-    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
-    if (!overlay) return;
-
-    const canChallenge = this.challengeManager && this.challengeManager.canChallengeToday();
-
-    if (canChallenge) {
-      const shouldPopup = this.challengeManager.shouldShowPopupToday();
-      if (shouldPopup && allowPopup) {
-        overlay.style.display = 'flex';
-        if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
-        setTimeout(() => {
-          playDrillSound();
-        }, 320);
-      } else {
-        overlay.style.display = 'none';
-        if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
-      }
-    } else {
-      overlay.style.display = 'none';
-      if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
-    }
-  }
-
-  bindEvents() {
-    document.getElementById('btn-reset').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.handleReset();
-    });
-    document.getElementById('btn-undo').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.canvasController.undo();
-    });
-    document.getElementById('btn-redo').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.canvasController.redo();
-    });
-
-    this.canvasController.initKeyboardShortcuts(() => {
-      ensureAudioUnlocked();
-    });
-
-    document.getElementById('btn-prev').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.handlePrev();
-    });
-    document.getElementById('btn-next').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.handleNext();
-    });
-    document.getElementById('btn-check').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.handleCheck();
-    });
-    document.getElementById('btn-pass').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.handlePass();
-    });
-    document.getElementById('btn-restart-all').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.handleRestartAll();
-    });
-
-    document.getElementById('btn-back-menu').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.handleBackToMenu();
-    });
-
-    const btnMenuDrill = document.getElementById('btn-menu-drill');
-    if (btnMenuDrill) {
-      btnMenuDrill.addEventListener('click', () => {
-        ensureAudioUnlocked();
-        if (this.drillManager) {
-          this.drillManager.open(true);
-        }
-      });
-    }
-
-    const btnChallengeAccept = document.getElementById('btn-challenge-accept');
-    if (btnChallengeAccept) {
-      btnChallengeAccept.addEventListener('click', () => {
-        ensureAudioUnlocked();
-        document.getElementById('challenge-modal-overlay').style.display = 'none';
-        this.startChallengeSet();
-      });
-    }
-
-    const btnChallengeDecline = document.getElementById('btn-challenge-decline');
-    if (btnChallengeDecline) {
-      btnChallengeDecline.addEventListener('click', () => {
-        ensureAudioUnlocked();
-        Storage.recordDismissToday();
-        document.getElementById('challenge-modal-overlay').style.display = 'none';
-
-        const btnHeader = document.getElementById('btn-header-challenge');
-        if (btnHeader) btnHeader.style.display = 'flex';
-      });
-    }
-
-    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
-    if (btnHeaderChallenge) {
-      btnHeaderChallenge.addEventListener('click', () => {
-        ensureAudioUnlocked();
-        document.getElementById('challenge-modal-overlay').style.display = 'flex';
-        btnHeaderChallenge.style.display = 'none';
-        setTimeout(() => {
-          playDrillSound();
-        }, 320);
-      });
-    }
-
-    const btnDebugReset = document.getElementById('btn-debug-reset-challenge');
-    if (btnDebugReset) {
-      btnDebugReset.addEventListener('click', () => {
-        ensureAudioUnlocked();
-        Storage.resetChallengeLimit();
-        this.checkDailyPopups();
-        alert('1日1回の制限（特訓・挑戦状）をリセットしました！');
-      });
-    }
-
-    document.getElementById('btn-clear-retry').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      if (this.isChallengeMode) {
-        this.startChallengeSet();
-      } else {
-        this.startSet(this.menu.getSelectedSetId());
-      }
-    });
-    document.getElementById('btn-clear-next').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      if (this.isChallengeMode) {
-        this.isChallengeMode = false;
-        this.ui.showMenuView();
-        this.menu.render();
-        this.checkDailyPopups();
-        if (this.drillManager) this.drillManager.updateBadgeCount();
-      } else {
-        this.startNextSet();
-      }
-    });
-    document.getElementById('btn-clear-menu').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.isChallengeMode = false;
-      this.ui.showMenuView();
-      this.menu.render();
-      this.checkDailyPopups();
-      if (this.drillManager) this.drillManager.updateBadgeCount();
-    });
-
-    document.getElementById('btn-start').addEventListener('click', () => {
-      ensureAudioUnlocked();
-      this.startSet(this.menu.getSelectedSetId());
-    });
-  }
-
-  handleBackToMenu() {
-    if (this.hasUnsavedSessionChanges) {
-      const currentUser = this.auth.getCurrentUser();
-      if (currentUser) {
-        const progress = Storage.getProgress();
-        syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
-      }
-      this.hasUnsavedSessionChanges = false;
-    }
-
-    this.isChallengeMode = false;
-    this.ui.showMenuView();
-    this.menu.render();
-    this.checkDailyPopups();
-    if (this.drillManager) this.drillManager.updateBadgeCount();
-  }
-
-  startChallengeSet() {
-    const questions = this.challengeManager.generateQuestions();
-    if (!questions) return;
-
-    Storage.recordChallengeToday();
-    this.isChallengeMode = true;
-    this.currentQuestions = questions;
-    this.currentSessionLogs = [];
-    this.hasUnsavedSessionChanges = false;
-
-    const btnHeader = document.getElementById('btn-header-challenge');
-    if (btnHeader) btnHeader.style.display = 'none';
-
-    this.ui.showPracticeView();
-    this.loadQuestion(0);
-  }
-
-  startSet(setId) {
-    if (!this.gradeData || !this.gradeData.sets) return;
-    this.isChallengeMode = false;
-    this.menu.setSelectedSetId(setId);
-    this.currentSet = this.gradeData.sets.find(s => s.id === setId);
-    if (!this.currentSet || !this.currentSet.questions) return;
-
-    this.currentQuestions = shuffleArray(this.currentSet.questions);
-    this.currentSessionLogs = [];
-    this.hasUnsavedSessionChanges = false;
-
-    this.ui.showPracticeView();
-    this.loadQuestion(0);
-  }
-
-  startNextSet() {
-    const currentId = this.menu.getSelectedSetId();
-    const currentIndex = this.gradeData.sets.findIndex(s => s.id === currentId);
-    if (currentIndex >= 0 && currentIndex < this.gradeData.sets.length - 1) {
-      const nextSet = this.gradeData.sets[currentIndex + 1];
-      this.startSet(nextSet.id);
-    } else {
-      this.ui.showMenuView();
-      this.menu.render();
-      this.checkDailyPopups();
-      if (this.drillManager) this.drillManager.updateBadgeCount();
-    }
-  }
-
-  getCurrentQuestion() {
-    if (!this.currentQuestions || this.currentQuestions.length === 0) {
-      if (this.currentSet && this.currentSet.questions) {
-        this.currentQuestions = shuffleArray(this.currentSet.questions);
-      } else {
-        return null;
-      }
-    }
-    return this.currentQuestions[this.currentQIndex];
-  }
-
-  loadQuestion(qIndex) {
-    this.currentQIndex = qIndex;
-    this.hasAttemptedFirst = false;
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-
-    if (q.targets && Array.isArray(q.targets)) {
-      const chars = q.targets.map(t => t.char);
-      prefetchKanjiVG(chars);
-    }
-
-    const isOkurigana = (q.type === 'okurigana');
-
-    let displayTitle = '';
-    if (this.isChallengeMode) {
-      displayTitle = '🥋 かきまるとの しょうぶ！';
-    } else {
-      const setId = this.menu.getSelectedSetId();
-      const numStr = setId.split('_')[1];
-      const termNum = setId.split('_')[0].replace('学期', '');
-      displayTitle = `${termNum}がっき その${parseInt(numStr, 10)}`;
-    }
-
-    this.ui.updateQuestionHeader(displayTitle, qIndex, q.sentenceHtml, q.notice);
-
-    if (isOkurigana) {
-      this.userInputs = [null];
-    } else {
-      const targetCount = (q.targets && q.targets.length) ? q.targets.length : 1;
-      this.userInputs = new Array(targetCount).fill(null);
-    }
-
-    this.ui.initPreviews(this.userInputs.length, (i) => {
-      if (i !== this.currentCharIndex) {
-        this.saveCurrentDrawing();
-        this.loadCharInput(i);
-      }
-    });
-
-    this.loadCharInput(0);
-  }
-
-  saveCurrentDrawing() {
-    const data = this.canvasController.getData();
-    if (data.strokeCount > 0) {
-      this.userInputs[this.currentCharIndex] = {
-        ...data,
-        previewUrl: this.canvasController.toDataURL()
-      };
-    } else {
-      this.userInputs[this.currentCharIndex] = null;
-    }
-  }
-
-  loadCharInput(cIndex) {
-    this.currentCharIndex = cIndex;
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-    const isOkurigana = (q.type === 'okurigana');
-    const targetObj = (q.targets && cIndex < q.targets.length) ? q.targets[cIndex] : null;
-    const targetStroke = targetObj ? targetObj.strokes : 0;
-    const targetChar = targetObj ? targetObj.char : '';
-
-    this.ui.renderTabs(
-      this.userInputs.length,
-      cIndex,
-      this.userInputs,
-      (index) => {
-        this.saveCurrentDrawing();
-        this.loadCharInput(index);
-      }
-    );
-
-    if (this.userInputs[cIndex]) {
-      this.canvasController.loadStrokes(
-        this.userInputs[cIndex].strokesData,
-        this.userInputs[cIndex].strokeCount,
-        this.userInputs[cIndex].redoStack || []
-      );
-    } else {
-      this.canvasController.clear();
-    }
-
-    const currentCount = this.canvasController.strokeCount;
-    this.ui.updateStrokeInfo(currentCount, targetStroke, isOkurigana, cIndex, targetChar);
-    this.ui.updateNavButtons(cIndex, this.userInputs.length, isOkurigana, q.maxChars || 4);
-    this.ui.updateHistoryButtons(this.canvasController.canUndo(), this.canvasController.canRedo());
-    this.checkButtonState();
-
-    const currentDataUrl = currentCount > 0 ? this.canvasController.toDataURL() : '';
-    this.ui.updateAllPreviews(this.userInputs, cIndex, currentDataUrl);
-    this.ui.setMessage(getInputAdvice(cIndex + 1, isOkurigana), 'info');
-  }
-
-  onCanvasChange(strokeCount, strokesData, canUndo, canRedo) {
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-    const isOkurigana = (q.type === 'okurigana');
-    const targetObj = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex] : null;
-    const targetStroke = targetObj ? targetObj.strokes : 0;
-    const targetChar = targetObj ? targetObj.char : '';
-
-    this.ui.updateStrokeInfo(strokeCount, targetStroke, isOkurigana, this.currentCharIndex, targetChar);
-    this.ui.updateHistoryButtons(canUndo, canRedo);
-    this.saveCurrentDrawing();
-
-    this.ui.renderTabs(
-      this.userInputs.length,
-      this.currentCharIndex,
-      this.userInputs,
-      (index) => {
-        this.saveCurrentDrawing();
-        this.loadCharInput(index);
-      }
-    );
-
-    this.checkButtonState();
-    const dataUrl = strokeCount > 0 ? this.canvasController.toDataURL() : '';
-    this.ui.syncActivePreview(this.currentCharIndex, dataUrl);
-  }
-
-  checkButtonState() {
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-    const isOkurigana = (q.type === 'okurigana');
-    const currentFilled = this.canvasController.strokeCount > 0;
-
-    const btnReset = document.getElementById('btn-reset');
-    if (btnReset) {
-      btnReset.disabled = !currentFilled;
-    }
-
-    if (isOkurigana) {
-      const anyFilled = this.userInputs.some((input, idx) => {
-        if (idx === this.currentCharIndex) return currentFilled;
-        return input !== null && input.strokeCount > 0;
-      });
-      this.ui.updateCheckButtonState(anyFilled);
-    } else {
-      const allFilled = this.userInputs.every((input, idx) => {
-        if (idx === this.currentCharIndex) return currentFilled;
-        return input !== null && input.strokeCount > 0;
-      });
-      this.ui.updateCheckButtonState(allFilled);
-    }
-  }
-
-  handleReset() {
-    this.canvasController.clear();
-    this.userInputs[this.currentCharIndex] = null;
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-    const isOkurigana = (q.type === 'okurigana');
-    const targetObj = (q.targets && this.currentCharIndex < q.targets.length) ? q.targets[this.currentCharIndex] : null;
-    const targetStroke = targetObj ? targetObj.strokes : 0;
-    const targetChar = targetObj ? targetObj.char : '';
-
-    this.ui.updateStrokeInfo(0, targetStroke, isOkurigana, this.currentCharIndex, targetChar);
-    this.ui.updateHistoryButtons(false, false);
-    this.ui.renderTabs(
-      this.userInputs.length,
-      this.currentCharIndex,
-      this.userInputs,
-      (index) => {
-        this.saveCurrentDrawing();
-        this.loadCharInput(index);
-      }
-    );
-    this.checkButtonState();
-    this.ui.syncActivePreview(this.currentCharIndex, '');
-    this.ui.setMessage(getRetryAdvice(), 'info');
-  }
-
-  handleRestartAll() {
-    this.loadQuestion(this.currentQIndex);
-    this.hasAttemptedFirst = true;
-    this.ui.setMessage('1もじめから もういちど かいてみよう。おちついてね。', 'info');
-  }
-
-  handlePrev() {
-    if (this.currentCharIndex === 0) return;
-    this.saveCurrentDrawing();
-    this.loadCharInput(this.currentCharIndex - 1);
-  }
-
-  handleNext() {
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-    const isOkurigana = (q.type === 'okurigana');
-
-    if (this.canvasController.strokeCount === 0) {
-      this.ui.setMessage('もじを かいてから つぎへ すすもうね。', 'mistake');
+      this.applyUserData();
+      this.checkHandModeSetup();
+      this.onUserAuthenticated(this.currentUser, this.clearedSets);
       return;
     }
-    this.saveCurrentDrawing();
 
-    if (isOkurigana) {
-      if (this.currentCharIndex === this.userInputs.length - 1 && this.userInputs.length < (q.maxChars || 4)) {
-        this.userInputs.push(null);
-        this.ui.initPreviews(this.userInputs.length, (i) => {
-          if (i !== this.currentCharIndex) {
-            this.saveCurrentDrawing();
-            this.loadCharInput(i);
-          }
-        });
-      }
-      this.loadCharInput(this.currentCharIndex + 1);
-    } else {
-      if (this.currentCharIndex < this.userInputs.length - 1) {
-        this.loadCharInput(this.currentCharIndex + 1);
-      }
-    }
-  }
+    // 2. 新規ログイン時：スプレッドシートデータから名簿を構築
+    selectClass.innerHTML = '<option value="">よみこみ中...</option>';
+    selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
+    selectUser.disabled = true;
 
-  handlePass() {
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-
-    playMistakeSound();
-    this.ui.setMessage('おてほんを よくみて かきじゅんを かくにんしよう。', 'mistake');
-
-    if (!this.hasAttemptedFirst) {
-      const targets = q.targets || [];
-      targets.forEach(t => {
-        if (t && t.char && KANJI_REGEX.test(t.char)) {
-          Storage.recordCharAttempt(t.char, false);
-          this.hasUnsavedSessionChanges = true;
-        }
-      });
-      this.hasAttemptedFirst = true;
-      if (this.drillManager) this.drillManager.updateBadgeCount();
-    }
-
-    const falseResults = new Array((q.targets || []).length).fill(false);
-
-    this.ui.showResultView(
-      false,
-      '',
-      (q.targets || []).map(t => t.char),
-      this.userInputs,
-      falseResults,
-      true
-    );
-    this.ui.updateCheckButtonState(true);
-  }
-
-  async handleCheck() {
-    this.saveCurrentDrawing();
-    const q = this.getCurrentQuestion();
-    if (!q) return;
-
-    const btnCheck = document.getElementById('btn-check');
-    btnCheck.disabled = true;
-    const originalBtnText = btnCheck.textContent;
-    btnCheck.textContent = 'かくにん中...';
-
+    let prefetchRes = null;
     try {
-      const {
-        isAllSuccess,
-        charResults,
-        validInputs,
-        feedbackHtml,
-        questionLogDetail
-      } = await this.validator.validateQuestion(q, this.userInputs);
-
-      if (!this.hasAttemptedFirst) {
-        const targets = q.targets || [];
-        const existingStats = Storage.getProgress().charStats || {};
-
-        targets.forEach((t, idx) => {
-          if (t && t.char && KANJI_REGEX.test(t.char)) {
-            const isCharOk = (charResults && charResults[idx] === true);
-            if (!isCharOk || existingStats[t.char]) {
-              Storage.recordCharAttempt(t.char, isCharOk);
-              this.hasUnsavedSessionChanges = true;
-            }
-          }
-        });
-        this.hasAttemptedFirst = true;
-        if (this.drillManager) this.drillManager.updateBadgeCount();
-      }
-
-      this.currentSessionLogs.push({
-        qIndex: this.currentQIndex + 1,
-        isSuccess: isAllSuccess,
-        detail: questionLogDetail
-      });
-
-      btnCheck.textContent = originalBtnText;
-
-      if (isAllSuccess) {
-        playCorrectSound();
-        this.ui.setMessage(getPraiseMessage(), 'success');
-        this.ui.showResultView(true, 'せいかい！', (q.targets || []).map(t => t.char), validInputs, charResults);
-
-        const isFinalQuestion = (this.currentQIndex === this.currentQuestions.length - 1);
-        setTimeout(async () => {
-          if (isFinalQuestion) {
-            playFanfareSound();
-
-            const currentUser = this.auth.getCurrentUser();
-            const displayName = currentUser ? currentUser.kanaName : '';
-
-            this.ui.showAllClear(this.isChallengeMode, displayName);
-
-            if (!this.isChallengeMode) {
-              const currentSetId = this.menu.getSelectedSetId();
-              this.auth.addClearedSet(currentSetId);
-              this.menu.updateClearedSets(this.auth.getClearedSets());
-
-              if (currentUser) {
-                const progress = Storage.getProgress();
-                await saveProgressAndLogs(
-                  currentUser.userId,
-                  currentSetId,
-                  true,
-                  progress.charStats,
-                  this.currentSessionLogs
-                );
-              }
-            } else {
-              const currentUser = this.auth.getCurrentUser();
-              if (currentUser) {
-                const progress = Storage.getProgress();
-                syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
-              }
-              this.isChallengeMode = false;
-            }
-
-            this.hasUnsavedSessionChanges = false;
-            if (this.drillManager) this.drillManager.updateBadgeCount();
-          } else {
-            this.currentQIndex++;
-            this.loadQuestion(this.currentQIndex);
-          }
-        }, 3000);
-      } else {
-        playMistakeSound();
-        this.ui.setMessage(getMistakeMessage(), 'mistake');
-        this.ui.showResultView(false, feedbackHtml, (q.targets || []).map(t => t.char), validInputs, charResults);
-        this.ui.updateCheckButtonState(true);
-      }
-    } catch (err) {
-      console.error('判定処理エラー:', err);
-      btnCheck.textContent = originalBtnText;
-      this.ui.setMessage('つうしんエラーが はっせいしました。', 'mistake');
-      this.ui.updateCheckButtonState(true);
+      prefetchRes = await this.prefetchPromise;
+    } catch (e) {
+      prefetchRes = null;
     }
+
+    if (!prefetchRes || !prefetchRes.success || !prefetchRes.authMap) {
+      selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
+      modal.style.display = 'flex';
+      return;
+    }
+
+    const { authMap, progressMap } = prefetchRes;
+    const allUsers = Object.values(authMap);
+
+    const classes = Array.from(new Set(allUsers.map(u => u.className).filter(Boolean))).sort();
+
+    selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
+    classes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      selectClass.appendChild(opt);
+    });
+
+    selectClass.addEventListener('change', () => {
+      const selectedClass = selectClass.value;
+      inputPin.value = '';
+      btnSubmit.disabled = true;
+      errorMsg.style.display = 'none';
+
+      if (!selectedClass) {
+        selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
+        selectUser.disabled = true;
+        return;
+      }
+
+      selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
+      const filteredUsers = allUsers
+        .filter(u => u.className === selectedClass)
+        .sort((a, b) => Number(a.studentNo || 0) - Number(b.studentNo || 0));
+
+      filteredUsers.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.userId;
+        opt.textContent = u.kanaName;
+        selectUser.appendChild(opt);
+      });
+      selectUser.disabled = false;
+    });
+
+    const checkFormReady = () => {
+      btnSubmit.disabled = !(selectUser.value && inputPin.value.length === 4);
+    };
+
+    selectUser.addEventListener('change', checkFormReady);
+    inputPin.addEventListener('input', checkFormReady);
+
+    btnSubmit.addEventListener('click', async () => {
+      ensureAudioUnlocked();
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'かくにん中...⏳';
+      errorMsg.style.display = 'none';
+
+      const selectedUserId = selectUser.value;
+      const enteredPin = inputPin.value.trim();
+
+      const matchedUser = authMap[selectedUserId];
+
+      if (matchedUser && matchedUser.pin === enteredPin) {
+        this.currentUser = matchedUser;
+        const userProgress = progressMap[selectedUserId] || { clearedSets: {}, charStats: {} };
+        const rawCleared = userProgress.clearedSets;
+        this.clearedSets = Array.isArray(rawCleared)
+          ? rawCleared
+          : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
+
+        Storage.setCurrentUser(this.currentUser);
+        Storage.setProgress(userProgress);
+
+        const soundMode = matchedUser.soundMode || 'on';
+        Storage.setSoundEnabled(soundMode !== 'off');
+
+        this.applyUserData();
+        modal.style.display = 'none';
+        this.checkHandModeSetup();
+        this.onUserAuthenticated(this.currentUser, this.clearedSets);
+      } else {
+        errorMsg.textContent = 'パスワードがちがいます。';
+        errorMsg.style.display = 'block';
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'ログインする';
+      }
+    });
+
+    modal.style.display = 'flex';
+  }
+
+  applyUserData() {
+    if (!this.currentUser) return;
+
+    const formattedClass = (this.currentUser.className || '')
+      .replace(/(\d+)年/, '$1ねん ')
+      .replace(/(\d+)組/, '$1くみ');
+
+    document.getElementById('user-display-name').textContent = `${formattedClass} ${this.currentUser.kanaName}`;
+    document.getElementById('user-info-bar').style.display = 'flex';
+
+    const handMode = this.currentUser.handMode || 'right';
+    this.onHandModeChanged(handMode === 'left');
+
+    if (this.currentUser.soundMode) {
+      Storage.setSoundEnabled(this.currentUser.soundMode !== 'off');
+    }
+    this.applySoundSetting();
+  }
+
+  checkHandModeSetup() {
+    if (!this.currentUser) return;
+    if (!this.currentUser.handMode || this.currentUser.handMode === '') {
+      this.openHandModal(true);
+    }
+  }
+
+  applySoundSetting() {
+    const isEnabled = Storage.getSoundEnabled();
+    setAudioMuted(!isEnabled);
+
+    const btnToggleSound = document.getElementById('btn-toggle-sound');
+    if (btnToggleSound) {
+      btnToggleSound.textContent = isEnabled ? '🎶' : '🔇';
+      btnToggleSound.title = isEnabled ? 'おと: ON' : 'おと: OFF';
+    }
+  }
+
+  openHandModal(isInitial = false) {
+    const handModal = document.getElementById('hand-modal');
+    const btnClose = document.getElementById('btn-close-hand-modal');
+    const handMsg = document.getElementById('hand-modal-msg');
+    const btnRow = document.getElementById('hand-modal-btn-row');
+
+    handMsg.textContent = '';
+    handMsg.style.display = 'none';
+    btnRow.style.display = 'flex';
+    btnClose.style.display = isInitial ? 'none' : 'block';
+
+    const currentHand = this.currentUser?.handMode || 'right';
+    document.querySelectorAll('.btn-hand-choice:not(.btn-sound-choice)').forEach(btn => {
+      btn.disabled = false;
+      btn.classList.toggle('active', btn.dataset.hand === currentHand);
+    });
+
+    handModal.style.display = 'flex';
+  }
+
+  async saveHandMode(mode) {
+    if (!this.currentUser) return;
+
+    const currentHand = this.currentUser.handMode || 'right';
+    const handModal = document.getElementById('hand-modal');
+    const handMsg = document.getElementById('hand-modal-msg');
+    const btnRow = document.getElementById('hand-modal-btn-row');
+    const choiceButtons = document.querySelectorAll('.btn-hand-choice:not(.btn-sound-choice)');
+
+    if (currentHand === mode) {
+      return;
+    }
+
+    choiceButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.classList.toggle('active', btn.dataset.hand === mode);
+    });
+
+    btnRow.style.display = 'none';
+    handMsg.textContent = 'ほぞんちゅう…';
+    handMsg.className = 'login-error-msg pin-status-feedback is-saving';
+    handMsg.style.display = 'flex';
+
+    const res = await updateHandModeApi(this.currentUser.userId, mode);
+
+    if (res && res.success) {
+      this.currentUser.handMode = mode;
+      this.onHandModeChanged(mode === 'left');
+      Storage.setCurrentUser(this.currentUser);
+
+      handMsg.textContent = 'ききてを へんこうしました。';
+      handMsg.className = 'login-error-msg pin-status-feedback is-success';
+
+      setTimeout(() => {
+        handModal.style.display = 'none';
+        handMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => btn.disabled = false);
+      }, 3000);
+
+    } else {
+      handMsg.textContent = 'ほぞんできませんでした。';
+      handMsg.className = 'login-error-msg pin-status-feedback is-error';
+
+      setTimeout(() => {
+        handMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.toggle('active', btn.dataset.hand === currentHand);
+        });
+      }, 1800);
+    }
+  }
+
+  openSoundModal() {
+    const soundModal = document.getElementById('sound-modal');
+    const soundMsg = document.getElementById('sound-modal-msg');
+    const btnRow = document.getElementById('sound-modal-btn-row');
+
+    soundMsg.textContent = '';
+    soundMsg.style.display = 'none';
+    btnRow.style.display = 'flex';
+
+    const isEnabled = Storage.getSoundEnabled();
+    const currentVal = isEnabled ? 'on' : 'off';
+
+    document.querySelectorAll('.btn-sound-choice').forEach(btn => {
+      btn.disabled = false;
+      btn.classList.toggle('active', btn.dataset.sound === currentVal);
+    });
+
+    soundModal.style.display = 'flex';
+  }
+
+  async saveSoundMode(mode) {
+    const soundModal = document.getElementById('sound-modal');
+    const soundMsg = document.getElementById('sound-modal-msg');
+    const btnRow = document.getElementById('sound-modal-btn-row');
+    const choiceButtons = document.querySelectorAll('.btn-sound-choice');
+
+    const currentlyEnabled = Storage.getSoundEnabled();
+    const newEnabled = (mode === 'on');
+
+    if (currentlyEnabled === newEnabled) {
+      return;
+    }
+
+    choiceButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.classList.toggle('active', btn.dataset.sound === mode);
+    });
+
+    btnRow.style.display = 'none';
+    soundMsg.textContent = 'ほぞんちゅう…';
+    soundMsg.className = 'login-error-msg pin-status-feedback is-saving';
+    soundMsg.style.display = 'flex';
+
+    Storage.setSoundEnabled(newEnabled);
+    this.applySoundSetting();
+
+    let apiSuccess = true;
+    if (this.currentUser) {
+      const res = await updateSoundModeApi(this.currentUser.userId, mode);
+      apiSuccess = res && res.success;
+      if (apiSuccess) {
+        this.currentUser.soundMode = mode;
+        Storage.setCurrentUser(this.currentUser);
+      }
+    }
+
+    if (apiSuccess) {
+      soundMsg.textContent = 'おとを へんこうしました。';
+      soundMsg.className = 'login-error-msg pin-status-feedback is-success';
+
+      setTimeout(() => {
+        soundModal.style.display = 'none';
+        soundMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => btn.disabled = false);
+      }, 3000);
+    } else {
+      Storage.setSoundEnabled(currentlyEnabled);
+      this.applySoundSetting();
+
+      soundMsg.textContent = 'ほぞんできませんでした。';
+      soundMsg.className = 'login-error-msg pin-status-feedback is-error';
+
+      setTimeout(() => {
+        soundMsg.style.display = 'none';
+        btnRow.style.display = 'flex';
+        choiceButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.toggle('active', btn.dataset.sound === (currentlyEnabled ? 'on' : 'off'));
+        });
+      }, 1800);
+    }
+  }
+
+  openPinModal() {
+    const pinModal = document.getElementById('pin-modal');
+    const inputNewPin = document.getElementById('input-new-pin');
+    const pinMsg = document.getElementById('pin-modal-msg');
+    const btnRow = document.querySelector('#pin-modal .modal-btn-row');
+    const btnSave = document.getElementById('btn-save-pin');
+
+    inputNewPin.value = '';
+    inputNewPin.disabled = false;
+    pinMsg.textContent = '';
+    pinMsg.style.display = 'none';
+    pinMsg.className = 'login-error-msg pin-status-feedback';
+    btnRow.style.display = 'flex';
+    btnSave.disabled = true;
+    btnSave.textContent = 'ほぞんする';
+
+    inputNewPin.oninput = () => {
+      btnSave.disabled = (inputNewPin.value.trim().length !== 4);
+    };
+
+    btnSave.onclick = async () => {
+      const newPin = inputNewPin.value.trim();
+      if (newPin.length !== 4) return;
+
+      inputNewPin.disabled = true;
+      btnRow.style.display = 'none';
+      pinMsg.textContent = 'ほぞんちゅう…';
+      pinMsg.className = 'login-error-msg pin-status-feedback is-saving';
+      pinMsg.style.display = 'flex';
+
+      const res = await updatePinApi(this.currentUser.userId, newPin);
+
+      if (res && res.success) {
+        this.currentUser.pin = newPin;
+        Storage.setCurrentUser(this.currentUser);
+
+        pinMsg.textContent = 'パスワードを へんこうしました。';
+        pinMsg.className = 'login-error-msg pin-status-feedback is-success';
+
+        setTimeout(() => {
+          pinModal.style.display = 'none';
+          inputNewPin.disabled = false;
+          btnRow.style.display = 'flex';
+          pinMsg.style.display = 'none';
+        }, 3000);
+
+      } else {
+        pinMsg.textContent = 'ほぞんできませんでした。';
+        pinMsg.className = 'login-error-msg pin-status-feedback is-error';
+
+        setTimeout(() => {
+          pinMsg.style.display = 'none';
+          btnRow.style.display = 'flex';
+          btnSave.disabled = false;
+          btnSave.textContent = 'ほぞんする';
+          inputNewPin.disabled = false;
+          inputNewPin.focus();
+        }, 1800);
+      }
+    };
+
+    pinModal.style.display = 'flex';
+  }
+
+  logout() {
+    Storage.clearSession();
+    location.reload();
+  }
+
+  _bindModalEvents() {
+    document.getElementById('btn-open-hand-modal').addEventListener('click', () => this.openHandModal(false));
+    document.getElementById('btn-close-hand-modal').addEventListener('click', () => {
+      document.getElementById('hand-modal').style.display = 'none';
+    });
+    document.querySelectorAll('.btn-hand-choice:not(.btn-sound-choice)').forEach(btn => {
+      btn.addEventListener('click', () => this.saveHandMode(btn.dataset.hand));
+    });
+
+    const btnToggleSound = document.getElementById('btn-toggle-sound');
+    if (btnToggleSound) {
+      btnToggleSound.addEventListener('click', () => this.openSoundModal());
+    }
+    const btnCloseSound = document.getElementById('btn-close-sound-modal');
+    if (btnCloseSound) {
+      btnCloseSound.addEventListener('click', () => {
+        document.getElementById('sound-modal').style.display = 'none';
+      });
+    }
+    document.querySelectorAll('.btn-sound-choice').forEach(btn => {
+      btn.addEventListener('click', () => this.saveSoundMode(btn.dataset.sound));
+    });
+
+    document.getElementById('btn-open-pin-modal').addEventListener('click', () => this.openPinModal());
+    document.getElementById('btn-cancel-pin').addEventListener('click', () => {
+      document.getElementById('pin-modal').style.display = 'none';
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      if (confirm('ログアウトしますか？')) {
+        this.logout();
+      }
+    });
   }
 }
-
-window.addEventListener('DOMContentLoaded', () => {
-  new KanjiApp();
-});
