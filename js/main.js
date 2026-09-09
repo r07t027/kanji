@@ -145,7 +145,6 @@ class KanjiApp {
     const canChallenge = this.challengeManager && this.challengeManager.canChallengeToday();
 
     if (canChallenge) {
-      // 挑戦権がある場合はモーダルの開閉に関わらずヘッダーアイコンを常時表示
       if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
 
       const shouldPopup = this.challengeManager.shouldShowPopupToday();
@@ -305,6 +304,7 @@ class KanjiApp {
     }
 
     this.isChallengeMode = false;
+    this.currentSessionLogs = [];
     this.ui.showMenuView();
     this.menu.render();
     this.checkDailyPopups();
@@ -673,13 +673,14 @@ class KanjiApp {
 
             this.ui.showAllClear(this.isChallengeMode, displayName);
 
+            const progress = Storage.getProgress();
+
             if (!this.isChallengeMode) {
               const currentSetId = this.menu.getSelectedSetId();
               this.auth.addClearedSet(currentSetId);
               this.menu.updateClearedSets(this.auth.getClearedSets());
 
               if (currentUser) {
-                const progress = Storage.getProgress();
                 await saveProgressAndLogs(
                   currentUser.userId,
                   currentSetId,
@@ -689,14 +690,20 @@ class KanjiApp {
                 );
               }
             } else {
-              const currentUser = this.auth.getCurrentUser();
+              // かきまるチャレンジの全問クリア時もLOGシートに記録
               if (currentUser) {
-                const progress = Storage.getProgress();
-                syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+                await saveProgressAndLogs(
+                  currentUser.userId,
+                  'challenge',
+                  true,
+                  progress.charStats,
+                  this.currentSessionLogs
+                );
               }
               this.isChallengeMode = false;
             }
 
+            this.currentSessionLogs = [];
             this.hasUnsavedSessionChanges = false;
             if (this.drillManager) this.drillManager.updateBadgeCount();
           } else {

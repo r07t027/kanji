@@ -48,7 +48,6 @@ export async function updateHandModeApi(userId, handMode) {
   return await callApi('updateHandMode', { userId, handMode });
 }
 
-// ★ 追加：音のON/OFFをスプレッドシートG列へ保存
 export async function updateSoundModeApi(userId, soundMode) {
   return await callApi('updateSoundMode', { userId, soundMode });
 }
@@ -58,23 +57,45 @@ export async function updatePinApi(userId, newPin) {
 }
 
 /**
- * 学習完了時の保存
+ * clearedSets のオブジェクト正規化ヘルパー
+ * スプレッドシートB列の型破壊（オブジェクト文字列化や配列混入）を防止
+ */
+function normalizeClearedSetsPayload(clearedSets) {
+  if (!clearedSets) return {};
+  if (Array.isArray(clearedSets)) {
+    const obj = {};
+    clearedSets.forEach(id => {
+      obj[id] = new Date().toISOString();
+    });
+    return obj;
+  }
+  if (typeof clearedSets === 'object') {
+    return clearedSets;
+  }
+  return {};
+}
+
+/**
+ * 学習完了時の保存（MASTER進捗マージ ＋ LOG追記）
  */
 export async function saveProgressAndLogs(userId, setId, isSetCleared, charStats, logRecords) {
   return await callApi('saveProgressAndLog', {
     userId,
     setId,
     isSetCleared,
-    charStats,
-    logRecords
+    charStats: (charStats && typeof charStats === 'object') ? charStats : {},
+    logRecords: Array.isArray(logRecords) ? logRecords : []
   });
 }
 
 /**
- * 「もどる」ボタン押下時などのバックグラウンド進捗同期
+ * バックグラウンド進捗同期（安全ガード付き）
  */
 export async function syncProgressSilently(userId, clearedSets, charStats) {
   try {
+    const safeClearedSets = normalizeClearedSetsPayload(clearedSets);
+    const safeCharStats = (charStats && typeof charStats === 'object') ? charStats : {};
+
     fetch(GAS_API_URL, {
       method: 'POST',
       headers: {
@@ -86,8 +107,8 @@ export async function syncProgressSilently(userId, clearedSets, charStats) {
         action: 'updateProgress',
         payload: {
           userId,
-          clearedSets,
-          charStats
+          clearedSets: safeClearedSets,
+          charStats: safeCharStats
         }
       })
     }).catch(err => console.warn('バックグラウンド同期エラー:', err));

@@ -5,7 +5,7 @@
 import { CanvasController } from './canvas.js';
 import { KanjiVGPlayer, prefetchKanjiVG } from './kanjivg.js';
 import { playCorrectSound, playMistakeSound, playFanfareSound, playDisappearSound, playDrillSound, ensureAudioUnlocked } from './audio.js';
-import { syncProgressSilently } from './logger.js';
+import { syncProgressSilently, saveProgressAndLogs } from './logger.js';
 
 export class DrillManager {
   constructor(options = {}) {
@@ -126,7 +126,6 @@ export class DrillManager {
     const sorted = this._getSortedTargets();
     this.currentBatchList = sorted.slice(0, 6).map(t => t.char);
 
-    // ★ モーダルカードが拡大から元の大きさに落ち着いた瞬間（0.3s）に鳴らす
     if (playSound) {
       setTimeout(() => {
         playDrillSound();
@@ -476,7 +475,25 @@ export class DrillManager {
           const currentUser = this.storage.getCurrentUser();
           if (currentUser) {
             const progress = this.storage.getProgress();
-            syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+            
+            // 特訓克服ログを1レコード作成し、saveProgressAndLogs でLOGシートへ追記保存
+            const drillLog = [{
+              qIndex: 1,
+              isSuccess: true,
+              detail: {
+                type: 'drill_cleared',
+                char: clearedChar,
+                strokes: this.targetStroke
+              }
+            }];
+
+            saveProgressAndLogs(
+              currentUser.userId,
+              `drill_${clearedChar}`,
+              true,
+              progress.charStats,
+              drillLog
+            );
           }
 
           this._setFeedback('せいかい！', 'success');

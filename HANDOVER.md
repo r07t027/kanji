@@ -1,48 +1,48 @@
 ```markdown
-# 📖 漢字練習Webアプリ「かんトレ」システム設計・保守・データ定義完全ガイド（HANDOVER v9）
+# 📖 漢字練習Webアプリ「かんトレ」システム設計・保守・データ定義完全ガイド（HANDOVER v10）
 
 ## 1. アプリケーション概要と基本方針
 
-本プロジェクトは、小学校児童向けのタブレット（Chromebook / iPad 等）およびPC環境に最適化された **漢字手書き練習Webアプリケーション「かんトレ」**（旧称: かきトレ）です[cite: 14]。
-外部ビルドツールを介さず、ブラウザ標準の **Vanilla ES Modules (`import` / `export`)** による疎結合なモジュール設計を採用しています[cite: 14]。
+本プロジェクトは、小学校児童向けのタブレット（Chromebook / iPad 等）およびPC環境に最適化された **漢字手書き練習Webアプリケーション「かんトレ」**（旧称: かきトレ）です[cite: 1]。
+外部ビルドツールを介さず、ブラウザ標準の **Vanilla ES Modules (`import` / `export`)** による疎結合なモジュール設計を採用しています[cite: 1]。
 
 ### 最重要開発規約（厳守ルール）
-* **推測や想像によるコード改変の全面禁止**: 必ず提供された既存コードを元にピンポイントで修正を行う。
-* **勝手なリファクタリング・コード破壊の禁止**: 動いている実績のある箇所（通信ヘッダー `text/plain;charset=utf-8`、DOM構造、Google Input Tools API のインク座標配列形式など）には絶対に手を触れない[cite: 2, 8]。
+* **推測や想像によるコード改変の全面禁止**: 必ず提供された既存コードを元にピンポイントで修正を行う[cite: 1]。
+* **勝手なリファクタリング・コード破壊の禁止**: 動いている実績のある箇所（通信ヘッダー `text/plain;charset=utf-8`、DOM構造、Google Input Tools API のインク座標配列形式など）には絶対に手を触れない[cite: 1]。
 
 ---
 
 ## 2. システム構成とデータモデル
 
 ### A. クラウドデータ基盤（Google スプレッドシート ＆ GAS）
-MASTER と LOG の **2ファイル分離型** を採用[cite: 14]。
+MASTER と LOG の **2ファイル分離型** を採用[cite: 1]。
 
-1. **MASTER スプレッドシート**（ID: `15MNUjS1D9pk4i6miH6dQX7aWpAnyTMXTa_DhpkziaNM`）[cite: 14]
-   * **`users` シート**: 児童名簿・暗証番号・設定情報[cite: 14]
-     * A列: `userId` | B列: `className` | C列: `studentNo` | D列: `kanaName` | E列: `pin` (4桁) | F列: `handMode` (`right` / `left`) | **G列: `soundMode` (`on` / `off`)**[cite: 14]
-   * **`progress` シート**: 進捗サマリー（1児童1行）[cite: 14]
+1. **MASTER スプレッドシート**（ID: `15MNUjS1D9pk4i6miH6dQX7aWpAnyTMXTa_DhpkziaNM`）[cite: 1]
+   * **`users` シート**: 児童名簿・暗証番号・設定情報[cite: 1]
+     * A列: `userId` | B列: `className` | C列: `studentNo` | D列: `kanaName` | E列: `pin` (4桁) | F列: `handMode` (`right` / `left`) | **G列: `soundMode` (`on` / `off`)**[cite: 1]
+   * **`progress` シート**: 進捗サマリー（1児童1行）[cite: 1]
      * A列: `userId`
-     * B列: `clearedSets`（連想配列 `{"1学期_01": "ISO日時", ...}` または配列形式）[cite: 5, 9]
-     * C列: `weakChars`（苦手漢字統計 `charStats` JSON形式）[cite: 9, 14]
-     * D列: `lastLogin`（最終更新日時: `yyyy-MM-dd HH:mm:ss`）[cite: 14, 22]
+     * B列: `clearedSets`（連想配列 `{"1学期_01": "ISO日時", ...}` または配列形式）[cite: 1]
+     * C列: `weakChars`（苦手漢字統計 `charStats` JSON形式）[cite: 1]
+     * D列: `lastLogin`（最終更新日時: `yyyy-MM-dd HH:mm:ss`）[cite: 1]
 
-2. **LOG スプレッドシート**（ID: `1hpgEYbzCFKGeTq6A2GavTGy3QdGrozVCpb4iv7GsA2g`）[cite: 14]
-   * **`logs` シート**: 解答1問ごとの追記専用ログ（Append-only）[cite: 14, 22]
-     * A列: `timestamp` | B列: `userId` | C列: `setId` | D列: `qIndex` | E列: `isSuccess` (1/0) | F列: `detailJson`[cite: 14, 22]
+2. **LOG スプレッドシート**（ID: `1hpgEYbzCFKGeTq6A2GavTGy3QdGrozVCpb4iv7GsA2g`）[cite: 1]
+   * **`logs` シート**: 解答1問ごとの追記専用ログ（Append-only）[cite: 1]
+     * A列: `timestamp` | B列: `userId` | C列: `setId` | D列: `qIndex` | E列: `isSuccess` (1/0) | F列: `detailJson`[cite: 1]
 
-3. **GAS Web API (`backend.gs`) アクション仕様**[cite: 14, 22]
-   * `prefetchAllData`: 起動時の全児童の認証情報（利き手・音設定含む）・進捗サマリー一括返却[cite: 14, 22]。
-   * `saveProgressAndLog`: 単元クリア時の進捗更新（MASTER C列マージ）＋詳細ログ追記[cite: 14, 22]。
-   * `updateProgress`: 「もどる」ボタン押下時・特訓モード克服時のバックグラウンド軽量進捗同期（`keepalive: true`）[cite: 4, 14, 22]。
-   * `updateHandMode`: 利き手設定の即時書き込み（F列）[cite: 14, 22]。
-   * `updateSoundMode`: 音設定（`on` / `off`）の即時書き込み（G列）[cite: 22]。
-   * `updatePin`: PIN変更の即時書き込み（E列）[cite: 14, 22]。
+3. **GAS Web API (`backend.gs`) アクション仕様**[cite: 1]
+   * `prefetchAllData`: 起動時の全児童の認証情報（利き手・音設定含む）・進捗サマリー一括返却[cite: 1]。
+   * `saveProgressAndLog`: 単元クリア時の進捗更新（MASTER C列マージ）＋詳細ログ追記[cite: 1]。
+   * `updateProgress`: 「もどる」ボタン押下時・特訓モード克服時のバックグラウンド軽量進捗同期（`keepalive: true`）[cite: 1]。
+   * `updateHandMode`: 利き手設定の即時書き込み（F列）[cite: 1]。
+   * `updateSoundMode`: 音設定（`on` / `off`）の即時書き込み（G列）[cite: 1]。
+   * `updatePin`: PIN変更の即時書き込み（E列）[cite: 1]。
 
 ---
 
 ### B. フロントエンド・データ仕様（`charStats` 形式）
 
-スプレッドシート C列（`weakChars`）およびローカルストレージに保持する苦手漢字のデータ構造[cite: 9, 14]：
+スプレッドシート C列（`weakChars`）およびローカルストレージに保持する苦手漢字のデータ構造[cite: 1]：
 ```json
 {
   "現": {
@@ -99,6 +99,7 @@ kanji_practice_app/
 │   ├── images/
 │   │   ├── logo_01.png           # 公式横長ロゴ（ヘッダー・ログインモーダル用）
 │   │   ├── logo_02.png           # 公式シンボルロゴ（スプラッシュ・読み込み待ち用）
+│   │   ├── tokkun.png            # 特訓道着アイコン
 │   │   └── kakimaru_01〜12.png   # マスコット表情連動
 │   └── audio/                    # correct.mp3 / wrong.mp3 / complete.mp3 / disappear.mp3 / drill.mp3
 └── js/
@@ -149,4 +150,17 @@ kanji_practice_app/
 
 
 
-```
+### ④ 起動時モーダルチェーン＆認証フローの正常化（v10）
+
+* **未ログイン時の初期化保証**: `init()` 完了時に全画面ローディング（`#app-loading-screen`）を確実に非表示化（`finally` 節）。未ログイン状態での日次モーダル（特訓・挑戦状）の誤爆発火を抑止し、ログインモーダルを最前面に正しく表示する構造に分離。
+
+
+* **ローカル名簿フォールバック**: オフライン時やスプレッドシート通信エラー時でも `data/users.json` から名簿を構築し、画面停止を防止。
+* **ログイン後チェーンの整理**: ログイン完了時（新規・自動復元問わず）のコールバック `onUserAuthenticated` を起点として、苦手特訓モーダル（存在時）→ 挑戦状モーダル（条件合致時）のポップアップチェーンを正しく実行。
+
+### ⑤ かきまる挑戦状モーダル表示時のヘッダーアイコン常時表示（v10）
+
+* **排他非表示の撤廃**: 挑戦権がある当日は、挑戦状モーダルの開閉状態や特訓モーダルからの画面遷移にかかわらず、ヘッダー右上の挑戦アイコン（`#btn-header-challenge`）を常時表示（`display: flex`）として維持。
+
+
+* 特訓一覧画面で「メニューへもどる」を押して挑戦状モーダルが表示された際にも、背景のヘッダーアイコンが不自然に消去されないよう修正。
