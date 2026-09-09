@@ -37,10 +37,11 @@ class KanjiApp {
     this.ui = new UIController();
     this.validator = new AnswerValidator(2);
 
-    const prefetchPromise = prefetchAllDataAsync();
+    // 通信Promiseを即座に開始[cite: 11]
+    this.prefetchPromise = prefetchAllDataAsync();
 
     this.auth = new AuthManager({
-      prefetchPromise,
+      prefetchPromise: this.prefetchPromise,
       onUserAuthenticated: (user, clearedSets) => {
         if (this.gradeData) {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
@@ -64,7 +65,6 @@ class KanjiApp {
     this.init();
   }
 
-  // ローディング画面を閉じる
   hideLoadingScreen() {
     const loadingScreen = document.getElementById('app-loading-screen');
     if (loadingScreen) {
@@ -75,7 +75,6 @@ class KanjiApp {
   async init() {
     initAudioUnlock();
 
-    // 特訓マネージャーの初期化
     this.drillManager = new DrillManager({
       storage: Storage,
       validator: this.validator,
@@ -85,7 +84,7 @@ class KanjiApp {
           const currentUser = this.auth.getCurrentUser();
           if (currentUser) {
             const progress = Storage.getProgress();
-            syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+            syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats); //[cite: 4, 9]
           }
           this.hasUnsavedSessionChanges = false;
         }
@@ -99,31 +98,39 @@ class KanjiApp {
     this.bindEvents();
 
     try {
-      // 1. 問題データの取得
-      const res = await fetch('data/grade5_questions.json');
-      this.gradeData = await res.json();
+      // 1. 問題JSON取得とスプレッドシート通信を並行待機
+      const [questionsRes, prefetchRes] = await Promise.all([
+        fetch('data/grade5_questions.json').then(r => r.json()),
+        this.prefetchPromise
+      ]);
+
+      this.gradeData = questionsRes;
+
+      // 2. スプレッドシートの最新データを渡して認証・進捗を完全最新化
+      await this.auth.initAuthFlow(prefetchRes);
+
+      // 3. 最新化されたStorageからマネージャーとメニューを構築
       this.challengeManager = new ChallengeManager(this.gradeData, Storage);
       this.drillManager.setGradeData(this.gradeData);
-    } catch (e) {
-      console.error('問題データの読み込みに失敗しました:', e);
-      this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
-    }
-
-    // 2. 認証 ＆ スプレッドシート最新データの完全同期待機
-    await this.auth.initAuthFlow();
-
-    // 3. データが100%揃った状態でメニューと苦手バッジを描画
-    if (this.gradeData) {
       this.menu.setData(this.gradeData, this.auth.getClearedSets());
-      if (this.drillManager) {
+      this.drillManager.updateBadgeCount();
+
+    } catch (e) {
+      console.error('起動時の初期化・同期エラー:', e);
+      // オフラインまたはエラー時のフォールバック
+      await this.auth.initAuthFlow(null);
+      if (this.gradeData) {
+        this.challengeManager = new ChallengeManager(this.gradeData, Storage);
+        this.drillManager.setGradeData(this.gradeData);
+        this.menu.setData(this.gradeData, this.auth.getClearedSets());
         this.drillManager.updateBadgeCount();
       }
     }
 
-    // 4. すべての準備が整った瞬間にローディング画面を消去
+    // 4. データ・画面構築が100%完了した状態でローディング画面を解除
     this.hideLoadingScreen();
 
-    // 5. 最新データに基づいて日次ポップアップ判定を実行
+    // 5. 最新のStorage値に基づき、確実にポップアップ判定を実行
     this.checkDailyPopups();
   }
 
@@ -298,7 +305,7 @@ class KanjiApp {
       const currentUser = this.auth.getCurrentUser();
       if (currentUser) {
         const progress = Storage.getProgress();
-        syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+        syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats); //[cite: 4, 9]
       }
       this.hasUnsavedSessionChanges = false;
     }
@@ -592,7 +599,7 @@ class KanjiApp {
       const targets = q.targets || [];
       targets.forEach(t => {
         if (t && t.char && KANJI_REGEX.test(t.char)) {
-          Storage.recordCharAttempt(t.char, false);
+          Storage.recordCharAttempt(t.char, false); //[cite: 9]
           this.hasUnsavedSessionChanges = true;
         }
       });
@@ -634,13 +641,13 @@ class KanjiApp {
 
       if (!this.hasAttemptedFirst) {
         const targets = q.targets || [];
-        const existingStats = Storage.getProgress().charStats || {};
+        const existingStats = Storage.getProgress().charStats || {}; //[cite: 9]
 
         targets.forEach((t, idx) => {
           if (t && t.char && KANJI_REGEX.test(t.char)) {
             const isCharOk = (charResults && charResults[idx] === true);
             if (!isCharOk || existingStats[t.char]) {
-              Storage.recordCharAttempt(t.char, isCharOk);
+              Storage.recordCharAttempt(t.char, isCharOk); //[cite: 9]
               this.hasUnsavedSessionChanges = true;
             }
           }
@@ -678,20 +685,20 @@ class KanjiApp {
               this.menu.updateClearedSets(this.auth.getClearedSets());
 
               if (currentUser) {
-                const progress = Storage.getProgress();
+                const progress = Storage.getProgress(); //[cite: 9]
                 await saveProgressAndLogs(
                   currentUser.userId,
                   currentSetId,
                   true,
                   progress.charStats,
                   this.currentSessionLogs
-                );
+                ); //[cite: 4]
               }
             } else {
               const currentUser = this.auth.getCurrentUser();
               if (currentUser) {
-                const progress = Storage.getProgress();
-                syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats);
+                const progress = Storage.getProgress(); //[cite: 9]
+                syncProgressSilently(currentUser.userId, progress.clearedSets, progress.charStats); //[cite: 4]
               }
               this.isChallengeMode = false;
             }
