@@ -41,11 +41,12 @@ class KanjiApp {
 
     this.auth = new AuthManager({
       prefetchPromise: this.prefetchPromise,
-      onUserAuthenticated: (user, clearedSets) => {
-        if (this.gradeData) {
-          this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
-          if (this.drillManager) this.drillManager.updateBadgeCount();
-        }
+      // ログインボタン押下時に即座にローディング幕を出す関数
+      showLoading: () => this.showLoadingScreen(),
+      // ログイン完了時に呼ばれるコールバック
+      onUserAuthenticated: async (user, clearedSets) => {
+        // メニュー・バッジ・ポップアップを確実に構築
+        await this.onLoginCompleted(clearedSets);
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -64,11 +65,27 @@ class KanjiApp {
     this.init();
   }
 
-  hideLoadingScreen() {
+  // ローディング画面を表示する
+  showLoadingScreen() {
     const loadingScreen = document.getElementById('app-loading-screen');
     if (loadingScreen) {
-      loadingScreen.classList.add('is-hidden');
+      loadingScreen.style.display = 'flex';
+      loadingScreen.classList.remove('is-hidden');
     }
+  }
+
+  // ローディング画面を閉じる（アニメーション完了待機）
+  async hideLoadingScreen() {
+    const loadingScreen = document.getElementById('app-loading-screen');
+    if (!loadingScreen) return;
+
+    return new Promise(resolve => {
+      loadingScreen.classList.add('is-hidden');
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+        resolve();
+      }, 320);
+    });
   }
 
   async init() {
@@ -97,38 +114,44 @@ class KanjiApp {
     this.bindEvents();
 
     try {
-      // 1. 問題JSON取得とスプレッドシート通信を並行待機
+      // 1. 問題JSONの読み込みとスプレッドシート通信を並行取得
       const [questionsRes, prefetchRes] = await Promise.all([
         fetch('data/grade5_questions.json').then(r => r.json()),
         this.prefetchPromise
       ]);
 
       this.gradeData = questionsRes;
-
-      // 2. スプレッドシートの最新データを渡して認証・進捗を完全最新化
-      await this.auth.initAuthFlow(prefetchRes);
-
-      // 3. 最新化されたStorageから各マネージャーを初期化
       this.challengeManager = new ChallengeManager(this.gradeData, Storage);
       this.drillManager.setGradeData(this.gradeData);
-      this.menu.setData(this.gradeData, this.auth.getClearedSets());
-      this.drillManager.updateBadgeCount();
+
+      // 2. 認証初期化（自動ログイン、または未ログインならログイン画面へ）
+      const isAutoLoggedIn = await this.auth.initAuthFlow(prefetchRes);
+
+      if (!isAutoLoggedIn) {
+        // 未ログイン時はログイン画面を出すためにローディングを解除
+        await this.hideLoadingScreen();
+      }
 
     } catch (e) {
-      console.error('起動時の初期化・同期エラー:', e);
+      console.error('起動同期エラー:', e);
       await this.auth.initAuthFlow(null);
-      if (this.gradeData) {
-        this.challengeManager = new ChallengeManager(this.gradeData, Storage);
-        this.drillManager.setGradeData(this.gradeData);
-        this.menu.setData(this.gradeData, this.auth.getClearedSets());
+      await this.hideLoadingScreen();
+    }
+  }
+
+  // ログインが成立した時（自動ログイン時、またはログインボタン押下後）の共通処理
+  async onLoginCompleted(clearedSets) {
+    if (this.gradeData) {
+      this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+      if (this.drillManager) {
         this.drillManager.updateBadgeCount();
       }
     }
 
-    // 4. データとメニューのDOM構築が完了した状態でローディング画面を解除
-    this.hideLoadingScreen();
+    // ローディング画面を閉じる
+    await this.hideLoadingScreen();
 
-    // 5. レンダリングが完全に落ち着いた次のフレームで確実にポップアップ判定を実行
+    // 画面が完全に落ち着いてからポップアップ判定を実行
     setTimeout(() => {
       this.checkDailyPopups();
     }, 60);

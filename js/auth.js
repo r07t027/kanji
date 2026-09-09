@@ -3,7 +3,7 @@
  * ユーザー認証、設定モーダル（利き手・音・PIN）、セッション管理モジュール
  */
 import { ensureAudioUnlocked, setAudioMuted } from './audio.js';
-import { updateHandModeApi, updateSoundModeApi, updatePinApi, prefetchAllDataAsync } from './logger.js'; //[cite: 4]
+import { updateHandModeApi, updateSoundModeApi, updatePinApi } from './logger.js';
 import { Storage } from './storage.js';
 
 export class AuthManager {
@@ -12,6 +12,7 @@ export class AuthManager {
     this.clearedSets = [];
     this.prefetchPromise = options.prefetchPromise || null;
 
+    this.showLoading = options.showLoading || (() => {});
     this.onUserAuthenticated = options.onUserAuthenticated || (() => {});
     this.onHandModeChanged = options.onHandModeChanged || (() => {});
 
@@ -35,12 +36,13 @@ export class AuthManager {
   }
 
   addClearedSet(setId) {
-    this.clearedSets = Storage.saveClearedSet(setId); //[cite: 9]
+    this.clearedSets = Storage.saveClearedSet(setId);
   }
 
   /**
    * 認証フローの実行
-   * @param {Object|null} resolvedPrefetchData - main.js 側で同期解決されたスプレッドシートデータ
+   * @param {Object|null} resolvedPrefetchData - スプレッドシートから取得したデータ
+   * @returns {Promise<boolean>} 自動ログイン成功時は true、未ログイン時は false
    */
   async initAuthFlow(resolvedPrefetchData = null) {
     const modal = document.getElementById('login-modal');
@@ -59,34 +61,34 @@ export class AuthManager {
       }
     }
 
-    // 1. ローカルキャッシュからの自動復元
-    const savedUser = Storage.getCurrentUser(); //[cite: 9]
+    // 1. ローカルキャッシュからの自動復元チェック
+    const savedUser = Storage.getCurrentUser();
     if (savedUser) {
       this.currentUser = savedUser;
       modal.style.display = 'none';
 
-      // スプレッドシート側の最新進捗があればローカルストレージへ即時同期
+      // スプレッドシート側の最新進捗をStorageへ上書き反映
       if (prefetchRes && prefetchRes.success && prefetchRes.progressMap) {
         const latestProgress = prefetchRes.progressMap[this.currentUser.userId];
         const latestAuth = prefetchRes.authMap ? prefetchRes.authMap[this.currentUser.userId] : null;
 
         if (latestAuth) {
           this.currentUser = latestAuth;
-          Storage.setCurrentUser(this.currentUser); //[cite: 9]
+          Storage.setCurrentUser(this.currentUser);
         }
 
         if (latestProgress) {
-          const currentLocal = Storage.getProgress(); //[cite: 9]
+          const currentLocal = Storage.getProgress();
           const mergedProgress = {
             ...currentLocal,
             clearedSets: latestProgress.clearedSets || {},
             charStats: latestProgress.charStats || {}
           };
-          Storage.setProgress(mergedProgress); //[cite: 9]
+          Storage.setProgress(mergedProgress);
         }
       }
 
-      const finalProgress = Storage.getProgress(); //[cite: 9]
+      const finalProgress = Storage.getProgress();
       const rawCleared = finalProgress.clearedSets;
       this.clearedSets = Array.isArray(rawCleared)
         ? rawCleared
@@ -94,11 +96,11 @@ export class AuthManager {
 
       this.applyUserData();
       this.checkHandModeSetup();
-      this.onUserAuthenticated(this.currentUser, this.clearedSets);
-      return;
+      await this.onUserAuthenticated(this.currentUser, this.clearedSets);
+      return true; // 自動ログイン完了
     }
 
-    // 2. 新規ログイン時：スプレッドシートデータから名簿を構築
+    // 2. 新規ログイン時：名簿を展開
     selectClass.innerHTML = '<option value="">よみこみ中...</option>';
     selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
     selectUser.disabled = true;
@@ -106,7 +108,7 @@ export class AuthManager {
     if (!prefetchRes || !prefetchRes.success || !prefetchRes.authMap) {
       selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
       modal.style.display = 'flex';
-      return;
+      return false;
     }
 
     const { authMap, progressMap } = prefetchRes;
@@ -158,7 +160,6 @@ export class AuthManager {
     btnSubmit.addEventListener('click', async () => {
       ensureAudioUnlocked();
       btnSubmit.disabled = true;
-      btnSubmit.textContent = 'かくにん中...⏳';
       errorMsg.style.display = 'none';
 
       const selectedUserId = selectUser.value;
@@ -167,6 +168,10 @@ export class AuthManager {
       const matchedUser = authMap[selectedUserId];
 
       if (matchedUser && matchedUser.pin === enteredPin) {
+        // ★ ログイン成功の瞬間に、ログインモーダルを消してローディング画面を即時最前面に展開
+        modal.style.display = 'none';
+        this.showLoading();
+
         this.currentUser = matchedUser;
         const userProgress = progressMap[selectedUserId] || { clearedSets: {}, charStats: {} };
         const rawCleared = userProgress.clearedSets;
@@ -174,25 +179,27 @@ export class AuthManager {
           ? rawCleared
           : (rawCleared && typeof rawCleared === 'object' ? Object.keys(rawCleared) : []);
 
-        Storage.setCurrentUser(this.currentUser); //[cite: 9]
-        Storage.setProgress(userProgress); //[cite: 9]
+        Storage.setCurrentUser(this.currentUser);
+        Storage.setProgress(userProgress);
 
         const soundMode = matchedUser.soundMode || 'on';
-        Storage.setSoundEnabled(soundMode !== 'off'); //[cite: 9]
+        Storage.setSoundEnabled(soundMode !== 'off');
 
         this.applyUserData();
-        modal.style.display = 'none';
         this.checkHandModeSetup();
-        this.onUserAuthenticated(this.currentUser, this.clearedSets);
+
+        // main.js の初期化コールバックを実行（内部でデータの描画とローディング解除・ポップアップが行われる）
+        await this.onUserAuthenticated(this.currentUser, this.clearedSets);
+
       } else {
         errorMsg.textContent = 'パスワードがちがいます。';
         errorMsg.style.display = 'block';
         btnSubmit.disabled = false;
-        btnSubmit.textContent = 'ログインする';
       }
     });
 
     modal.style.display = 'flex';
+    return false; // 新規ログイン待ち
   }
 
   applyUserData() {
@@ -209,7 +216,7 @@ export class AuthManager {
     this.onHandModeChanged(handMode === 'left');
 
     if (this.currentUser.soundMode) {
-      Storage.setSoundEnabled(this.currentUser.soundMode !== 'off'); //[cite: 9]
+      Storage.setSoundEnabled(this.currentUser.soundMode !== 'off');
     }
     this.applySoundSetting();
   }
@@ -222,7 +229,7 @@ export class AuthManager {
   }
 
   applySoundSetting() {
-    const isEnabled = Storage.getSoundEnabled(); //[cite: 9]
+    const isEnabled = Storage.getSoundEnabled();
     setAudioMuted(!isEnabled);
 
     const btnToggleSound = document.getElementById('btn-toggle-sound');
@@ -275,12 +282,12 @@ export class AuthManager {
     handMsg.className = 'login-error-msg pin-status-feedback is-saving';
     handMsg.style.display = 'flex';
 
-    const res = await updateHandModeApi(this.currentUser.userId, mode); //[cite: 4]
+    const res = await updateHandModeApi(this.currentUser.userId, mode);
 
     if (res && res.success) {
       this.currentUser.handMode = mode;
       this.onHandModeChanged(mode === 'left');
-      Storage.setCurrentUser(this.currentUser); //[cite: 9]
+      Storage.setCurrentUser(this.currentUser);
 
       handMsg.textContent = 'ききてを へんこうしました。';
       handMsg.className = 'login-error-msg pin-status-feedback is-success';
@@ -316,7 +323,7 @@ export class AuthManager {
     soundMsg.style.display = 'none';
     btnRow.style.display = 'flex';
 
-    const isEnabled = Storage.getSoundEnabled(); //[cite: 9]
+    const isEnabled = Storage.getSoundEnabled();
     const currentVal = isEnabled ? 'on' : 'off';
 
     document.querySelectorAll('.btn-sound-choice').forEach(btn => {
@@ -333,7 +340,7 @@ export class AuthManager {
     const btnRow = document.getElementById('sound-modal-btn-row');
     const choiceButtons = document.querySelectorAll('.btn-sound-choice');
 
-    const currentlyEnabled = Storage.getSoundEnabled(); //[cite: 9]
+    const currentlyEnabled = Storage.getSoundEnabled();
     const newEnabled = (mode === 'on');
 
     if (currentlyEnabled === newEnabled) {
@@ -350,16 +357,16 @@ export class AuthManager {
     soundMsg.className = 'login-error-msg pin-status-feedback is-saving';
     soundMsg.style.display = 'flex';
 
-    Storage.setSoundEnabled(newEnabled); //[cite: 9]
+    Storage.setSoundEnabled(newEnabled);
     this.applySoundSetting();
 
     let apiSuccess = true;
     if (this.currentUser) {
-      const res = await updateSoundModeApi(this.currentUser.userId, mode); //[cite: 4]
+      const res = await updateSoundModeApi(this.currentUser.userId, mode);
       apiSuccess = res && res.success;
       if (apiSuccess) {
         this.currentUser.soundMode = mode;
-        Storage.setCurrentUser(this.currentUser); //[cite: 9]
+        Storage.setCurrentUser(this.currentUser);
       }
     }
 
@@ -374,7 +381,7 @@ export class AuthManager {
         choiceButtons.forEach(btn => btn.disabled = false);
       }, 3000);
     } else {
-      Storage.setSoundEnabled(currentlyEnabled); //[cite: 9]
+      Storage.setSoundEnabled(currentlyEnabled);
       this.applySoundSetting();
 
       soundMsg.textContent = 'ほぞんできませんでした。';
@@ -421,11 +428,11 @@ export class AuthManager {
       pinMsg.className = 'login-error-msg pin-status-feedback is-saving';
       pinMsg.style.display = 'flex';
 
-      const res = await updatePinApi(this.currentUser.userId, newPin); //[cite: 4]
+      const res = await updatePinApi(this.currentUser.userId, newPin);
 
       if (res && res.success) {
         this.currentUser.pin = newPin;
-        Storage.setCurrentUser(this.currentUser); //[cite: 9]
+        Storage.setCurrentUser(this.currentUser);
 
         pinMsg.textContent = 'パスワードを へんこうしました。';
         pinMsg.className = 'login-error-msg pin-status-feedback is-success';
@@ -456,7 +463,7 @@ export class AuthManager {
   }
 
   logout() {
-    Storage.clearSession(); //[cite: 9]
+    Storage.clearSession();
     location.reload();
   }
 
