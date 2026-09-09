@@ -46,7 +46,6 @@ class KanjiApp {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
           if (this.drillManager) this.drillManager.updateBadgeCount();
         }
-        // ★ ユーザー認証（新規ログイン／キャッシュ自動ログイン問わず）が完了した段階で日次ポップアップを実行
         this.checkDailyPopups();
       },
       onHandModeChanged: (isLeftHanded) => {
@@ -111,7 +110,6 @@ class KanjiApp {
       this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
     }
 
-    // 認証フロー初期化（終了後に確実にローディング画面を非表示にする）
     try {
       await this.auth.initAuthFlow();
     } finally {
@@ -124,11 +122,9 @@ class KanjiApp {
         this.drillManager.updateBadgeCount();
       }
     }
-    // ※ checkDailyPopups() は onUserAuthenticated で発火されるため未ログイン時の誤爆を防止
   }
 
   checkDailyPopups() {
-    // ログイン済みユーザーがいない場合は日次モーダルは出さない
     if (!this.auth.getCurrentUser()) return;
 
     if (Storage.shouldShowDrillPopupToday() && this.drillManager) {
@@ -149,16 +145,17 @@ class KanjiApp {
     const canChallenge = this.challengeManager && this.challengeManager.canChallengeToday();
 
     if (canChallenge) {
+      // 挑戦権がある場合はモーダルの開閉に関わらずヘッダーアイコンを常時表示
+      if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
+
       const shouldPopup = this.challengeManager.shouldShowPopupToday();
       if (shouldPopup && allowPopup) {
         overlay.style.display = 'flex';
-        if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'none';
         setTimeout(() => {
           playDrillSound();
         }, 320);
       } else {
         overlay.style.display = 'none';
-        if (btnHeaderChallenge) btnHeaderChallenge.style.display = 'flex';
       }
     } else {
       overlay.style.display = 'none';
@@ -246,7 +243,6 @@ class KanjiApp {
       btnHeaderChallenge.addEventListener('click', () => {
         ensureAudioUnlocked();
         document.getElementById('challenge-modal-overlay').style.display = 'flex';
-        btnHeaderChallenge.style.display = 'none';
         setTimeout(() => {
           playDrillSound();
         }, 320);
