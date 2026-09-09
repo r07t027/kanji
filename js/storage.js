@@ -6,11 +6,20 @@
 const STORAGE_KEYS = {
   USER: 'kanji_current_user',
   PROGRESS: 'kanji_user_progress',
-  SOUND: 'kanji_sound_enabled' // ★ 追加：音ON/OFF永続化キー
+  SOUND: 'kanji_sound_enabled'
 };
 
-// 漢字判定用正規表現（CJK統合漢字・拡張A）
+// 漢字判定用正規表現（CJK統合漢字・拡張A）[cite: 9]
 const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+
+// ローカル現地時間（JST等）の YYYY-MM-DD 文字列を取得する関数
+function getLocalDateString() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export const Storage = {
   getCurrentUser() {
@@ -31,7 +40,6 @@ export const Storage = {
     }
   },
 
-  // 音の有効/無効の取得（未設定時はtrue）
   getSoundEnabled() {
     const val = localStorage.getItem(STORAGE_KEYS.SOUND);
     return val === null ? true : val === 'true';
@@ -156,30 +164,28 @@ export const Storage = {
 
   recordChallengeToday() {
     const progress = this.getProgress();
-    const today = new Date().toISOString().split('T')[0];
-    progress.lastChallengeDate = today;
+    progress.lastChallengeDate = getLocalDateString();
     this.setProgress(progress);
   },
 
   recordDismissToday() {
     const progress = this.getProgress();
-    const today = new Date().toISOString().split('T')[0];
-    progress.lastDismissDate = today;
+    progress.lastDismissDate = getLocalDateString();
     this.setProgress(progress);
   },
 
   recordDrillDismissToday() {
     const progress = this.getProgress();
-    const today = new Date().toISOString().split('T')[0];
-    progress.lastDrillDismissDate = today;
+    progress.lastDrillDismissDate = getLocalDateString();
     this.setProgress(progress);
   },
 
+  // 本日特訓ポップアップを出すべきか
   shouldShowDrillPopupToday() {
     const targets = this.getDrillTargets();
     if (targets.length === 0) return false;
     const progress = this.getProgress();
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     return progress.lastDrillDismissDate !== today;
   },
 

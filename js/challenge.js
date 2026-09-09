@@ -3,7 +3,15 @@
  * 「かきまるからのちょうせん！」出題生成 ＆ 条件判定モジュール
  */
 
-const COOL_DOWN_DAYS = 7; // クールダウン期間（日数）
+const COOL_DOWN_DAYS = 7; // クールダウン期間（日数）[cite: 15]
+
+function getLocalDateString() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export class ChallengeManager {
   constructor(gradeData, storage) {
@@ -11,17 +19,16 @@ export class ChallengeManager {
     this.storage = storage;
   }
 
-  // 今日の挑戦が可能か（まだ今日勝負しておらず、5問作れるか）
+  // 今日の挑戦が可能か（まだ今日勝負しておらず、5問作れるか）[cite: 15]
   canChallengeToday() {
     const progress = this.storage.getProgress();
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
 
-    // 今日すでに「勝負」を完了している場合は不可
     if (progress.lastChallengeDate === today) {
       return false;
     }
 
-    const clearedSetIds = Object.keys(progress.clearedSets);
+    const clearedSetIds = Object.keys(progress.clearedSets || {});
     if (clearedSetIds.length === 0) {
       return false;
     }
@@ -30,26 +37,25 @@ export class ChallengeManager {
     return questions !== null && questions.length === 5;
   }
 
-  // 起動時に自動ポップアップを出すべきか（今日まだ「あとに する」も押していない）
+  // 起動時に自動ポップアップを出すべきか[cite: 15]
   shouldShowPopupToday() {
     if (!this.canChallengeToday()) return false;
     const progress = this.storage.getProgress();
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     return progress.lastDismissDate !== today;
   }
 
-  // アラカルト5問を生成
+  // アラカルト5問を生成[cite: 15]
   generateQuestions() {
     if (!this.gradeData || !this.gradeData.sets) return null;
 
     const progress = this.storage.getProgress();
-    const clearedSetIds = Object.keys(progress.clearedSets);
+    const clearedSetIds = Object.keys(progress.clearedSets || {});
     if (clearedSetIds.length === 0) return null;
 
     const now = new Date().getTime();
     const msCoolDown = COOL_DOWN_DAYS * 24 * 60 * 60 * 1000;
 
-    // 過去に解いたことのあるすべての問題を収集
     const allAvailableQuestions = [];
     this.gradeData.sets.forEach(setObj => {
       if (clearedSetIds.includes(setObj.id)) {
@@ -64,17 +70,16 @@ export class ChallengeManager {
     });
 
     const selectedQuestions = [];
-    const usedChars = new Set(); // 漢字重複防止用
+    const usedChars = new Set();
 
-    // ==================== プールA: 苦手漢字（要復習） ====================
+    // プールA: 苦手漢字（要復習）[cite: 15]
     const weakCandidates = [];
-    Object.entries(progress.charStats).forEach(([char, stat]) => {
+    Object.entries(progress.charStats || {}).forEach(([char, stat]) => {
       const history = stat.history || [];
       const correctCount = history.filter(h => h === true).length;
       const winRate = history.length > 0 ? (correctCount / history.length) : 0;
       const lastAttemptMs = new Date(stat.lastAttempt || 0).getTime();
 
-      // 直近3回中2回以上不正解（正答率 < 0.67） かつ 7日以上経過
       if (winRate < 0.67 && (now - lastAttemptMs) >= msCoolDown) {
         weakCandidates.push({
           char,
@@ -84,13 +89,11 @@ export class ChallengeManager {
       }
     });
 
-    // 正答率が低い順、古い順にソート
     weakCandidates.sort((a, b) => {
       if (a.winRate !== b.winRate) return a.winRate - b.winRate;
       return a.lastAttemptMs - b.lastAttemptMs;
     });
 
-    // 該当する漢字を含む問題をプールAから選定
     for (const weak of weakCandidates) {
       if (selectedQuestions.length >= 5) break;
 
@@ -106,7 +109,7 @@ export class ChallengeManager {
       }
     }
 
-    // ==================== プールB: 過去合格問題（忘却曲線復習） ====================
+    // プールB: 過去合格問題[cite: 15]
     if (selectedQuestions.length < 5) {
       const sortedByOldestClear = [...allAvailableQuestions].sort((a, b) => a.clearedAt - b.clearedAt);
 
