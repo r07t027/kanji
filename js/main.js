@@ -41,11 +41,8 @@ class KanjiApp {
 
     this.auth = new AuthManager({
       prefetchPromise: this.prefetchPromise,
-      // ログインボタン押下時に即座にローディング幕を出す関数
       showLoading: () => this.showLoadingScreen(),
-      // ログイン完了時に呼ばれるコールバック
       onUserAuthenticated: async (user, clearedSets) => {
-        // メニュー・バッジ・ポップアップを確実に構築
         await this.onLoginCompleted(clearedSets);
       },
       onHandModeChanged: (isLeftHanded) => {
@@ -65,7 +62,6 @@ class KanjiApp {
     this.init();
   }
 
-  // ローディング画面を表示する
   showLoadingScreen() {
     const loadingScreen = document.getElementById('app-loading-screen');
     if (loadingScreen) {
@@ -74,7 +70,6 @@ class KanjiApp {
     }
   }
 
-  // ローディング画面を閉じる（アニメーション完了待機）
   async hideLoadingScreen() {
     const loadingScreen = document.getElementById('app-loading-screen');
     if (!loadingScreen) return;
@@ -114,7 +109,6 @@ class KanjiApp {
     this.bindEvents();
 
     try {
-      // 1. 問題JSONの読み込みとスプレッドシート通信を並行取得
       const [questionsRes, prefetchRes] = await Promise.all([
         fetch('data/grade5_questions.json').then(r => r.json()),
         this.prefetchPromise
@@ -124,11 +118,9 @@ class KanjiApp {
       this.challengeManager = new ChallengeManager(this.gradeData, Storage);
       this.drillManager.setGradeData(this.gradeData);
 
-      // 2. 認証初期化（自動ログイン、または未ログインならログイン画面へ）
       const isAutoLoggedIn = await this.auth.initAuthFlow(prefetchRes);
 
       if (!isAutoLoggedIn) {
-        // 未ログイン時はログイン画面を出すためにローディングを解除
         await this.hideLoadingScreen();
       }
 
@@ -139,31 +131,48 @@ class KanjiApp {
     }
   }
 
-  // ログインが成立した時（自動ログイン時、またはログインボタン押下後）の共通処理
+  // ログイン完了時の処理
   async onLoginCompleted(clearedSets) {
     if (this.gradeData) {
+      // 1. メニュー画面の単元ボタンや進捗を構築
       this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
+      
+      // 2. 特訓道着アイコンの表示・バッジ数を確定
       if (this.drillManager) {
         this.drillManager.updateBadgeCount();
       }
+
+      // 3. かきまる挑戦アイコンの表示状態をあらかじめ確定（モーダルはまだ開かない）
+      this.updateChallengeHeaderButtonOnly();
     }
 
-    // ローディング画面を閉じる
+    // 4. ローディング幕を閉じる
     await this.hideLoadingScreen();
 
-    // 画面が完全に落ち着いてからポップアップ判定を実行
-    setTimeout(() => {
+    // 5. 背面のすべてのアイコンが完全に描画された直後、安定した状態でモーダルを表示
+    requestAnimationFrame(() => {
       this.checkDailyPopups();
-    }, 60);
+    });
   }
 
+  // 背面ヘッダー用：かきまるアイコンの表示/非表示のみを先に確定させるメソッド
+  updateChallengeHeaderButtonOnly() {
+    const btnHeaderChallenge = document.getElementById('btn-header-challenge');
+    if (!btnHeaderChallenge || !this.challengeManager) return;
+
+    const canChallenge = this.challengeManager.canChallengeToday();
+    btnHeaderChallenge.style.display = canChallenge ? 'flex' : 'none';
+  }
+
+  // 起動時のポップアップ表示
   checkDailyPopups() {
     const shouldShowDrill = Storage.shouldShowDrillPopupToday();
 
     if (shouldShowDrill && this.drillManager) {
+      // 特訓を最優先で表示（背面のアイコン群はすでに完璧に揃っている状態）
       this.drillManager.open(true);
-      this.checkDailyChallenge(false);
     } else {
+      // 特訓がない場合は挑戦状の判定・表示へ
       this.checkDailyChallenge(true);
     }
   }
