@@ -3,7 +3,7 @@
  * ユーザー認証、設定モーダル（利き手・音・PIN）、セッション管理モジュール
  */
 import { ensureAudioUnlocked, setAudioMuted } from './audio.js';
-import { updateHandModeApi, updateSoundModeApi, updatePinApi, prefetchAllDataAsync } from './logger.js';
+import { updateHandModeApi, updateSoundModeApi, updatePinApi, fetchClassAndUsersFromLocal } from './logger.js';
 import { Storage } from './storage.js';
 
 export class AuthManager {
@@ -92,7 +92,9 @@ export class AuthManager {
       return;
     }
 
-    // 2. 新規ログイン時：スプレッドシートデータから名簿を構築
+    // 2. 新規ログイン時：
+    // 初期状態としてモーダルを最前面に表示
+    modal.style.display = 'flex';
     selectClass.innerHTML = '<option value="">よみこみ中...</option>';
     selectUser.innerHTML = '<option value="">なまえを えらんでね</option>';
     selectUser.disabled = true;
@@ -104,15 +106,35 @@ export class AuthManager {
       prefetchRes = null;
     }
 
-    if (!prefetchRes || !prefetchRes.success || !prefetchRes.authMap) {
+    let authMap = prefetchRes && prefetchRes.authMap ? prefetchRes.authMap : null;
+    let progressMap = prefetchRes && prefetchRes.progressMap ? prefetchRes.progressMap : {};
+
+    // 万一GAS通信が失敗した場合、data/users.json からフォールバック
+    if (!authMap) {
+      console.warn('スプレッドシートからの名簿取得に失敗したため、ローカル名簿を参照します');
+      const localData = await fetchClassAndUsersFromLocal();
+      if (localData && localData.success && Array.isArray(localData.users)) {
+        authMap = {};
+        localData.users.forEach(u => {
+          authMap[u.userId] = {
+            userId: u.userId,
+            className: u.className,
+            studentNo: u.studentNo,
+            kanaName: u.kanaName,
+            pin: u.pin || '1234',
+            handMode: u.handMode || 'right',
+            soundMode: u.soundMode || 'on'
+          };
+        });
+      }
+    }
+
+    if (!authMap || Object.keys(authMap).length === 0) {
       selectClass.innerHTML = '<option value="">名簿の取得に失敗しました</option>';
-      modal.style.display = 'flex';
       return;
     }
 
-    const { authMap, progressMap } = prefetchRes;
     const allUsers = Object.values(authMap);
-
     const classes = Array.from(new Set(allUsers.map(u => u.className).filter(Boolean))).sort();
 
     selectClass.innerHTML = '<option value="">クラスを えらんでね</option>';
@@ -192,8 +214,6 @@ export class AuthManager {
         btnSubmit.textContent = 'ログインする';
       }
     });
-
-    modal.style.display = 'flex';
   }
 
   applyUserData() {
