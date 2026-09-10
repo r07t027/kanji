@@ -23,9 +23,12 @@
     <div class="loading-content">
       <img src="assets/images/logo_02.png" alt="かんトレ" class="loading-logo-img">
       
-      <!-- 読み込み中表示 -->
+      <!-- 読み込み中表示（確実に回転するSVGスピナー） -->
       <div id="loading-spinner-box" class="loading-status-box">
-        <div class="loading-spinner"></div>
+        <svg class="loading-spinner-svg" viewBox="0 0 50 50">
+          <circle class="spinner-track" cx="25" cy="25" r="20" fill="none" stroke="#e0f2fe" stroke-width="5"></circle>
+          <circle class="spinner-head" cx="25" cy="25" r="20" fill="none" stroke="#0284c7" stroke-width="5" stroke-linecap="round" stroke-dasharray="31.4 94.2"></circle>
+        </svg>
         <div class="loading-text">データを よみこんでいます...</div>
       </div>
 

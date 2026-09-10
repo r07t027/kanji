@@ -47,7 +47,7 @@ body {
   gap: 24px;
 }
 
-/* 起動時ロゴ（logo_02.png）のスタイル */
+/* 起動時ロゴ */
 .loading-logo-img {
   width: 175px;
   height: 175px;
@@ -65,15 +65,21 @@ body {
   justify-content: center;
 }
 
-/* 水色基調の回転スピナー（余計なtransformプロパティを排除） */
-.loading-spinner {
-  width: 44px;
-  height: 44px;
-  border: 5px solid #e0f2fe;
-  border-top-color: #0284c7;
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-  box-sizing: border-box;
+/* ★ SVG回転スピナー：軽量かつ独立した描画レイヤーで確実に回転 */
+.loading-spinner-svg {
+  width: 46px;
+  height: 46px;
+  animation: svgSpin 0.9s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes svgSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -108,16 +114,6 @@ button.btn-start-app:active {
   transform: translateY(1px) scale(0.98);
 }
 
-/* 回転キーフレーム */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes pulseText {
   0%, 100% {
     opacity: 0.6;
@@ -125,30 +121,6 @@ button.btn-start-app:active {
   50% {
     opacity: 1;
   }
-}
-
-/* ★ 追加：「はじめる！」ボタン（大きく押しやすいデザイン・弾むアニメーション） */
-button.btn-start-app {
-  background: linear-gradient(135deg, #f57c00, #ff9800);
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #ffffff;
-  padding: 14px 48px;
-  border-radius: 18px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 6px 20px rgba(245, 124, 0, 0.35);
-  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transition: transform 0.15s, opacity 0.15s;
-}
-
-button.btn-start-app:hover {
-  transform: translateY(-2px) scale(1.03);
-  opacity: 0.95;
-}
-
-button.btn-start-app:active {
-  transform: translateY(1px) scale(0.98);
 }
 
 /* ========================================================
