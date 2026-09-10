@@ -18,12 +18,21 @@
 </head>
 <body>
 
-  <!-- ==================== 全画面 起動ローディングオーバーレイ ==================== -->
+<!-- ==================== 全画面 起動ローディングオーバーレイ ==================== -->
   <div id="app-loading-screen" class="app-loading-screen">
     <div class="loading-content">
       <img src="assets/images/logo_02.png" alt="かんトレ" class="loading-logo-img">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">データを よみこんでいます...</div>
+      
+      <!-- 読み込み中表示 -->
+      <div id="loading-spinner-box" class="loading-status-box">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">データを よみこんでいます...</div>
+      </div>
+
+      <!-- 準備完了時に表示する「はじめる」ボタン -->
+      <div id="loading-ready-box" class="loading-status-box" style="display: none;">
+        <button type="button" id="btn-start-app" class="btn-start-app">はじめる！</button>
+      </div>
     </div>
   </div>
 

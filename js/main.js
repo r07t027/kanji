@@ -46,8 +46,6 @@ class KanjiApp {
           this.menu.setData(this.gradeData, clearedSets, this.menu.getSelectedSetId());
           if (this.drillManager) this.drillManager.updateBadgeCount();
         }
-        // ★ ログイン完了時（セッション開始時）にのみ起動時ポップアップ判定を実行
-        this.checkDailyPopups();
       },
       onHandModeChanged: (isLeftHanded) => {
         this.ui.setHandedness(isLeftHanded);
@@ -111,11 +109,8 @@ class KanjiApp {
       this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
     }
 
-    try {
-      await this.auth.initAuthFlow();
-    } finally {
-      this.hideLoadingScreen();
-    }
+    // 認証フロー実行
+    await this.auth.initAuthFlow();
 
     if (this.gradeData) {
       this.menu.setData(this.gradeData, this.auth.getClearedSets());
@@ -123,9 +118,36 @@ class KanjiApp {
         this.drillManager.updateBadgeCount();
       }
     }
+
+    // 自動ログイン（ユーザー認証済み）か新規ログインかで分岐
+    const currentUser = this.auth.getCurrentUser();
+    if (currentUser) {
+      // 自動ログイン時：スピナーを隠して「はじめる！」ボタンを表示
+      const spinnerBox = document.getElementById('loading-spinner-box');
+      const readyBox = document.getElementById('loading-ready-box');
+      const btnStartApp = document.getElementById('btn-start-app');
+
+      if (spinnerBox) spinnerBox.style.display = 'none';
+      if (readyBox) readyBox.style.display = 'flex';
+
+      if (btnStartApp) {
+        btnStartApp.onclick = () => {
+          // ユーザー操作により確実に Web Audio API をアンロック
+          ensureAudioUnlocked();
+          this.hideLoadingScreen();
+          // アンロック完了後に日次ポップアップ（特訓・挑戦状）を発火（確実に音が鳴る）
+          this.checkDailyPopups();
+        };
+      } else {
+        this.hideLoadingScreen();
+        this.checkDailyPopups();
+      }
+    } else {
+      // 未ログイン（新規ログインモーダル表示）時はそのままローディングを解除
+      this.hideLoadingScreen();
+    }
   }
 
-  // ★ 起動・ログイン時専用のポップアップ判定（単元クリア後などは呼ばない）
   checkDailyPopups() {
     if (!this.auth.getCurrentUser()) return;
 
@@ -269,7 +291,6 @@ class KanjiApp {
       }
     });
 
-    // ★ 修正：クリア画面から次の単元に進む際、checkDailyPopups は呼ばない
     document.getElementById('btn-clear-next').addEventListener('click', () => {
       ensureAudioUnlocked();
       if (this.isChallengeMode) {
@@ -282,7 +303,6 @@ class KanjiApp {
       }
     });
 
-    // ★ 修正：クリア画面からメニューに戻る際、checkDailyPopups は呼ばずバッジ数のみ更新
     document.getElementById('btn-clear-menu').addEventListener('click', () => {
       ensureAudioUnlocked();
       this.isChallengeMode = false;
@@ -297,7 +317,6 @@ class KanjiApp {
     });
   }
 
-  // ★ 修正：問題解答中に「メニューへもどる」を押した際、checkDailyPopups は呼ばない
   handleBackToMenu() {
     if (this.hasUnsavedSessionChanges) {
       const currentUser = this.auth.getCurrentUser();
