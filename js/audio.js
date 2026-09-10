@@ -45,15 +45,22 @@ async function loadSound(name, url) {
 }
 
 /**
- * 起動直後に全音声ファイルを即座にプリロード開始する関数
+ * 起動直後に全音声ファイルをプリロードする関数
+ * メインスレッドの描画（CSSスピナー等）を固まらせないよう、順次遅延読み込みを行う
  */
 export async function preloadAllSounds() {
   if (isPreloading) return;
   isPreloading = true;
-  getAudioContext(); // コンテキストを先行生成
-  await Promise.allSettled(
-    Object.entries(SOUND_FILES).map(([name, url]) => loadSound(name, url))
-  );
+
+  // 描画フレームが安定するまで少し待機してから開始
+  setTimeout(async () => {
+    getAudioContext();
+    for (const [name, url] of Object.entries(SOUND_FILES)) {
+      await loadSound(name, url);
+      // 各音声デコードの間に微小な隙間を空けてスレッドを開放
+      await new Promise(resolve => setTimeout(resolve, 30));
+    }
+  }, 150);
 }
 
 export function ensureAudioUnlocked() {
@@ -65,10 +72,10 @@ export function ensureAudioUnlocked() {
 }
 
 export function initAudioUnlock() {
-  // 1. 音声データの読み込みはユーザー操作を待たずに即時バックグラウンドで開始
+  // 描画を阻害しない安全なバックグラウンド読み込みを開始
   preloadAllSounds();
 
-  // 2. ユーザーの初回操作で確実に AudioContext をアンロック
+  // ユーザーの初回操作で確実に AudioContext をアンロック
   const unlock = async () => {
     if (isUnlocked) return;
     const ctx = getAudioContext();
@@ -80,7 +87,6 @@ export function initAudioUnlock() {
         } catch (e) {}
       }
 
-      // 無音バッファを再生して iOS / Chrome の制限を解除
       try {
         const dummyBuffer = ctx.createBuffer(1, 1, 22050);
         const source = ctx.createBufferSource();
