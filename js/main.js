@@ -99,6 +99,7 @@ class KanjiApp {
 
     this.bindEvents();
 
+    // 問題データの読み込み
     try {
       const res = await fetch('data/grade5_questions.json');
       this.gradeData = await res.json();
@@ -106,11 +107,16 @@ class KanjiApp {
       this.drillManager.setGradeData(this.gradeData);
     } catch (e) {
       console.error('問題データの読み込みに失敗しました:', e);
-      this.ui.setMessage('もんだいデータの よみこみに しっぱいしました。', 'mistake');
     }
 
-    // 認証フロー実行
-    await this.auth.initAuthFlow();
+    // 認証フロー実行（最長4秒でタイムアウトして必ず画面を進める）
+    const authPromise = this.auth.initAuthFlow();
+    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 4000));
+    try {
+      await Promise.race([authPromise, timeoutPromise]);
+    } catch (err) {
+      console.warn('認証フロー待機例外:', err);
+    }
 
     if (this.gradeData) {
       this.menu.setData(this.gradeData, this.auth.getClearedSets());
@@ -119,6 +125,7 @@ class KanjiApp {
       }
     }
 
+    // 画面切り替え判定
     const currentUser = this.auth.getCurrentUser();
     const spinner = document.getElementById('loading-spinner');
     const loadingText = document.getElementById('loading-text');
@@ -133,11 +140,11 @@ class KanjiApp {
       btnStartApp.onclick = () => {
         ensureAudioUnlocked();
         this.hideLoadingScreen();
-        // ユーザー操作直後に日次ポップアップを発火（確実に音が鳴る）
+        // ユーザーがタップした直後に日次ポップアップを発火（確実に音が鳴る）
         this.checkDailyPopups();
       };
     } else {
-      // 未ログイン（新規ログインモーダル時）は即座にローディング解除
+      // 未ログイン（新規ログイン画面）はスピナーを消してログインモーダルを表示
       this.hideLoadingScreen();
     }
   }

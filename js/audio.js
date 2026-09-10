@@ -2,7 +2,6 @@
 let audioCtx = null;
 const audioBuffers = {};
 let isMuted = false;
-let isPreloading = false;
 let isUnlocked = false;
 
 const SOUND_FILES = {
@@ -34,33 +33,27 @@ export function getAudioContext() {
 async function loadSound(name, url) {
   try {
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+    if (!response.ok) return;
     const arrayBuffer = await response.arrayBuffer();
     const ctx = getAudioContext();
     if (!ctx) return;
-    audioBuffers[name] = await ctx.decodeAudioData(arrayBuffer);
+    // コールバック形式とPromise形式の両対応で確実にデコード
+    return new Promise((resolve) => {
+      ctx.decodeAudioData(
+        arrayBuffer,
+        (decoded) => {
+          audioBuffers[name] = decoded;
+          resolve();
+        },
+        (err) => {
+          console.warn(`デコード失敗 (${name}):`, err);
+          resolve();
+        }
+      );
+    });
   } catch (err) {
-    console.warn(`音声ファイルの読み込み/デコードに失敗しました (${name}):`, err);
+    console.warn(`音声読み込み失敗 (${name}):`, err);
   }
-}
-
-/**
- * 起動直後に全音声ファイルをプリロードする関数
- * メインスレッドの描画（CSSスピナー等）を固まらせないよう、順次遅延読み込みを行う
- */
-export async function preloadAllSounds() {
-  if (isPreloading) return;
-  isPreloading = true;
-
-  // 描画フレームが安定するまで少し待機してから開始
-  setTimeout(async () => {
-    getAudioContext();
-    for (const [name, url] of Object.entries(SOUND_FILES)) {
-      await loadSound(name, url);
-      // 各音声デコードの間に微小な隙間を空けてスレッドを開放
-      await new Promise(resolve => setTimeout(resolve, 30));
-    }
-  }, 150);
 }
 
 export function ensureAudioUnlocked() {
@@ -72,31 +65,34 @@ export function ensureAudioUnlocked() {
 }
 
 export function initAudioUnlock() {
-  // 描画を阻害しない安全なバックグラウンド読み込みを開始
-  preloadAllSounds();
-
-  // ユーザーの初回操作で確実に AudioContext をアンロック
   const unlock = async () => {
     if (isUnlocked) return;
+    isUnlocked = true;
+
     const ctx = getAudioContext();
-
-    if (ctx) {
-      if (ctx.state === 'suspended') {
-        try {
-          await ctx.resume();
-        } catch (e) {}
-      }
-
+    if (ctx && ctx.state === 'suspended') {
       try {
-        const dummyBuffer = ctx.createBuffer(1, 1, 22050);
-        const source = ctx.createBufferSource();
-        source.buffer = dummyBuffer;
-        source.connect(ctx.destination);
-        source.start(0);
+        await ctx.resume();
       } catch (e) {}
     }
 
-    isUnlocked = true;
+    // ダミー音声でiOS/WebKitの制限を解除
+    if (ctx) {
+      try {
+        const dummy = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        src.buffer = dummy;
+        src.connect(ctx.destination);
+        src.start(0);
+      } catch (e) {}
+    }
+
+    // アンロックされた安全な状態で全音声をデコード読み込み
+    Object.entries(SOUND_FILES).forEach(([name, url]) => {
+      if (!audioBuffers[name]) {
+        loadSound(name, url);
+      }
+    });
 
     window.removeEventListener('pointerdown', unlock);
     window.removeEventListener('touchstart', unlock);
