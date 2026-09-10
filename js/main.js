@@ -119,31 +119,25 @@ class KanjiApp {
       }
     }
 
-    // 自動ログイン（ユーザー認証済み）か新規ログインかで分岐
     const currentUser = this.auth.getCurrentUser();
-    if (currentUser) {
-      // 自動ログイン時：スピナーを隠して「はじめる！」ボタンを表示
-      const spinnerBox = document.getElementById('loading-spinner-box');
-      const readyBox = document.getElementById('loading-ready-box');
-      const btnStartApp = document.getElementById('btn-start-app');
+    const spinner = document.getElementById('loading-spinner');
+    const loadingText = document.getElementById('loading-text');
+    const btnStartApp = document.getElementById('btn-start-app');
 
-      if (spinnerBox) spinnerBox.style.display = 'none';
-      if (readyBox) readyBox.style.display = 'flex';
+    if (currentUser && btnStartApp) {
+      // 自動ログイン時：スピナーとテキストを非表示にして「はじめる！」ボタンを表示
+      if (spinner) spinner.style.display = 'none';
+      if (loadingText) loadingText.style.display = 'none';
+      btnStartApp.style.display = 'inline-block';
 
-      if (btnStartApp) {
-        btnStartApp.onclick = () => {
-          // ユーザー操作により確実に Web Audio API をアンロック
-          ensureAudioUnlocked();
-          this.hideLoadingScreen();
-          // アンロック完了後に日次ポップアップ（特訓・挑戦状）を発火（確実に音が鳴る）
-          this.checkDailyPopups();
-        };
-      } else {
+      btnStartApp.onclick = () => {
+        ensureAudioUnlocked();
         this.hideLoadingScreen();
+        // ユーザー操作直後に日次ポップアップを発火（確実に音が鳴る）
         this.checkDailyPopups();
-      }
+      };
     } else {
-      // 未ログイン（新規ログインモーダル表示）時はそのままローディングを解除
+      // 未ログイン（新規ログインモーダル時）は即座にローディング解除
       this.hideLoadingScreen();
     }
   }

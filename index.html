@@ -18,24 +18,13 @@
 </head>
 <body>
 
-<!-- ==================== 全画面 起動ローディングオーバーレイ ==================== -->
+  <!-- ==================== 全画面 起動ローディングオーバーレイ ==================== -->
   <div id="app-loading-screen" class="app-loading-screen">
     <div class="loading-content">
       <img src="assets/images/logo_02.png" alt="かんトレ" class="loading-logo-img">
-      
-      <!-- 読み込み中表示（確実に回転するSVGスピナー） -->
-      <div id="loading-spinner-box" class="loading-status-box">
-        <svg class="loading-spinner-svg" viewBox="0 0 50 50">
-          <circle class="spinner-track" cx="25" cy="25" r="20" fill="none" stroke="#e0f2fe" stroke-width="5"></circle>
-          <circle class="spinner-head" cx="25" cy="25" r="20" fill="none" stroke="#0284c7" stroke-width="5" stroke-linecap="round" stroke-dasharray="31.4 94.2"></circle>
-        </svg>
-        <div class="loading-text">データを よみこんでいます...</div>
-      </div>
-
-      <!-- 準備完了時に表示する「はじめる」ボタン -->
-      <div id="loading-ready-box" class="loading-status-box" style="display: none;">
-        <button type="button" id="btn-start-app" class="btn-start-app">はじめる！</button>
-      </div>
+      <div id="loading-spinner" class="loading-spinner"></div>
+      <div id="loading-text" class="loading-text">データを よみこんでいます...</div>
+      <button type="button" id="btn-start-app" class="btn-start-app" style="display: none;">はじめる！</button>
     </div>
   </div>
 
@@ -359,7 +348,6 @@
         <button type="button" id="btn-drill-close-list" class="btn-back-menu">メニューへ もどる</button>
       </div>
 
-      <!-- かきまるのセリフ吹き出しエリア（kakimaru_12.png） -->
       <div class="drill-mascot-speech-row">
         <div class="drill-mascot-avatar-box">
           <img src="assets/images/kakimaru_12.png" alt="かきまる" class="drill-mascot-avatar-img">
@@ -371,11 +359,8 @@
         </div>
       </div>
       
-      <div id="drill-grid-container" class="drill-grid-container">
-        <!-- JSで最大6個の苦手漢字タイルを動的描画 -->
-      </div>
+      <div id="drill-grid-container" class="drill-grid-container"></div>
 
-      <!-- 絵文字を廃止し、高さを統一した1行メッセージ -->
       <div id="drill-empty-msg" class="drill-empty-msg" style="display: none;">
         <div class="drill-empty-title">いまは にがてな かんじは ないよ！</div>
       </div>
@@ -417,18 +402,15 @@
             <button id="btn-drill-redo" class="btn-history" title="1かくすすむ" disabled>1かくすすむ</button>
           </div>
 
-          <!-- 通常問題と同じ2行画数パネル -->
           <div class="info-panel drill-info-panel">
             <div id="drill-stroke-target" class="stroke-info-line" style="color: #1e40af;">このじは ０かく です。</div>
             <div id="drill-canvas-status" class="stroke-info-line">いまの かくすう：０かく</div>
           </div>
 
-          <!-- 高さを固定したメッセージ表示エリア（レイアウトシフト防止） -->
           <div class="drill-feedback-container">
             <div class="drill-feedback-msg" id="drill-feedback-msg"></div>
           </div>
 
-          <!-- 「はじめから」と「こたえあわせ」の2ボタン並列エリア -->
           <div class="drill-action-row">
             <button type="button" id="btn-drill-restart" class="btn-drill-restart" title="とっくんを 1かいめから やりなおす">
               はじめから
