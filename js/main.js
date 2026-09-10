@@ -99,7 +99,6 @@ class KanjiApp {
 
     this.bindEvents();
 
-    // 問題データの読み込み
     try {
       const res = await fetch('data/grade5_questions.json');
       this.gradeData = await res.json();
@@ -109,7 +108,6 @@ class KanjiApp {
       console.error('問題データの読み込みに失敗しました:', e);
     }
 
-    // 認証フロー実行（最長4秒でタイムアウトして必ず画面を進める）
     const authPromise = this.auth.initAuthFlow();
     const timeoutPromise = new Promise(resolve => setTimeout(resolve, 4000));
     try {
@@ -125,26 +123,21 @@ class KanjiApp {
       }
     }
 
-    // 画面切り替え判定
     const currentUser = this.auth.getCurrentUser();
-    const spinner = document.getElementById('loading-spinner');
-    const loadingText = document.getElementById('loading-text');
+    const spinnerWrapper = document.getElementById('loading-spinner-wrapper');
     const btnStartApp = document.getElementById('btn-start-app');
 
     if (currentUser && btnStartApp) {
-      // 自動ログイン時：スピナーとテキストを非表示にして「はじめる！」ボタンを表示
-      if (spinner) spinner.style.display = 'none';
-      if (loadingText) loadingText.style.display = 'none';
+      // スピナー＆テキストのラッパーを隠し、同じ高さの枠内に「はじめる！」ボタンを表示
+      if (spinnerWrapper) spinnerWrapper.style.display = 'none';
       btnStartApp.style.display = 'inline-block';
 
       btnStartApp.onclick = () => {
         ensureAudioUnlocked();
         this.hideLoadingScreen();
-        // ユーザーがタップした直後に日次ポップアップを発火（確実に音が鳴る）
         this.checkDailyPopups();
       };
     } else {
-      // 未ログイン（新規ログイン画面）はスピナーを消してログインモーダルを表示
       this.hideLoadingScreen();
     }
   }

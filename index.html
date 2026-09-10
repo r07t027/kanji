@@ -22,9 +22,15 @@
   <div id="app-loading-screen" class="app-loading-screen">
     <div class="loading-content">
       <img src="assets/images/logo_02.png" alt="かんトレ" class="loading-logo-img">
-      <div id="loading-spinner" class="loading-spinner"></div>
-      <div id="loading-text" class="loading-text">データを よみこんでいます...</div>
-      <button type="button" id="btn-start-app" class="btn-start-app" style="display: none;">はじめる！</button>
+      
+      <!-- 高さを固定してロゴの位置ズレを防ぐアクションエリア -->
+      <div class="loading-action-area">
+        <div id="loading-spinner-wrapper" class="loading-spinner-wrapper">
+          <div id="loading-spinner" class="loading-spinner"></div>
+          <div id="loading-text" class="loading-text">データを よみこんでいます...</div>
+        </div>
+        <button type="button" id="btn-start-app" class="btn-start-app" style="display: none;">はじめる！</button>
+      </div>
     </div>
   </div>
 
