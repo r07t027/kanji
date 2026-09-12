@@ -128,9 +128,8 @@ class KanjiApp {
     const btnStartApp = document.getElementById('btn-start-app');
 
     if (currentUser && btnStartApp) {
-      // スピナー＆テキストのラッパーを隠し、同じ高さの枠内に「はじめる！」ボタンを表示
       if (spinnerWrapper) spinnerWrapper.style.display = 'none';
-      btnStartApp.style.display = 'inline-block';
+      btnStartApp.style.display = 'block'; // inline-block から block に変更
 
       btnStartApp.onclick = () => {
         ensureAudioUnlocked();
