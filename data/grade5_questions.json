@@ -1558,22 +1558,16 @@
           ]
         },
         {
-          "type": "okurigana",
+          "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">にんき</span>が切れる。",
-          "notice": "💡 おくりがなまで全部書いてね！",
-          "maxChars": 3,
           "targets": [
             {
-              "char": "切",
-              "strokes": 4
+              "char": "任",
+              "strokes": 6
             },
             {
-              "char": "れ",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
+              "char": "期",
+              "strokes": 12
             }
           ]
         },
@@ -3630,6 +3624,1006 @@
             {
               "char": "道",
               "strokes": 12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_01",
+      "title": "3学期 第01回",
+      "questions": [
+        {
+          "type": "okurigana",
+          "sentenceHtml": "朝日が<span class=\"highlight-target\">さす</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 2,
+          "targets": [
+            {
+              "char": "差",
+              "strokes": 10
+            },
+            {
+              "char": "す",
+              "strokes": 2
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "黄色が<span class=\"highlight-target\">にあう</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "似",
+              "strokes": 7
+            },
+            {
+              "char": "合",
+              "strokes": 6
+            },
+            {
+              "char": "う",
+              "strokes": 2
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "新しい<span class=\"highlight-target\">せいひん</span>。",
+          "targets": [
+            {
+              "char": "製",
+              "strokes": 14
+            },
+            {
+              "char": "品",
+              "strokes": 9
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">きのう</span>の多いペン。",
+          "targets": [
+            {
+              "char": "機",
+              "strokes": 16
+            },
+            {
+              "char": "能",
+              "strokes": 10
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "真実を検（けん）<span class=\"highlight-target\">しょう</span>する。",
+          "targets": [
+            {
+              "char": "証",
+              "strokes": 12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_02",
+      "title": "3学期 第02回",
+      "questions": [
+        {
+          "type": "okurigana",
+          "sentenceHtml": "<span class=\"highlight-target\">ゆたか</span>な生活。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "豊",
+              "strokes": 13
+            },
+            {
+              "char": "か",
+              "strokes": 3
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">ほうふ</span>な知識。",
+          "targets": [
+            {
+              "char": "豊",
+              "strokes": 13
+            },
+            {
+              "char": "富",
+              "strokes": 12
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "周りを<span class=\"highlight-target\">とりかこむ</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 5,
+          "targets": [
+            {
+              "char": "取",
+              "strokes": 8
+            },
+            {
+              "char": "り",
+              "strokes": 2
+            },
+            {
+              "char": "囲",
+              "strokes": 7
+            },
+            {
+              "char": "む",
+              "strokes": 3
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "ビルを<span class=\"highlight-target\">ほうい</span>する。",
+          "targets": [
+            {
+              "char": "包",
+              "strokes": 5
+            },
+            {
+              "char": "囲",
+              "strokes": 7
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "急ぐ<span class=\"highlight-target\">ひつよう</span>がある。",
+          "targets": [
+            {
+              "char": "必",
+              "strokes": 5
+            },
+            {
+              "char": "要",
+              "strokes": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_03",
+      "title": "3学期 第03回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">しゅうだん</span>で下校する。",
+          "targets": [
+            {
+              "char": "集",
+              "strokes": 12
+            },
+            {
+              "char": "団",
+              "strokes": 6
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "委員長を<span class=\"highlight-target\">けいけん</span>する。",
+          "targets": [
+            {
+              "char": "経",
+              "strokes": 11
+            },
+            {
+              "char": "験",
+              "strokes": 18
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "卒業から一年を<span class=\"highlight-target\">へる</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 2,
+          "targets": [
+            {
+              "char": "経",
+              "strokes": 11
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">むり</span>しないで歩く。",
+          "targets": [
+            {
+              "char": "無",
+              "strokes": 12
+            },
+            {
+              "char": "理",
+              "strokes": 11
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">まさゆめ</span>になる。",
+          "targets": [
+            {
+              "char": "正",
+              "strokes": 5
+            },
+            {
+              "char": "夢",
+              "strokes": 13
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_04",
+      "title": "3学期 第04回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">かんせんどうろ</span>を走る。",
+          "targets": [
+            {
+              "char": "幹",
+              "strokes": 13
+            },
+            {
+              "char": "線",
+              "strokes": 15
+            },
+            {
+              "char": "道",
+              "strokes": 12
+            },
+            {
+              "char": "路",
+              "strokes": 13
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "大きな木の<span class=\"highlight-target\">みき</span>。",
+          "targets": [
+            {
+              "char": "幹",
+              "strokes": 13
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">かんれい</span>にとらわれない。",
+          "targets": [
+            {
+              "char": "慣",
+              "strokes": 14
+            },
+            {
+              "char": "例",
+              "strokes": 8
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "早起きに<span class=\"highlight-target\">なれる</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "慣",
+              "strokes": 14
+            },
+            {
+              "char": "れ",
+              "strokes": 2
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "水質の<span class=\"highlight-target\">けんさ</span>。",
+          "targets": [
+            {
+              "char": "検",
+              "strokes": 12
+            },
+            {
+              "char": "査",
+              "strokes": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_05",
+      "title": "3学期 第05回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "ドアで<span class=\"highlight-target\">がんめん</span>を打つ。",
+          "targets": [
+            {
+              "char": "顔",
+              "strokes": 18
+            },
+            {
+              "char": "面",
+              "strokes": 9
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "仕組みを<span class=\"highlight-target\">こうちく</span>する。",
+          "targets": [
+            {
+              "char": "構",
+              "strokes": 14
+            },
+            {
+              "char": "築",
+              "strokes": 16
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "よい関係を<span class=\"highlight-target\">きずく</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "築",
+              "strokes": 16
+            },
+            {
+              "char": "く",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "銀の<span class=\"highlight-target\">こうざん</span>。",
+          "targets": [
+            {
+              "char": "鉱",
+              "strokes": 13
+            },
+            {
+              "char": "山",
+              "strokes": 3
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">こうみゃく</span>をほり当てる。",
+          "targets": [
+            {
+              "char": "鉱",
+              "strokes": 13
+            },
+            {
+              "char": "脈",
+              "strokes": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_06",
+      "title": "3学期 第06回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "船で<span class=\"highlight-target\">こうかい</span>する。",
+          "targets": [
+            {
+              "char": "航",
+              "strokes": 10
+            },
+            {
+              "char": "海",
+              "strokes": 9
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "絵画に<span class=\"highlight-target\">きょうみ</span>がある。",
+          "targets": [
+            {
+              "char": "興",
+              "strokes": 16
+            },
+            {
+              "char": "味",
+              "strokes": 8
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">じちたい</span>の活動。",
+          "targets": [
+            {
+              "char": "自",
+              "strokes": 6
+            },
+            {
+              "char": "治",
+              "strokes": 8
+            },
+            {
+              "char": "体",
+              "strokes": 7
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "食品の<span class=\"highlight-target\">しょうひきげん</span>。",
+          "targets": [
+            {
+              "char": "消",
+              "strokes": 10
+            },
+            {
+              "char": "費",
+              "strokes": 12
+            },
+            {
+              "char": "期",
+              "strokes": 12
+            },
+            {
+              "char": "限",
+              "strokes": 9
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">じっせき</span>がみとめられる。",
+          "targets": [
+            {
+              "char": "実",
+              "strokes": 8
+            },
+            {
+              "char": "績",
+              "strokes": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_07",
+      "title": "3学期 第07回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "条件を<span class=\"highlight-target\">せってい</span>する。",
+          "targets": [
+            {
+              "char": "設",
+              "strokes": 11
+            },
+            {
+              "char": "定",
+              "strokes": 8
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "規則を<span class=\"highlight-target\">もうける</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 4,
+          "targets": [
+            {
+              "char": "設",
+              "strokes": 11
+            },
+            {
+              "char": "け",
+              "strokes": 3
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">きょじゅうち</span>が変わる。",
+          "targets": [
+            {
+              "char": "居",
+              "strokes": 8
+            },
+            {
+              "char": "住",
+              "strokes": 7
+            },
+            {
+              "char": "地",
+              "strokes": 6
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">いま</span>でくつろぐ。",
+          "targets": [
+            {
+              "char": "居",
+              "strokes": 8
+            },
+            {
+              "char": "間",
+              "strokes": 12
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "池に<span class=\"highlight-target\">あつい</span>氷が張る。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "厚",
+              "strokes": 9
+            },
+            {
+              "char": "い",
+              "strokes": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_08",
+      "title": "3学期 第08回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">ぼうりょく</span>に反対する。",
+          "targets": [
+            {
+              "char": "暴",
+              "strokes": 15
+            },
+            {
+              "char": "力",
+              "strokes": 2
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "鹿が<span class=\"highlight-target\">あばれる</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 4,
+          "targets": [
+            {
+              "char": "暴",
+              "strokes": 15
+            },
+            {
+              "char": "れ",
+              "strokes": 2
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "心を<span class=\"highlight-target\">ゆるす</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "許",
+              "strokes": 11
+            },
+            {
+              "char": "す",
+              "strokes": 2
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">きょか</span>をもらう。",
+          "targets": [
+            {
+              "char": "許",
+              "strokes": 11
+            },
+            {
+              "char": "可",
+              "strokes": 5
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "先生に<span class=\"highlight-target\">かんしゃ</span>する。",
+          "targets": [
+            {
+              "char": "感",
+              "strokes": 13
+            },
+            {
+              "char": "謝",
+              "strokes": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_09",
+      "title": "3学期 第09回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "植物を<span class=\"highlight-target\">さいしゅう</span>する。",
+          "targets": [
+            {
+              "char": "採",
+              "strokes": 11
+            },
+            {
+              "char": "集",
+              "strokes": 12
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "春の山菜を<span class=\"highlight-target\">とる</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 2,
+          "targets": [
+            {
+              "char": "採",
+              "strokes": 11
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">ひょうばん</span>の働き者。",
+          "targets": [
+            {
+              "char": "評",
+              "strokes": 12
+            },
+            {
+              "char": "判",
+              "strokes": 7
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">じゅぎょう</span>を受ける。",
+          "targets": [
+            {
+              "char": "授",
+              "strokes": 11
+            },
+            {
+              "char": "業",
+              "strokes": 13
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "試合に<span class=\"highlight-target\">そなえる</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 4,
+          "targets": [
+            {
+              "char": "備",
+              "strokes": 12
+            },
+            {
+              "char": "え",
+              "strokes": 2
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_10",
+      "title": "3学期 第10回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">じゅんび</span>をすませる。",
+          "targets": [
+            {
+              "char": "準",
+              "strokes": 13
+            },
+            {
+              "char": "備",
+              "strokes": 12
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "選手の<span class=\"highlight-target\">しゅくしゃ</span>。",
+          "targets": [
+            {
+              "char": "宿",
+              "strokes": 11
+            },
+            {
+              "char": "舎",
+              "strokes": 8
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">えん</span>劇（げき）を見に行く。",
+          "targets": [
+            {
+              "char": "演",
+              "strokes": 14
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">しょうひぜい</span>をはらう。",
+          "targets": [
+            {
+              "char": "消",
+              "strokes": 10
+            },
+            {
+              "char": "費",
+              "strokes": 12
+            },
+            {
+              "char": "税",
+              "strokes": 12
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "わり算の<span class=\"highlight-target\">あまり</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "余",
+              "strokes": 7
+            },
+            {
+              "char": "り",
+              "strokes": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_11",
+      "title": "3学期 第11回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">よけい</span>なお世話。",
+          "targets": [
+            {
+              "char": "余",
+              "strokes": 7
+            },
+            {
+              "char": "計",
+              "strokes": 9
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "芸術家の<span class=\"highlight-target\">そしつ</span>。",
+          "targets": [
+            {
+              "char": "素",
+              "strokes": 10
+            },
+            {
+              "char": "質",
+              "strokes": 15
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "大切な<span class=\"highlight-target\">ざいさん</span>。",
+          "targets": [
+            {
+              "char": "財",
+              "strokes": 10
+            },
+            {
+              "char": "産",
+              "strokes": 11
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">ちょすいち</span>の管理。",
+          "targets": [
+            {
+              "char": "貯",
+              "strokes": 12
+            },
+            {
+              "char": "水",
+              "strokes": 4
+            },
+            {
+              "char": "池",
+              "strokes": 6
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "美しい<span class=\"highlight-target\">ぬの</span>を買う。",
+          "targets": [
+            {
+              "char": "布",
+              "strokes": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3学期_12",
+      "title": "3学期 第12回",
+      "questions": [
+        {
+          "type": "normal",
+          "sentenceHtml": "人口の<span class=\"highlight-target\">ぶんぷ</span>。",
+          "targets": [
+            {
+              "char": "分",
+              "strokes": 4
+            },
+            {
+              "char": "布",
+              "strokes": 5
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "調査の<span class=\"highlight-target\">ほうこくぶん</span>。",
+          "targets": [
+            {
+              "char": "報",
+              "strokes": 12
+            },
+            {
+              "char": "告",
+              "strokes": 7
+            },
+            {
+              "char": "文",
+              "strokes": 4
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "本名を<span class=\"highlight-target\">つげる</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 3,
+          "targets": [
+            {
+              "char": "告",
+              "strokes": 7
+            },
+            {
+              "char": "げ",
+              "strokes": 3
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "okurigana",
+          "sentenceHtml": "司会を<span class=\"highlight-target\">つとめる</span>。",
+          "notice": "💡 おくりがなまで全部書いてね！",
+          "maxChars": 4,
+          "targets": [
+            {
+              "char": "務",
+              "strokes": 11
+            },
+            {
+              "char": "め",
+              "strokes": 2
+            },
+            {
+              "char": "る",
+              "strokes": 1
+            }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "<span class=\"highlight-target\">ぎむ</span>教育を終える。",
+          "targets": [
+            {
+              "char": "義",
+              "strokes": 13
+            },
+            {
+              "char": "務",
+              "strokes": 11
             }
           ]
         }
