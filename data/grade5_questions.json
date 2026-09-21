@@ -337,7 +337,7 @@
         },
         {
           "type": "okurigana",
-          "sentenceHtml": "要求に<span class=\"highlight-target\">こたえる</span>。",
+          "sentenceHtml": "要求に応える。",
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
@@ -526,7 +526,7 @@
         },
         {
           "type": "normal",
-          "sentenceHtml": "災害の警（けい）<span class=\"highlight-target\">ほう</span>。",
+          "sentenceHtml": "<span class=\"highlight-target\">さいがい</span>の警（けい）報。",
           "targets": [
             { "char": "災", "strokes": 7 },
             { "char": "害", "strokes": 10 }
