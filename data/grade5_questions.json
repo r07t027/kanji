@@ -1,7 +1,7 @@
 {
   "grade": 5,
   "title": "小学5年生",
-  "totalSets": 44,
+  "totalSets": 56,
   "sets": [
     {
       "id": "1学期_01",
@@ -11,14 +11,8 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">さいしょ</span>に手をあらう。",
           "targets": [
-            {
-              "char": "最",
-              "strokes": 12
-            },
-            {
-              "char": "初",
-              "strokes": 7
-            }
+            { "char": "最", "strokes": 12 },
+            { "char": "初", "strokes": 7 }
           ]
         },
         {
@@ -27,42 +21,24 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "確",
-              "strokes": 15
-            },
-            {
-              "char": "か",
-              "strokes": 3
-            }
+            { "char": "確", "strokes": 15 },
+            { "char": "か", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">せいかく</span>にねらう。",
           "targets": [
-            {
-              "char": "正",
-              "strokes": 5
-            },
-            {
-              "char": "確",
-              "strokes": 15
-            }
+            { "char": "正", "strokes": 5 },
+            { "char": "確", "strokes": 15 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "目の前に<span class=\"highlight-target\">しゅつげん</span>する。",
           "targets": [
-            {
-              "char": "出",
-              "strokes": 5
-            },
-            {
-              "char": "現",
-              "strokes": 11
-            }
+            { "char": "出", "strokes": 5 },
+            { "char": "現", "strokes": 11 }
           ]
         },
         {
@@ -71,18 +47,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "現",
-              "strokes": 11
-            },
-            {
-              "char": "れ",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "現", "strokes": 11 },
+            { "char": "れ", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         }
       ]
@@ -95,78 +62,42 @@
           "type": "normal",
           "sentenceHtml": "りんごが<span class=\"highlight-target\">いっこ</span>ある。",
           "targets": [
-            {
-              "char": "一",
-              "strokes": 1
-            },
-            {
-              "char": "個",
-              "strokes": 10
-            }
+            { "char": "一", "strokes": 1 },
+            { "char": "個", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">よつば</span>の植物。",
           "targets": [
-            {
-              "char": "四",
-              "strokes": 5
-            },
-            {
-              "char": "つ",
-              "strokes": 1
-            },
-            {
-              "char": "葉",
-              "strokes": 12
-            }
+            { "char": "四", "strokes": 5 },
+            { "char": "つ", "strokes": 1 },
+            { "char": "葉", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ほうかご</span>に遊ぶ。",
           "targets": [
-            {
-              "char": "放",
-              "strokes": 8
-            },
-            {
-              "char": "課",
-              "strokes": 15
-            },
-            {
-              "char": "後",
-              "strokes": 9
-            }
+            { "char": "放", "strokes": 8 },
+            { "char": "課", "strokes": 15 },
+            { "char": "後", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ふくすう</span>の本を借りる。",
           "targets": [
-            {
-              "char": "複",
-              "strokes": 14
-            },
-            {
-              "char": "数",
-              "strokes": 13
-            }
+            { "char": "複", "strokes": 14 },
+            { "char": "数", "strokes": 13 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">みょうじ</span>をつげる。",
           "targets": [
-            {
-              "char": "名",
-              "strokes": 6
-            },
-            {
-              "char": "字",
-              "strokes": 6
-            }
+            { "char": "名", "strokes": 6 },
+            { "char": "字", "strokes": 6 }
           ]
         }
       ]
@@ -179,14 +110,8 @@
           "type": "normal",
           "sentenceHtml": "あきれて<span class=\"highlight-target\">ぜっく</span>する。",
           "targets": [
-            {
-              "char": "絶",
-              "strokes": 12
-            },
-            {
-              "char": "句",
-              "strokes": 5
-            }
+            { "char": "絶", "strokes": 12 },
+            { "char": "句", "strokes": 5 }
           ]
         },
         {
@@ -195,56 +120,32 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "絶",
-              "strokes": 12
-            },
-            {
-              "char": "や",
-              "strokes": 3
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "絶", "strokes": 12 },
+            { "char": "や", "strokes": 3 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "昨夜見た<span class=\"highlight-target\">ゆめ</span>。",
           "targets": [
-            {
-              "char": "夢",
-              "strokes": 13
-            }
+            { "char": "夢", "strokes": 13 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "話に<span class=\"highlight-target\">むちゅう</span>になる。",
           "targets": [
-            {
-              "char": "夢",
-              "strokes": 13
-            },
-            {
-              "char": "中",
-              "strokes": 4
-            }
+            { "char": "夢", "strokes": 13 },
+            { "char": "中", "strokes": 4 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">れいせい</span>に考える。",
           "targets": [
-            {
-              "char": "冷",
-              "strokes": 7
-            },
-            {
-              "char": "静",
-              "strokes": 14
-            }
+            { "char": "冷", "strokes": 7 },
+            { "char": "静", "strokes": 14 }
           ]
         }
       ]
@@ -259,54 +160,27 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "久",
-              "strokes": 3
-            },
-            {
-              "char": "し",
-              "strokes": 1
-            },
-            {
-              "char": "ぶ",
-              "strokes": 6
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            }
+            { "char": "久", "strokes": 3 },
+            { "char": "し", "strokes": 1 },
+            { "char": "ぶ", "strokes": 6 },
+            { "char": "り", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じきゅうそう</span>の選手。",
           "targets": [
-            {
-              "char": "持",
-              "strokes": 9
-            },
-            {
-              "char": "久",
-              "strokes": 3
-            },
-            {
-              "char": "走",
-              "strokes": 7
-            }
+            { "char": "持", "strokes": 9 },
+            { "char": "久", "strokes": 3 },
+            { "char": "走", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "主人公の<span class=\"highlight-target\">しんじょう</span>。",
           "targets": [
-            {
-              "char": "心",
-              "strokes": 4
-            },
-            {
-              "char": "情",
-              "strokes": 11
-            }
+            { "char": "心", "strokes": 4 },
+            { "char": "情", "strokes": 11 }
           ]
         },
         {
@@ -315,32 +189,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "情",
-              "strokes": 11
-            },
-            {
-              "char": "け",
-              "strokes": 3
-            }
+            { "char": "情", "strokes": 11 },
+            { "char": "け", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">そうぞうじょう</span>の生き物。",
           "targets": [
-            {
-              "char": "想",
-              "strokes": 13
-            },
-            {
-              "char": "像",
-              "strokes": 14
-            },
-            {
-              "char": "上",
-              "strokes": 3
-            }
+            { "char": "想", "strokes": 13 },
+            { "char": "像", "strokes": 14 },
+            { "char": "上", "strokes": 3 }
           ]
         }
       ]
@@ -355,18 +214,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "増",
-              "strokes": 14
-            },
-            {
-              "char": "え",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "増", "strokes": 14 },
+            { "char": "え", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
@@ -375,56 +225,32 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "増",
-              "strokes": 14
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "増", "strokes": 14 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "会社が<span class=\"highlight-target\">ぞうえき</span>になる。",
           "targets": [
-            {
-              "char": "増",
-              "strokes": 14
-            },
-            {
-              "char": "益",
-              "strokes": 10
-            }
+            { "char": "増", "strokes": 14 },
+            { "char": "益", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "となり村との<span class=\"highlight-target\">さかい</span>",
+          "sentenceHtml": "となり村との<span class=\"highlight-target\">さかい</span>。",
           "targets": [
-            {
-              "char": "境",
-              "strokes": 14
-            }
+            { "char": "境", "strokes": 14 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きょうかいせん</span>を引く。",
           "targets": [
-            {
-              "char": "境",
-              "strokes": 14
-            },
-            {
-              "char": "界",
-              "strokes": 9
-            },
-            {
-              "char": "線",
-              "strokes": 15
-            }
+            { "char": "境", "strokes": 14 },
+            { "char": "界", "strokes": 9 },
+            { "char": "線", "strokes": 15 }
           ]
         }
       ]
@@ -437,56 +263,32 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">せいぎ</span>のために戦う。",
           "targets": [
-            {
-              "char": "正",
-              "strokes": 5
-            },
-            {
-              "char": "義",
-              "strokes": 13
-            }
+            { "char": "正", "strokes": 5 },
+            { "char": "義", "strokes": 13 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">がいとう</span>インタビュー。",
           "targets": [
-            {
-              "char": "街",
-              "strokes": 12
-            },
-            {
-              "char": "頭",
-              "strokes": 16
-            }
+            { "char": "街", "strokes": 12 },
+            { "char": "頭", "strokes": 16 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">えいせい</span>管理を行う。",
           "targets": [
-            {
-              "char": "衛",
-              "strokes": 16
-            },
-            {
-              "char": "生",
-              "strokes": 5
-            }
+            { "char": "衛", "strokes": 16 },
+            { "char": "生", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">がんきゅう</span>の仕組み。",
           "targets": [
-            {
-              "char": "眼",
-              "strokes": 11
-            },
-            {
-              "char": "球",
-              "strokes": 11
-            }
+            { "char": "眼", "strokes": 11 },
+            { "char": "球", "strokes": 11 }
           ]
         },
         {
@@ -495,14 +297,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "救",
-              "strokes": 11
-            },
-            {
-              "char": "う",
-              "strokes": 2
-            }
+            { "char": "救", "strokes": 11 },
+            { "char": "う", "strokes": 2 }
           ]
         }
       ]
@@ -515,32 +311,17 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きゅうきゅうしゃ</span>が通る。",
           "targets": [
-            {
-              "char": "救",
-              "strokes": 11
-            },
-            {
-              "char": "急",
-              "strokes": 9
-            },
-            {
-              "char": "車",
-              "strokes": 7
-            }
+            { "char": "救", "strokes": 11 },
+            { "char": "急", "strokes": 9 },
+            { "char": "車", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "信号で<span class=\"highlight-target\">ていし</span>する。",
           "targets": [
-            {
-              "char": "停",
-              "strokes": 11
-            },
-            {
-              "char": "止",
-              "strokes": 4
-            }
+            { "char": "停", "strokes": 11 },
+            { "char": "止", "strokes": 4 }
           ]
         },
         {
@@ -549,18 +330,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "応",
-              "strokes": 7
-            },
-            {
-              "char": "じ",
-              "strokes": 3
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "応", "strokes": 7 },
+            { "char": "じ", "strokes": 3 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
@@ -569,32 +341,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "応",
-              "strokes": 7
-            },
-            {
-              "char": "え",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "応", "strokes": 7 },
+            { "char": "え", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "会議の<span class=\"highlight-target\">しりょう</span>を配る",
+          "sentenceHtml": "会議の<span class=\"highlight-target\">しりょう</span>を配る。",
           "targets": [
-            {
-              "char": "資",
-              "strokes": 13
-            },
-            {
-              "char": "料",
-              "strokes": 10
-            }
+            { "char": "資", "strokes": 13 },
+            { "char": "料", "strokes": 10 }
           ]
         }
       ]
@@ -607,76 +364,41 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しぜん</span>に親しむ。",
           "targets": [
-            {
-              "char": "自",
-              "strokes": 6
-            },
-            {
-              "char": "然",
-              "strokes": 12
-            }
+            { "char": "自", "strokes": 6 },
+            { "char": "然", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "<span class=\"highlight-target\">げんざい</span>と未来の話",
+          "sentenceHtml": "<span class=\"highlight-target\">げんざい</span>と未来の話。",
           "targets": [
-            {
-              "char": "現",
-              "strokes": 11
-            },
-            {
-              "char": "在",
-              "strokes": 6
-            }
-          ]
-        },
-        {
-          "type": "okurigana",
-          "sentenceHtml": "活動の<span class=\"highlight-target\">ありかた</span>",
-          "notice": "💡 おくりがなまで全部書いてね！",
-          "maxChars": 4,
-          "targets": [
-            {
-              "char": "在",
-              "strokes": 6
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            },
-            {
-              "char": "方",
-              "strokes": 4
-            }
+            { "char": "現", "strokes": 11 },
+            { "char": "在", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "こん虫を<span class=\"highlight-target\">ちょうさ</span>する",
+          "sentenceHtml": "活動の<span class=\"highlight-target\">ありかた</span>。",
           "targets": [
-            {
-              "char": "調",
-              "strokes": 15
-            },
-            {
-              "char": "査",
-              "strokes": 9
-            }
+            { "char": "在", "strokes": 6 },
+            { "char": "り", "strokes": 2 },
+            { "char": "方", "strokes": 4 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "役に立つ<span class=\"highlight-target\">じょうほう</span>",
+          "sentenceHtml": "こん虫を<span class=\"highlight-target\">ちょうさ</span>する。",
           "targets": [
-            {
-              "char": "情",
-              "strokes": 11
-            },
-            {
-              "char": "報",
-              "strokes": 12
-            }
+            { "char": "調", "strokes": 15 },
+            { "char": "査", "strokes": 9 }
+          ]
+        },
+        {
+          "type": "normal",
+          "sentenceHtml": "役に立つ<span class=\"highlight-target\">じょうほう</span>。",
+          "targets": [
+            { "char": "情", "strokes": 11 },
+            { "char": "報", "strokes": 12 }
           ]
         }
       ]
@@ -691,52 +413,31 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "得",
-              "strokes": 11
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "得", "strokes": 11 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">とくい</span>な科目。",
           "targets": [
-            {
-              "char": "得",
-              "strokes": 11
-            },
-            {
-              "char": "意",
-              "strokes": 13
-            }
+            { "char": "得", "strokes": 11 },
+            { "char": "意", "strokes": 13 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "入室の<span class=\"highlight-target\">さい</span>の手続き。",
           "targets": [
-            {
-              "char": "際",
-              "strokes": 14
-            }
+            { "char": "際", "strokes": 14 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しつもん</span>を繰り返す。",
           "targets": [
-            {
-              "char": "質",
-              "strokes": 15
-            },
-            {
-              "char": "問",
-              "strokes": 11
-            }
+            { "char": "質", "strokes": 15 },
+            { "char": "問", "strokes": 11 }
           ]
         },
         {
@@ -745,22 +446,10 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "移",
-              "strokes": 11
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            },
-            {
-              "char": "住",
-              "strokes": 7
-            },
-            {
-              "char": "む",
-              "strokes": 3
-            }
+            { "char": "移", "strokes": 11 },
+            { "char": "り", "strokes": 2 },
+            { "char": "住", "strokes": 7 },
+            { "char": "む", "strokes": 3 }
           ]
         }
       ]
@@ -771,76 +460,43 @@
       "questions": [
         {
           "type": "normal",
-          "sentenceHtml": "<span class=\"highlight-target\">そうごうてき</span>に考える",
+          "sentenceHtml": "<span class=\"highlight-target\">そうごうてき</span>に考える。",
           "targets": [
-            {
-              "char": "総",
-              "strokes": 14
-            },
-            {
-              "char": "合",
-              "strokes": 6
-            },
-            {
-              "char": "的",
-              "strokes": 8
-            }
+            { "char": "総", "strokes": 14 },
+            { "char": "合", "strokes": 6 },
+            { "char": "的", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "文章の<span class=\"highlight-target\">ないよう</span>。",
           "targets": [
-            {
-              "char": "内",
-              "strokes": 4
-            },
-            {
-              "char": "容",
-              "strokes": 10
-            }
+            { "char": "内", "strokes": 4 },
+            { "char": "容", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "わくわくする冒（ぼう）<span class=\"highlight-target\">けん</span>。",
           "targets": [
-            {
-              "char": "険",
-              "strokes": 11
-            }
+            { "char": "険", "strokes": 11 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "陸上部に<span class=\"highlight-target\">しょぞく</span>する。",
           "targets": [
-            {
-              "char": "所",
-              "strokes": 8
-            },
-            {
-              "char": "属",
-              "strokes": 12
-            }
+            { "char": "所", "strokes": 8 },
+            { "char": "属", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "宇宙（うちゅう）<span class=\"highlight-target\">ひこうし</span>になる。",
           "targets": [
-            {
-              "char": "飛",
-              "strokes": 9
-            },
-            {
-              "char": "行",
-              "strokes": 6
-            },
-            {
-              "char": "士",
-              "strokes": 3
-            }
+            { "char": "飛", "strokes": 9 },
+            { "char": "行", "strokes": 6 },
+            { "char": "士", "strokes": 3 }
           ]
         }
       ]
@@ -855,74 +511,41 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "混",
-              "strokes": 11
-            },
-            {
-              "char": "じ",
-              "strokes": 3
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "混", "strokes": 11 },
+            { "char": "じ", "strokes": 3 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "塩が<span class=\"highlight-target\">こんにゅう</span>する。",
           "targets": [
-            {
-              "char": "混",
-              "strokes": 11
-            },
-            {
-              "char": "入",
-              "strokes": 2
-            }
+            { "char": "混", "strokes": 11 },
+            { "char": "入", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "<span class=\"highlight-target\">さいがい</span>のけい報。",
+          "sentenceHtml": "災害の警（けい）<span class=\"highlight-target\">ほう</span>。",
           "targets": [
-            {
-              "char": "災",
-              "strokes": 7
-            },
-            {
-              "char": "害",
-              "strokes": 10
-            }
+            { "char": "災", "strokes": 7 },
+            { "char": "害", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">げんいん</span>を調べる。",
           "targets": [
-            {
-              "char": "原",
-              "strokes": 10
-            },
-            {
-              "char": "因",
-              "strokes": 6
-            }
+            { "char": "原", "strokes": 10 },
+            { "char": "因", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きょうみ</span>のある作家。",
           "targets": [
-            {
-              "char": "興",
-              "strokes": 16
-            },
-            {
-              "char": "味",
-              "strokes": 8
-            }
+            { "char": "興", "strokes": 16 },
+            { "char": "味", "strokes": 8 }
           ]
         }
       ]
@@ -935,10 +558,7 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">か</span>激（げき）なやりかた。",
           "targets": [
-            {
-              "char": "過",
-              "strokes": 12
-            }
+            { "char": "過", "strokes": 12 }
           ]
         },
         {
@@ -947,60 +567,33 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "過",
-              "strokes": 12
-            },
-            {
-              "char": "ご",
-              "strokes": 4
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "過", "strokes": 12 },
+            { "char": "ご", "strokes": 4 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "落下の危（き）<span class=\"highlight-target\">けんせい</span>。",
           "targets": [
-            {
-              "char": "険",
-              "strokes": 11
-            },
-            {
-              "char": "性",
-              "strokes": 8
-            }
+            { "char": "険", "strokes": 11 },
+            { "char": "性", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "曲の<span class=\"highlight-target\">こうせい</span>を決める。",
           "targets": [
-            {
-              "char": "構",
-              "strokes": 14
-            },
-            {
-              "char": "成",
-              "strokes": 6
-            }
+            { "char": "構", "strokes": 14 },
+            { "char": "成", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ちょくせつ</span>話を聞く。",
           "targets": [
-            {
-              "char": "直",
-              "strokes": 8
-            },
-            {
-              "char": "接",
-              "strokes": 11
-            }
+            { "char": "直", "strokes": 8 },
+            { "char": "接", "strokes": 11 }
           ]
         }
       ]
@@ -1015,74 +608,41 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "示",
-              "strokes": 5
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "示", "strokes": 5 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しじ</span>にしたがう。",
           "targets": [
-            {
-              "char": "指",
-              "strokes": 9
-            },
-            {
-              "char": "示",
-              "strokes": 5
-            }
+            { "char": "指", "strokes": 9 },
+            { "char": "示", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "入室を<span class=\"highlight-target\">きんし</span>する。",
           "targets": [
-            {
-              "char": "禁",
-              "strokes": 13
-            },
-            {
-              "char": "止",
-              "strokes": 4
-            }
+            { "char": "禁", "strokes": 13 },
+            { "char": "止", "strokes": 4 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ざつだん</span>がもり上がる。",
           "targets": [
-            {
-              "char": "雑",
-              "strokes": 14
-            },
-            {
-              "char": "談",
-              "strokes": 15
-            }
+            { "char": "雑", "strokes": 14 },
+            { "char": "談", "strokes": 15 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぞうきばやし</span>を歩く。",
           "targets": [
-            {
-              "char": "雑",
-              "strokes": 14
-            },
-            {
-              "char": "木",
-              "strokes": 4
-            },
-            {
-              "char": "林",
-              "strokes": 8
-            }
+            { "char": "雑", "strokes": 14 },
+            { "char": "木", "strokes": 4 },
+            { "char": "林", "strokes": 8 }
           ]
         }
       ]
@@ -1095,48 +655,25 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">さんみ</span>の強いトマト。",
           "targets": [
-            {
-              "char": "酸",
-              "strokes": 14
-            },
-            {
-              "char": "味",
-              "strokes": 8
-            }
+            { "char": "酸", "strokes": 14 },
+            { "char": "味", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "昔の歌を<span class=\"highlight-target\">どくしょう</span>する。",
           "targets": [
-            {
-              "char": "独",
-              "strokes": 9
-            },
-            {
-              "char": "唱",
-              "strokes": 11
-            }
+            { "char": "独", "strokes": 9 },
+            { "char": "唱", "strokes": 11 }
           ]
         },
         {
-          "type": "okurigana",
+          "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ひとりごと</span>をつぶやく。",
-          "notice": "💡 おくりがなまで全部書いてね！",
-          "maxChars": 5,
           "targets": [
-            {
-              "char": "独",
-              "strokes": 9
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            },
-            {
-              "char": "言",
-              "strokes": 7
-            }
+            { "char": "独", "strokes": 9 },
+            { "char": "り", "strokes": 2 },
+            { "char": "言", "strokes": 7 }
           ]
         },
         {
@@ -1145,28 +682,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "快",
-              "strokes": 7
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            }
+            { "char": "快", "strokes": 7 },
+            { "char": "い", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">かいせい</span>にめぐまれる。",
           "targets": [
-            {
-              "char": "快",
-              "strokes": 7
-            },
-            {
-              "char": "晴",
-              "strokes": 12
-            }
+            { "char": "快", "strokes": 7 },
+            { "char": "晴", "strokes": 12 }
           ]
         }
       ]
@@ -1179,70 +704,40 @@
           "type": "normal",
           "sentenceHtml": "作品の<span class=\"highlight-target\">だいざい</span>。",
           "targets": [
-            {
-              "char": "題",
-              "strokes": 18
-            },
-            {
-              "char": "材",
-              "strokes": 7
-            }
+            { "char": "題", "strokes": 18 },
+            { "char": "材", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "句読点を<span class=\"highlight-target\">いしき</span>する。",
           "targets": [
-            {
-              "char": "意",
-              "strokes": 13
-            },
-            {
-              "char": "識",
-              "strokes": 19
-            }
+            { "char": "意", "strokes": 13 },
+            { "char": "識", "strokes": 19 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "ぶあつい国語<span class=\"highlight-target\">じてん</span>",
+          "sentenceHtml": "ぶあつい国語<span class=\"highlight-target\">じてん</span>。",
           "targets": [
-            {
-              "char": "辞",
-              "strokes": 13
-            },
-            {
-              "char": "典",
-              "strokes": 8
-            }
+            { "char": "辞", "strokes": 13 },
+            { "char": "典", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "手を<span class=\"highlight-target\">せいけつ</span>にする。",
           "targets": [
-            {
-              "char": "清",
-              "strokes": 11
-            },
-            {
-              "char": "潔",
-              "strokes": 15
-            }
+            { "char": "清", "strokes": 11 },
+            { "char": "潔", "strokes": 15 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "気温を<span class=\"highlight-target\">たいひ</span>する。",
           "targets": [
-            {
-              "char": "対",
-              "strokes": 7
-            },
-            {
-              "char": "比",
-              "strokes": 4
-            }
+            { "char": "対", "strokes": 7 },
+            { "char": "比", "strokes": 4 }
           ]
         }
       ]
@@ -1257,78 +752,42 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "比",
-              "strokes": 4
-            },
-            {
-              "char": "べ",
-              "strokes": 3
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "比", "strokes": 4 },
+            { "char": "べ", "strokes": 3 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "がんじょうな<span class=\"highlight-target\">そうこ</span>。",
           "targets": [
-            {
-              "char": "倉",
-              "strokes": 10
-            },
-            {
-              "char": "庫",
-              "strokes": 10
-            }
+            { "char": "倉", "strokes": 10 },
+            { "char": "庫", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">たいが</span>にかかる橋。",
           "targets": [
-            {
-              "char": "大",
-              "strokes": 3
-            },
-            {
-              "char": "河",
-              "strokes": 8
-            }
+            { "char": "大", "strokes": 3 },
+            { "char": "河", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "気高い<span class=\"highlight-target\">せいしん</span>。",
           "targets": [
-            {
-              "char": "精",
-              "strokes": 14
-            },
-            {
-              "char": "神",
-              "strokes": 9
-            }
+            { "char": "精", "strokes": 14 },
+            { "char": "神", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しゅっぱんしゃ</span>の仕事。",
           "targets": [
-            {
-              "char": "出",
-              "strokes": 5
-            },
-            {
-              "char": "版",
-              "strokes": 8
-            },
-            {
-              "char": "社",
-              "strokes": 7
-            }
+            { "char": "出", "strokes": 5 },
+            { "char": "版", "strokes": 8 },
+            { "char": "社", "strokes": 7 }
           ]
         }
       ]
@@ -1343,28 +802,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "勢",
-              "strokes": 13
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            }
+            { "char": "勢", "strokes": 13 },
+            { "char": "い", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">おおぜい</span>の人が集まる。",
           "targets": [
-            {
-              "char": "大",
-              "strokes": 3
-            },
-            {
-              "char": "勢",
-              "strokes": 13
-            }
+            { "char": "大", "strokes": 3 },
+            { "char": "勢", "strokes": 13 }
           ]
         },
         {
@@ -1373,58 +820,28 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "織",
-              "strokes": 18
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            },
-            {
-              "char": "交",
-              "strokes": 6
-            },
-            {
-              "char": "ぜ",
-              "strokes": 5
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "織", "strokes": 18 },
+            { "char": "り", "strokes": 2 },
+            { "char": "交", "strokes": 6 },
+            { "char": "ぜ", "strokes": 5 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きこうぶん</span>を読む。",
           "targets": [
-            {
-              "char": "紀",
-              "strokes": 9
-            },
-            {
-              "char": "行",
-              "strokes": 6
-            },
-            {
-              "char": "文",
-              "strokes": 4
-            }
+            { "char": "紀", "strokes": 9 },
+            { "char": "行", "strokes": 6 },
+            { "char": "文", "strokes": 4 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">えいえん</span>に続く。",
           "targets": [
-            {
-              "char": "永",
-              "strokes": 5
-            },
-            {
-              "char": "遠",
-              "strokes": 13
-            }
+            { "char": "永", "strokes": 5 },
+            { "char": "遠", "strokes": 13 }
           ]
         }
       ]
@@ -1437,14 +854,8 @@
           "type": "normal",
           "sentenceHtml": "強い<span class=\"highlight-target\">いし</span>をいだく。",
           "targets": [
-            {
-              "char": "意",
-              "strokes": 13
-            },
-            {
-              "char": "思",
-              "strokes": 8
-            }
+            { "char": "意", "strokes": 13 },
+            { "char": "思", "strokes": 8 }
           ]
         },
         {
@@ -1453,28 +864,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "志",
-              "strokes": 7
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "志", "strokes": 7 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "<span class=\"highlight-target\">れきし</span>のじゅ業。",
+          "sentenceHtml": "歴史の授（じゅ）<span class=\"highlight-target\">ぎょう</span>。",
           "targets": [
-            {
-              "char": "歴",
-              "strokes": 14
-            },
-            {
-              "char": "史",
-              "strokes": 5
-            }
+            { "char": "歴", "strokes": 14 },
+            { "char": "史", "strokes": 5 }
           ]
         },
         {
@@ -1483,24 +882,15 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "喜",
-              "strokes": 12
-            },
-            {
-              "char": "び",
-              "strokes": 3
-            }
+            { "char": "喜", "strokes": 12 },
+            { "char": "び", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">き</span>げきを楽しむ。",
           "targets": [
-            {
-              "char": "喜",
-              "strokes": 12
-            }
+            { "char": "喜", "strokes": 12 }
           ]
         }
       ]
@@ -1513,28 +903,16 @@
           "type": "normal",
           "sentenceHtml": "みんなが<span class=\"highlight-target\">さんせい</span>する。",
           "targets": [
-            {
-              "char": "賛",
-              "strokes": 15
-            },
-            {
-              "char": "成",
-              "strokes": 6
-            }
+            { "char": "賛", "strokes": 15 },
+            { "char": "成", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しょくば</span>から家に帰る。",
           "targets": [
-            {
-              "char": "職",
-              "strokes": 18
-            },
-            {
-              "char": "場",
-              "strokes": 12
-            }
+            { "char": "職", "strokes": 18 },
+            { "char": "場", "strokes": 12 }
           ]
         },
         {
@@ -1543,46 +921,25 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "任",
-              "strokes": 6
-            },
-            {
-              "char": "せ",
-              "strokes": 3
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "任", "strokes": 6 },
+            { "char": "せ", "strokes": 3 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">にんき</span>が切れる。",
           "targets": [
-            {
-              "char": "任",
-              "strokes": 6
-            },
-            {
-              "char": "期",
-              "strokes": 12
-            }
+            { "char": "任", "strokes": 6 },
+            { "char": "期", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぶつぞう</span>を見学する。",
           "targets": [
-            {
-              "char": "仏",
-              "strokes": 4
-            },
-            {
-              "char": "像",
-              "strokes": 14
-            }
+            { "char": "仏", "strokes": 4 },
+            { "char": "像", "strokes": 14 }
           ]
         }
       ]
@@ -1595,28 +952,16 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ほとけ</span>をおがむ。",
           "targets": [
-            {
-              "char": "仏",
-              "strokes": 4
-            }
+            { "char": "仏", "strokes": 4 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "<span class=\"highlight-target\">しょうたいじょう</span>がとどく",
+          "sentenceHtml": "<span class=\"highlight-target\">しょうたいじょう</span>がとどく。",
           "targets": [
-            {
-              "char": "招",
-              "strokes": 8
-            },
-            {
-              "char": "待",
-              "strokes": 9
-            },
-            {
-              "char": "状",
-              "strokes": 7
-            }
+            { "char": "招", "strokes": 8 },
+            { "char": "待", "strokes": 9 },
+            { "char": "状", "strokes": 7 }
           ]
         },
         {
@@ -1625,18 +970,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "手",
-              "strokes": 4
-            },
-            {
-              "char": "招",
-              "strokes": 8
-            },
-            {
-              "char": "き",
-              "strokes": 4
-            }
+            { "char": "手", "strokes": 4 },
+            { "char": "招", "strokes": 8 },
+            { "char": "き", "strokes": 4 }
           ]
         },
         {
@@ -1645,32 +981,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "殺",
-              "strokes": 10
-            },
-            {
-              "char": "し",
-              "strokes": 1
-            },
-            {
-              "char": "て",
-              "strokes": 1
-            }
+            { "char": "殺", "strokes": 10 },
+            { "char": "し", "strokes": 1 },
+            { "char": "て", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "話を聞く<span class=\"highlight-target\">たいど</span>。",
           "targets": [
-            {
-              "char": "態",
-              "strokes": 14
-            },
-            {
-              "char": "度",
-              "strokes": 9
-            }
+            { "char": "態", "strokes": 14 },
+            { "char": "度", "strokes": 9 }
           ]
         }
       ]
@@ -1683,38 +1004,23 @@
           "type": "normal",
           "sentenceHtml": "晴れると<span class=\"highlight-target\">かてい</span>する。",
           "targets": [
-            {
-              "char": "仮",
-              "strokes": 6
-            },
-            {
-              "char": "定",
-              "strokes": 8
-            }
+            { "char": "仮", "strokes": 6 },
+            { "char": "定", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "印を<span class=\"highlight-target\">かり</span>につける。",
           "targets": [
-            {
-              "char": "仮",
-              "strokes": 6
-            }
+            { "char": "仮", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "本物と<span class=\"highlight-target\">だんてい</span>する。",
           "targets": [
-            {
-              "char": "断",
-              "strokes": 11
-            },
-            {
-              "char": "定",
-              "strokes": 8
-            }
+            { "char": "断", "strokes": 11 },
+            { "char": "定", "strokes": 8 }
           ]
         },
         {
@@ -1723,28 +1029,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "断",
-              "strokes": 11
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "断", "strokes": 11 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "正しい<span class=\"highlight-target\">はんだん</span>をする。",
           "targets": [
-            {
-              "char": "判",
-              "strokes": 7
-            },
-            {
-              "char": "断",
-              "strokes": 11
-            }
+            { "char": "判", "strokes": 7 },
+            { "char": "断", "strokes": 11 }
           ]
         }
       ]
@@ -1757,28 +1051,16 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">おおばん</span>の紙に書く。",
           "targets": [
-            {
-              "char": "大",
-              "strokes": 3
-            },
-            {
-              "char": "判",
-              "strokes": 7
-            }
+            { "char": "大", "strokes": 3 },
+            { "char": "判", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "変化を<span class=\"highlight-target\">よそく</span>する。",
           "targets": [
-            {
-              "char": "予",
-              "strokes": 4
-            },
-            {
-              "char": "測",
-              "strokes": 12
-            }
+            { "char": "予", "strokes": 4 },
+            { "char": "測", "strokes": 12 }
           ]
         },
         {
@@ -1787,42 +1069,24 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "測",
-              "strokes": 12
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "測", "strokes": 12 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">かんけい</span>がない。",
           "targets": [
-            {
-              "char": "関",
-              "strokes": 14
-            },
-            {
-              "char": "係",
-              "strokes": 9
-            }
+            { "char": "関", "strokes": 14 },
+            { "char": "係", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じょうやく</span>を結ぶ。",
           "targets": [
-            {
-              "char": "条",
-              "strokes": 7
-            },
-            {
-              "char": "約",
-              "strokes": 9
-            }
+            { "char": "条", "strokes": 7 },
+            { "char": "約", "strokes": 9 }
           ]
         }
       ]
@@ -1835,14 +1099,8 @@
           "type": "normal",
           "sentenceHtml": "するどい<span class=\"highlight-target\">こうさつ</span>。",
           "targets": [
-            {
-              "char": "考",
-              "strokes": 6
-            },
-            {
-              "char": "察",
-              "strokes": 14
-            }
+            { "char": "考", "strokes": 6 },
+            { "char": "察", "strokes": 14 }
           ]
         },
         {
@@ -1851,56 +1109,32 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "常",
-              "strokes": 11
-            },
-            {
-              "char": "に",
-              "strokes": 3
-            }
+            { "char": "常", "strokes": 11 },
+            { "char": "に", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じょうしき</span>ある行動。",
           "targets": [
-            {
-              "char": "常",
-              "strokes": 11
-            },
-            {
-              "char": "識",
-              "strokes": 19
-            }
+            { "char": "常", "strokes": 11 },
+            { "char": "識", "strokes": 19 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">へいきん</span>を求める。",
           "targets": [
-            {
-              "char": "平",
-              "strokes": 5
-            },
-            {
-              "char": "均",
-              "strokes": 7
-            }
+            { "char": "平", "strokes": 5 },
+            { "char": "均", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じけん</span>の真相。",
           "targets": [
-            {
-              "char": "事",
-              "strokes": 8
-            },
-            {
-              "char": "件",
-              "strokes": 6
-            }
+            { "char": "事", "strokes": 8 },
+            { "char": "件", "strokes": 6 }
           ]
         }
       ]
@@ -1913,42 +1147,24 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じこ</span>の原因を知る。",
           "targets": [
-            {
-              "char": "事",
-              "strokes": 8
-            },
-            {
-              "char": "故",
-              "strokes": 9
-            }
+            { "char": "事", "strokes": 8 },
+            { "char": "故", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">せいじ</span>について学ぶ。",
           "targets": [
-            {
-              "char": "政",
-              "strokes": 9
-            },
-            {
-              "char": "治",
-              "strokes": 8
-            }
+            { "char": "政", "strokes": 9 },
+            { "char": "治", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "本を<span class=\"highlight-target\">へんしゅう</span>する。",
           "targets": [
-            {
-              "char": "編",
-              "strokes": 15
-            },
-            {
-              "char": "集",
-              "strokes": 12
-            }
+            { "char": "編", "strokes": 15 },
+            { "char": "集", "strokes": 12 }
           ]
         },
         {
@@ -1957,28 +1173,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "編",
-              "strokes": 15
-            },
-            {
-              "char": "む",
-              "strokes": 3
-            }
+            { "char": "編", "strokes": 15 },
+            { "char": "む", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ちょうかん</span>を買う。",
           "targets": [
-            {
-              "char": "朝",
-              "strokes": 12
-            },
-            {
-              "char": "刊",
-              "strokes": 5
-            }
+            { "char": "朝", "strokes": 12 },
+            { "char": "刊", "strokes": 5 }
           ]
         }
       ]
@@ -1991,66 +1195,39 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">いんしょう</span>に残る言葉",
           "targets": [
-            {
-              "char": "印",
-              "strokes": 6
-            },
-            {
-              "char": "象",
-              "strokes": 12
-            }
+            { "char": "印", "strokes": 6 },
+            { "char": "象", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぞう</span>が水浴びをする。",
           "targets": [
-            {
-              "char": "象",
-              "strokes": 12
-            }
+            { "char": "象", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きほん</span>を学ぶ。",
           "targets": [
-            {
-              "char": "基",
-              "strokes": 11
-            },
-            {
-              "char": "本",
-              "strokes": 5
-            }
+            { "char": "基", "strokes": 11 },
+            { "char": "本", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "文章を<span class=\"highlight-target\">しゅうせい</span>する。",
           "targets": [
-            {
-              "char": "修",
-              "strokes": 10
-            },
-            {
-              "char": "正",
-              "strokes": 5
-            }
+            { "char": "修", "strokes": 10 },
+            { "char": "正", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">てきせつ</span>な使い方。",
           "targets": [
-            {
-              "char": "適",
-              "strokes": 14
-            },
-            {
-              "char": "切",
-              "strokes": 4
-            }
+            { "char": "適", "strokes": 14 },
+            { "char": "切", "strokes": 4 }
           ]
         }
       ]
@@ -2063,28 +1240,16 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じゅんじょ</span>よく示す。",
           "targets": [
-            {
-              "char": "順",
-              "strokes": 12
-            },
-            {
-              "char": "序",
-              "strokes": 7
-            }
+            { "char": "順", "strokes": 12 },
+            { "char": "序", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">かいけつ</span>までの時間。",
           "targets": [
-            {
-              "char": "解",
-              "strokes": 13
-            },
-            {
-              "char": "決",
-              "strokes": 7
-            }
+            { "char": "解", "strokes": 13 },
+            { "char": "決", "strokes": 7 }
           ]
         },
         {
@@ -2093,14 +1258,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "解",
-              "strokes": 13
-            },
-            {
-              "char": "く",
-              "strokes": 1
-            }
+            { "char": "解", "strokes": 13 },
+            { "char": "く", "strokes": 1 }
           ]
         },
         {
@@ -2109,28 +1268,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "減",
-              "strokes": 12
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "減", "strokes": 12 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "事故が<span class=\"highlight-target\">げんしょう</span>する。",
           "targets": [
-            {
-              "char": "減",
-              "strokes": 12
-            },
-            {
-              "char": "少",
-              "strokes": 4
-            }
+            { "char": "減", "strokes": 12 },
+            { "char": "少", "strokes": 4 }
           ]
         }
       ]
@@ -2143,28 +1290,16 @@
           "type": "normal",
           "sentenceHtml": "参加の<span class=\"highlight-target\">しかく</span>を得る。",
           "targets": [
-            {
-              "char": "資",
-              "strokes": 13
-            },
-            {
-              "char": "格",
-              "strokes": 10
-            }
+            { "char": "資", "strokes": 13 },
+            { "char": "格", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "買った物の<span class=\"highlight-target\">そうがく</span>。",
           "targets": [
-            {
-              "char": "総",
-              "strokes": 14
-            },
-            {
-              "char": "額",
-              "strokes": 18
-            }
+            { "char": "総", "strokes": 14 },
+            { "char": "額", "strokes": 18 }
           ]
         },
         {
@@ -2173,22 +1308,10 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "貸",
-              "strokes": 12
-            },
-            {
-              "char": "し",
-              "strokes": 1
-            },
-            {
-              "char": "出",
-              "strokes": 5
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "貸", "strokes": 12 },
+            { "char": "し", "strokes": 1 },
+            { "char": "出", "strokes": 5 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
@@ -2197,32 +1320,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "貧",
-              "strokes": 11
-            },
-            {
-              "char": "し",
-              "strokes": 1
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            }
+            { "char": "貧", "strokes": 11 },
+            { "char": "し", "strokes": 1 },
+            { "char": "い", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きじゅん</span>となる点。",
           "targets": [
-            {
-              "char": "基",
-              "strokes": 11
-            },
-            {
-              "char": "準",
-              "strokes": 13
-            }
+            { "char": "基", "strokes": 11 },
+            { "char": "準", "strokes": 13 }
           ]
         }
       ]
@@ -2237,32 +1345,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "墓",
-              "strokes": 13
-            },
-            {
-              "char": "参",
-              "strokes": 8
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            }
+            { "char": "墓", "strokes": 13 },
+            { "char": "参", "strokes": 8 },
+            { "char": "り", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">せんぞ</span>をうやまう。",
           "targets": [
-            {
-              "char": "先",
-              "strokes": 6
-            },
-            {
-              "char": "祖",
-              "strokes": 9
-            }
+            { "char": "先", "strokes": 6 },
+            { "char": "祖", "strokes": 9 }
           ]
         },
         {
@@ -2271,28 +1364,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "迷",
-              "strokes": 9
-            },
-            {
-              "char": "う",
-              "strokes": 2
-            }
+            { "char": "迷", "strokes": 9 },
+            { "char": "う", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "文の中の<span class=\"highlight-target\">じゅつご</span>。",
           "targets": [
-            {
-              "char": "述",
-              "strokes": 8
-            },
-            {
-              "char": "語",
-              "strokes": 14
-            }
+            { "char": "述", "strokes": 8 },
+            { "char": "語", "strokes": 14 }
           ]
         },
         {
@@ -2301,18 +1382,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "述",
-              "strokes": 8
-            },
-            {
-              "char": "べ",
-              "strokes": 3
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "述", "strokes": 8 },
+            { "char": "べ", "strokes": 3 },
+            { "char": "る", "strokes": 1 }
           ]
         }
       ]
@@ -2325,38 +1397,20 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">そんがい</span>が発生する。",
           "targets": [
-            {
-              "char": "損",
-              "strokes": 13
-            },
-            {
-              "char": "害",
-              "strokes": 10
-            }
+            { "char": "損", "strokes": 13 },
+            { "char": "害", "strokes": 10 }
           ]
         },
         {
           "type": "okurigana",
-          "sentenceHtml": "<span class=\"highlight-target\">せいようづくり</span>の建物",
+          "sentenceHtml": "<span class=\"highlight-target\">せいようづくり</span>の建物。",
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 7,
           "targets": [
-            {
-              "char": "西",
-              "strokes": 6
-            },
-            {
-              "char": "洋",
-              "strokes": 9
-            },
-            {
-              "char": "造",
-              "strokes": 10
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            }
+            { "char": "西", "strokes": 6 },
+            { "char": "洋", "strokes": 9 },
+            { "char": "造", "strokes": 10 },
+            { "char": "り", "strokes": 2 }
           ]
         },
         {
@@ -2365,50 +1419,26 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "寄",
-              "strokes": 11
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            },
-            {
-              "char": "そ",
-              "strokes": 1
-            },
-            {
-              "char": "う",
-              "strokes": 2
-            }
+            { "char": "寄", "strokes": 11 },
+            { "char": "り", "strokes": 2 },
+            { "char": "そ", "strokes": 1 },
+            { "char": "う", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "本を<span class=\"highlight-target\">きふ</span>する。",
           "targets": [
-            {
-              "char": "寄",
-              "strokes": 11
-            },
-            {
-              "char": "付",
-              "strokes": 5
-            }
+            { "char": "寄", "strokes": 11 },
+            { "char": "付", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">めがね</span>をかける。",
           "targets": [
-            {
-              "char": "眼",
-              "strokes": 11
-            },
-            {
-              "char": "鏡",
-              "strokes": 19
-            }
+            { "char": "眼", "strokes": 11 },
+            { "char": "鏡", "strokes": 19 }
           ]
         }
       ]
@@ -2421,28 +1451,16 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ひじょう</span>に寒い日。",
           "targets": [
-            {
-              "char": "非",
-              "strokes": 8
-            },
-            {
-              "char": "常",
-              "strokes": 11
-            }
+            { "char": "非", "strokes": 8 },
+            { "char": "常", "strokes": 11 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "かぜの<span class=\"highlight-target\">よぼう</span>。",
           "targets": [
-            {
-              "char": "予",
-              "strokes": 4
-            },
-            {
-              "char": "防",
-              "strokes": 7
-            }
+            { "char": "予", "strokes": 4 },
+            { "char": "防", "strokes": 7 }
           ]
         },
         {
@@ -2451,32 +1469,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "気",
-              "strokes": 6
-            },
-            {
-              "char": "の",
-              "strokes": 1
-            },
-            {
-              "char": "毒",
-              "strokes": 8
-            }
+            { "char": "気", "strokes": 6 },
+            { "char": "の", "strokes": 1 },
+            { "char": "毒", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">せきにん</span>を持つ。",
           "targets": [
-            {
-              "char": "責",
-              "strokes": 11
-            },
-            {
-              "char": "任",
-              "strokes": 6
-            }
+            { "char": "責", "strokes": 11 },
+            { "char": "任", "strokes": 6 }
           ]
         },
         {
@@ -2485,22 +1488,10 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "責",
-              "strokes": 11
-            },
-            {
-              "char": "め",
-              "strokes": 2
-            },
-            {
-              "char": "な",
-              "strokes": 4
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            }
+            { "char": "責", "strokes": 11 },
+            { "char": "め", "strokes": 2 },
+            { "char": "な", "strokes": 4 },
+            { "char": "い", "strokes": 2 }
           ]
         }
       ]
@@ -2515,62 +1506,38 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "破",
-              "strokes": 10
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "破", "strokes": 10 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "松の木の<span class=\"highlight-target\">えだ</span>。",
           "targets": [
-            {
-              "char": "枝",
-              "strokes": 8
-            }
+            { "char": "枝", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "りょう<span class=\"highlight-target\">し</span>の鉄ぽう。",
+          "sentenceHtml": "猟（りょう）<span class=\"highlight-target\">し</span>の鉄ぽう。",
           "targets": [
-            {
-              "char": "師",
-              "strokes": 10
-            }
+            { "char": "師", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">あつりょく</span>が弱まる。",
           "targets": [
-            {
-              "char": "圧",
-              "strokes": 5
-            },
-            {
-              "char": "力",
-              "strokes": 2
-            }
+            { "char": "圧", "strokes": 5 },
+            { "char": "力", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">こくえい</span>の公園。",
           "targets": [
-            {
-              "char": "国",
-              "strokes": 8
-            },
-            {
-              "char": "営",
-              "strokes": 12
-            }
+            { "char": "国", "strokes": 8 },
+            { "char": "営", "strokes": 12 }
           ]
         }
       ]
@@ -2583,66 +1550,39 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">か</span>値（ち）のある館。",
           "targets": [
-            {
-              "char": "価",
-              "strokes": 8
-            }
+            { "char": "価", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "県が定めた<span class=\"highlight-target\">せいど</span>。",
           "targets": [
-            {
-              "char": "制",
-              "strokes": 8
-            },
-            {
-              "char": "度",
-              "strokes": 9
-            }
+            { "char": "制", "strokes": 8 },
+            { "char": "度", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "花の<span class=\"highlight-target\">ひりょう</span>。",
           "targets": [
-            {
-              "char": "肥",
-              "strokes": 8
-            },
-            {
-              "char": "料",
-              "strokes": 10
-            }
+            { "char": "肥", "strokes": 8 },
+            { "char": "料", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きゅうしき</span>の道具。",
           "targets": [
-            {
-              "char": "旧",
-              "strokes": 5
-            },
-            {
-              "char": "式",
-              "strokes": 6
-            }
+            { "char": "旧", "strokes": 5 },
+            { "char": "式", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "<span class=\"highlight-target\">ぎゃくせつ</span>の関係の文",
+          "sentenceHtml": "<span class=\"highlight-target\">ぎゃくせつ</span>の関係の文。",
           "targets": [
-            {
-              "char": "逆",
-              "strokes": 9
-            },
-            {
-              "char": "接",
-              "strokes": 11
-            }
+            { "char": "逆", "strokes": 9 },
+            { "char": "接", "strokes": 11 }
           ]
         }
       ]
@@ -2655,18 +1595,9 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">でんとうてき</span>なおどり。",
           "targets": [
-            {
-              "char": "伝",
-              "strokes": 6
-            },
-            {
-              "char": "統",
-              "strokes": 12
-            },
-            {
-              "char": "的",
-              "strokes": 8
-            }
+            { "char": "伝", "strokes": 6 },
+            { "char": "統", "strokes": 12 },
+            { "char": "的", "strokes": 8 }
           ]
         },
         {
@@ -2675,60 +1606,33 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "関",
-              "strokes": 14
-            },
-            {
-              "char": "わ",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "関", "strokes": 14 },
+            { "char": "わ", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "米を<span class=\"highlight-target\">こな</span>にする。",
           "targets": [
-            {
-              "char": "粉",
-              "strokes": 10
-            }
+            { "char": "粉", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "すぎ<span class=\"highlight-target\">かふん</span>の特性。",
           "targets": [
-            {
-              "char": "花",
-              "strokes": 7
-            },
-            {
-              "char": "粉",
-              "strokes": 10
-            }
+            { "char": "花", "strokes": 7 },
+            { "char": "粉", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">こむぎこ</span>を練る。",
           "targets": [
-            {
-              "char": "小",
-              "strokes": 3
-            },
-            {
-              "char": "麦",
-              "strokes": 7
-            },
-            {
-              "char": "粉",
-              "strokes": 10
-            }
+            { "char": "小", "strokes": 3 },
+            { "char": "麦", "strokes": 7 },
+            { "char": "粉", "strokes": 10 }
           ]
         }
       ]
@@ -2741,42 +1645,24 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">せんごく</span>の大名。",
           "targets": [
-            {
-              "char": "戦",
-              "strokes": 13
-            },
-            {
-              "char": "国",
-              "strokes": 8
-            }
+            { "char": "戦", "strokes": 13 },
+            { "char": "国", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "魚を<span class=\"highlight-target\">ゆにゅう</span>する。",
           "targets": [
-            {
-              "char": "輸",
-              "strokes": 16
-            },
-            {
-              "char": "入",
-              "strokes": 2
-            }
+            { "char": "輸", "strokes": 16 },
+            { "char": "入", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "すぐれた<span class=\"highlight-target\">ぎじゅつ</span>。",
           "targets": [
-            {
-              "char": "技",
-              "strokes": 7
-            },
-            {
-              "char": "術",
-              "strokes": 11
-            }
+            { "char": "技", "strokes": 7 },
+            { "char": "術", "strokes": 11 }
           ]
         },
         {
@@ -2785,14 +1671,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "願",
-              "strokes": 19
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            }
+            { "char": "願", "strokes": 19 },
+            { "char": "い", "strokes": 2 }
           ]
         },
         {
@@ -2801,18 +1681,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "支",
-              "strokes": 4
-            },
-            {
-              "char": "え",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "支", "strokes": 4 },
+            { "char": "え", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         }
       ]
@@ -2825,74 +1696,41 @@
           "type": "normal",
           "sentenceHtml": "海外に<span class=\"highlight-target\">してん</span>を出す。",
           "targets": [
-            {
-              "char": "支",
-              "strokes": 4
-            },
-            {
-              "char": "店",
-              "strokes": 8
-            }
+            { "char": "支", "strokes": 4 },
+            { "char": "店", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きがた</span>をほる。",
           "targets": [
-            {
-              "char": "木",
-              "strokes": 4
-            },
-            {
-              "char": "型",
-              "strokes": 9
-            }
+            { "char": "木", "strokes": 4 },
+            { "char": "型", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
-          "sentenceHtml": "飛行機のも<span class=\"highlight-target\">けい</span>。",
+          "sentenceHtml": "飛行機の模（も）<span class=\"highlight-target\">けい</span>。",
           "targets": [
-            {
-              "char": "型",
-              "strokes": 9
-            }
+            { "char": "型", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "長所を<span class=\"highlight-target\">さいはっけん</span>する。",
           "targets": [
-            {
-              "char": "再",
-              "strokes": 6
-            },
-            {
-              "char": "発",
-              "strokes": 9
-            },
-            {
-              "char": "見",
-              "strokes": 7
-            }
+            { "char": "再", "strokes": 6 },
+            { "char": "発", "strokes": 9 },
+            { "char": "見", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">さらいねん</span>の予定。",
           "targets": [
-            {
-              "char": "再",
-              "strokes": 6
-            },
-            {
-              "char": "来",
-              "strokes": 6
-            },
-            {
-              "char": "年",
-              "strokes": 6
-            }
+            { "char": "再", "strokes": 6 },
+            { "char": "来", "strokes": 6 },
+            { "char": "年", "strokes": 6 }
           ]
         }
       ]
@@ -2907,14 +1745,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "再",
-              "strokes": 6
-            },
-            {
-              "char": "び",
-              "strokes": 3
-            }
+            { "char": "再", "strokes": 6 },
+            { "char": "び", "strokes": 3 }
           ]
         },
         {
@@ -2923,46 +1755,25 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "限",
-              "strokes": 9
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "限", "strokes": 9 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "本を返す<span class=\"highlight-target\">きげん</span>。",
           "targets": [
-            {
-              "char": "期",
-              "strokes": 12
-            },
-            {
-              "char": "限",
-              "strokes": 9
-            }
+            { "char": "期", "strokes": 12 },
+            { "char": "限", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">こうかてき</span>な勉強法。",
           "targets": [
-            {
-              "char": "効",
-              "strokes": 8
-            },
-            {
-              "char": "果",
-              "strokes": 8
-            },
-            {
-              "char": "的",
-              "strokes": 8
-            }
+            { "char": "効", "strokes": 8 },
+            { "char": "果", "strokes": 8 },
+            { "char": "的", "strokes": 8 }
           ]
         },
         {
@@ -2971,14 +1782,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "効",
-              "strokes": 8
-            },
-            {
-              "char": "く",
-              "strokes": 1
-            }
+            { "char": "効", "strokes": 8 },
+            { "char": "く", "strokes": 1 }
           ]
         }
       ]
@@ -2991,14 +1796,8 @@
           "type": "normal",
           "sentenceHtml": "自然を<span class=\"highlight-target\">ほご</span>する。",
           "targets": [
-            {
-              "char": "保",
-              "strokes": 9
-            },
-            {
-              "char": "護",
-              "strokes": 20
-            }
+            { "char": "保", "strokes": 9 },
+            { "char": "護", "strokes": 20 }
           ]
         },
         {
@@ -3007,52 +1806,31 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "保",
-              "strokes": 9
-            },
-            {
-              "char": "つ",
-              "strokes": 1
-            }
+            { "char": "保", "strokes": 9 },
+            { "char": "つ", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ふさい</span>で旅行をする。",
           "targets": [
-            {
-              "char": "夫",
-              "strokes": 4
-            },
-            {
-              "char": "妻",
-              "strokes": 8
-            }
+            { "char": "夫", "strokes": 4 },
+            { "char": "妻", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">つま</span>と買い物をする。",
           "targets": [
-            {
-              "char": "妻",
-              "strokes": 8
-            }
+            { "char": "妻", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">おうふく</span>の乗車けん。",
           "targets": [
-            {
-              "char": "往",
-              "strokes": 8
-            },
-            {
-              "char": "復",
-              "strokes": 12
-            }
+            { "char": "往", "strokes": 8 },
+            { "char": "復", "strokes": 12 }
           ]
         }
       ]
@@ -3065,14 +1843,8 @@
           "type": "normal",
           "sentenceHtml": "田んぼで使う<span class=\"highlight-target\">こうぐ</span>。",
           "targets": [
-            {
-              "char": "耕",
-              "strokes": 10
-            },
-            {
-              "char": "具",
-              "strokes": 8
-            }
+            { "char": "耕", "strokes": 10 },
+            { "char": "具", "strokes": 8 }
           ]
         },
         {
@@ -3081,52 +1853,31 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "耕",
-              "strokes": 10
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "耕", "strokes": 10 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じゅこう</span>の資格を得る。",
           "targets": [
-            {
-              "char": "受",
-              "strokes": 8
-            },
-            {
-              "char": "講",
-              "strokes": 17
-            }
+            { "char": "受", "strokes": 8 },
+            { "char": "講", "strokes": 17 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">むざい</span>を主ちょうする。",
           "targets": [
-            {
-              "char": "無",
-              "strokes": 12
-            },
-            {
-              "char": "罪",
-              "strokes": 13
-            }
+            { "char": "無", "strokes": 12 },
+            { "char": "罪", "strokes": 13 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">つみ</span>をつぐなう。",
           "targets": [
-            {
-              "char": "罪",
-              "strokes": 13
-            }
+            { "char": "罪", "strokes": 13 }
           ]
         }
       ]
@@ -3139,14 +1890,8 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ふねん</span>ごみをだす。",
           "targets": [
-            {
-              "char": "不",
-              "strokes": 4
-            },
-            {
-              "char": "燃",
-              "strokes": 16
-            }
+            { "char": "不", "strokes": 4 },
+            { "char": "燃", "strokes": 16 }
           ]
         },
         {
@@ -3155,56 +1900,32 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "燃",
-              "strokes": 16
-            },
-            {
-              "char": "え",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "燃", "strokes": 16 },
+            { "char": "え", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ていあん</span>に賛成する。",
           "targets": [
-            {
-              "char": "提",
-              "strokes": 12
-            },
-            {
-              "char": "案",
-              "strokes": 10
-            }
+            { "char": "提", "strokes": 12 },
+            { "char": "案", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぎんしょう</span>を取った絵。",
           "targets": [
-            {
-              "char": "銀",
-              "strokes": 14
-            },
-            {
-              "char": "賞",
-              "strokes": 15
-            }
+            { "char": "銀", "strokes": 14 },
+            { "char": "賞", "strokes": 15 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">さくら</span>の花びら。",
           "targets": [
-            {
-              "char": "桜",
-              "strokes": 10
-            }
+            { "char": "桜", "strokes": 10 }
           ]
         }
       ]
@@ -3217,38 +1938,23 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">どう</span>でできたメダル。",
           "targets": [
-            {
-              "char": "銅",
-              "strokes": 14
-            }
+            { "char": "銅", "strokes": 14 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぼうえき</span>の相手国。",
           "targets": [
-            {
-              "char": "貿",
-              "strokes": 12
-            },
-            {
-              "char": "易",
-              "strokes": 8
-            }
+            { "char": "貿", "strokes": 12 },
+            { "char": "易", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "紙が<span class=\"highlight-target\">ようい</span>に破れる。",
           "targets": [
-            {
-              "char": "容",
-              "strokes": 10
-            },
-            {
-              "char": "易",
-              "strokes": 8
-            }
+            { "char": "容", "strokes": 10 },
+            { "char": "易", "strokes": 8 }
           ]
         },
         {
@@ -3257,32 +1963,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "易",
-              "strokes": 8
-            },
-            {
-              "char": "し",
-              "strokes": 1
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            }
+            { "char": "易", "strokes": 8 },
+            { "char": "し", "strokes": 1 },
+            { "char": "い", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きそく</span>を定める。",
           "targets": [
-            {
-              "char": "規",
-              "strokes": 11
-            },
-            {
-              "char": "則",
-              "strokes": 9
-            }
+            { "char": "規", "strokes": 11 },
+            { "char": "則", "strokes": 9 }
           ]
         }
       ]
@@ -3297,32 +1988,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "率",
-              "strokes": 11
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "率", "strokes": 11 },
+            { "char": "い", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">りょうち</span>を治める。",
           "targets": [
-            {
-              "char": "領",
-              "strokes": 14
-            },
-            {
-              "char": "地",
-              "strokes": 6
-            }
+            { "char": "領", "strokes": 14 },
+            { "char": "地", "strokes": 6 }
           ]
         },
         {
@@ -3331,50 +2007,26 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "引",
-              "strokes": 4
-            },
-            {
-              "char": "っ",
-              "strokes": 1
-            },
-            {
-              "char": "張",
-              "strokes": 11
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "引", "strokes": 4 },
+            { "char": "っ", "strokes": 1 },
+            { "char": "張", "strokes": 11 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しゅちょう</span>を述べる。",
           "targets": [
-            {
-              "char": "主",
-              "strokes": 5
-            },
-            {
-              "char": "張",
-              "strokes": 11
-            }
+            { "char": "主", "strokes": 5 },
+            { "char": "張", "strokes": 11 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "仲間を<span class=\"highlight-target\">しどう</span>する。",
           "targets": [
-            {
-              "char": "指",
-              "strokes": 9
-            },
-            {
-              "char": "導",
-              "strokes": 14
-            }
+            { "char": "指", "strokes": 9 },
+            { "char": "導", "strokes": 14 }
           ]
         }
       ]
@@ -3389,28 +2041,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "導",
-              "strokes": 14
-            },
-            {
-              "char": "く",
-              "strokes": 1
-            }
+            { "char": "導", "strokes": 14 },
+            { "char": "く", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">けいりゃく</span>にはまる。",
           "targets": [
-            {
-              "char": "計",
-              "strokes": 9
-            },
-            {
-              "char": "略",
-              "strokes": 11
-            }
+            { "char": "計", "strokes": 9 },
+            { "char": "略", "strokes": 11 }
           ]
         },
         {
@@ -3419,54 +2059,27 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "飼",
-              "strokes": 13
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            },
-            {
-              "char": "な",
-              "strokes": 4
-            },
-            {
-              "char": "ら",
-              "strokes": 2
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "飼", "strokes": 13 },
+            { "char": "い", "strokes": 2 },
+            { "char": "な", "strokes": 4 },
+            { "char": "ら", "strokes": 2 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "うさぎを<span class=\"highlight-target\">しいく</span>する。",
           "targets": [
-            {
-              "char": "飼",
-              "strokes": 13
-            },
-            {
-              "char": "育",
-              "strokes": 8
-            }
+            { "char": "飼", "strokes": 13 },
+            { "char": "育", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "桜の<span class=\"highlight-target\">かべん</span>。",
           "targets": [
-            {
-              "char": "花",
-              "strokes": 7
-            },
-            {
-              "char": "弁",
-              "strokes": 5
-            }
+            { "char": "花", "strokes": 7 },
+            { "char": "弁", "strokes": 5 }
           ]
         }
       ]
@@ -3481,70 +2094,40 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "堂",
-              "strokes": 11
-            },
-            {
-              "char": "々",
-              "strokes": 3
-            }
+            { "char": "堂", "strokes": 11 },
+            { "char": "々", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ふじんふく</span>を選ぶ。",
           "targets": [
-            {
-              "char": "婦",
-              "strokes": 11
-            },
-            {
-              "char": "人",
-              "strokes": 2
-            },
-            {
-              "char": "服",
-              "strokes": 8
-            }
+            { "char": "婦", "strokes": 11 },
+            { "char": "人", "strokes": 2 },
+            { "char": "服", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">わた</span>の入ったまくら。",
           "targets": [
-            {
-              "char": "綿",
-              "strokes": 14
-            }
+            { "char": "綿", "strokes": 14 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">めんし</span>で布を織る。",
           "targets": [
-            {
-              "char": "綿",
-              "strokes": 14
-            },
-            {
-              "char": "糸",
-              "strokes": 6
-            }
+            { "char": "綿", "strokes": 14 },
+            { "char": "糸", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "会長が<span class=\"highlight-target\">りゅうにん</span>する。",
           "targets": [
-            {
-              "char": "留",
-              "strokes": 10
-            },
-            {
-              "char": "任",
-              "strokes": 6
-            }
+            { "char": "留", "strokes": 10 },
+            { "char": "任", "strokes": 6 }
           ]
         }
       ]
@@ -3557,74 +2140,41 @@
           "type": "normal",
           "sentenceHtml": "家を<span class=\"highlight-target\">るす</span>にする。",
           "targets": [
-            {
-              "char": "留",
-              "strokes": 10
-            },
-            {
-              "char": "守",
-              "strokes": 6
-            }
+            { "char": "留", "strokes": 10 },
+            { "char": "守", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぼうはん</span>に努める。",
           "targets": [
-            {
-              "char": "防",
-              "strokes": 7
-            },
-            {
-              "char": "犯",
-              "strokes": 5
-            }
+            { "char": "防", "strokes": 7 },
+            { "char": "犯", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">えきたい</span>燃料の石油。",
           "targets": [
-            {
-              "char": "液",
-              "strokes": 11
-            },
-            {
-              "char": "体",
-              "strokes": 7
-            }
+            { "char": "液", "strokes": 11 },
+            { "char": "体", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "駅までの<span class=\"highlight-target\">どうてい</span>。",
           "targets": [
-            {
-              "char": "道",
-              "strokes": 12
-            },
-            {
-              "char": "程",
-              "strokes": 12
-            }
+            { "char": "道", "strokes": 12 },
+            { "char": "程", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぶしどう</span>をつらぬく。",
           "targets": [
-            {
-              "char": "武",
-              "strokes": 8
-            },
-            {
-              "char": "士",
-              "strokes": 3
-            },
-            {
-              "char": "道",
-              "strokes": 12
-            }
+            { "char": "武", "strokes": 8 },
+            { "char": "士", "strokes": 3 },
+            { "char": "道", "strokes": 12 }
           ]
         }
       ]
@@ -3639,14 +2189,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "差",
-              "strokes": 10
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "差", "strokes": 10 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
@@ -3655,56 +2199,32 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "似",
-              "strokes": 7
-            },
-            {
-              "char": "合",
-              "strokes": 6
-            },
-            {
-              "char": "う",
-              "strokes": 2
-            }
+            { "char": "似", "strokes": 7 },
+            { "char": "合", "strokes": 6 },
+            { "char": "う", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "新しい<span class=\"highlight-target\">せいひん</span>。",
           "targets": [
-            {
-              "char": "製",
-              "strokes": 14
-            },
-            {
-              "char": "品",
-              "strokes": 9
-            }
+            { "char": "製", "strokes": 14 },
+            { "char": "品", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きのう</span>の多いペン。",
           "targets": [
-            {
-              "char": "機",
-              "strokes": 16
-            },
-            {
-              "char": "能",
-              "strokes": 10
-            }
+            { "char": "機", "strokes": 16 },
+            { "char": "能", "strokes": 10 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "真実を検（けん）<span class=\"highlight-target\">しょう</span>する。",
           "targets": [
-            {
-              "char": "証",
-              "strokes": 12
-            }
+            { "char": "証", "strokes": 12 }
           ]
         }
       ]
@@ -3719,28 +2239,16 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "豊",
-              "strokes": 13
-            },
-            {
-              "char": "か",
-              "strokes": 3
-            }
+            { "char": "豊", "strokes": 13 },
+            { "char": "か", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ほうふ</span>な知識。",
           "targets": [
-            {
-              "char": "豊",
-              "strokes": 13
-            },
-            {
-              "char": "富",
-              "strokes": 12
-            }
+            { "char": "豊", "strokes": 13 },
+            { "char": "富", "strokes": 12 }
           ]
         },
         {
@@ -3749,50 +2257,26 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 5,
           "targets": [
-            {
-              "char": "取",
-              "strokes": 8
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            },
-            {
-              "char": "囲",
-              "strokes": 7
-            },
-            {
-              "char": "む",
-              "strokes": 3
-            }
+            { "char": "取", "strokes": 8 },
+            { "char": "り", "strokes": 2 },
+            { "char": "囲", "strokes": 7 },
+            { "char": "む", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "ビルを<span class=\"highlight-target\">ほうい</span>する。",
           "targets": [
-            {
-              "char": "包",
-              "strokes": 5
-            },
-            {
-              "char": "囲",
-              "strokes": 7
-            }
+            { "char": "包", "strokes": 5 },
+            { "char": "囲", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "急ぐ<span class=\"highlight-target\">ひつよう</span>がある。",
           "targets": [
-            {
-              "char": "必",
-              "strokes": 5
-            },
-            {
-              "char": "要",
-              "strokes": 9
-            }
+            { "char": "必", "strokes": 5 },
+            { "char": "要", "strokes": 9 }
           ]
         }
       ]
@@ -3805,28 +2289,16 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しゅうだん</span>で下校する。",
           "targets": [
-            {
-              "char": "集",
-              "strokes": 12
-            },
-            {
-              "char": "団",
-              "strokes": 6
-            }
+            { "char": "集", "strokes": 12 },
+            { "char": "団", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "委員長を<span class=\"highlight-target\">けいけん</span>する。",
           "targets": [
-            {
-              "char": "経",
-              "strokes": 11
-            },
-            {
-              "char": "験",
-              "strokes": 18
-            }
+            { "char": "経", "strokes": 11 },
+            { "char": "験", "strokes": 18 }
           ]
         },
         {
@@ -3835,42 +2307,24 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "経",
-              "strokes": 11
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "経", "strokes": 11 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">むり</span>しないで歩く。",
           "targets": [
-            {
-              "char": "無",
-              "strokes": 12
-            },
-            {
-              "char": "理",
-              "strokes": 11
-            }
+            { "char": "無", "strokes": 12 },
+            { "char": "理", "strokes": 11 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">まさゆめ</span>になる。",
           "targets": [
-            {
-              "char": "正",
-              "strokes": 5
-            },
-            {
-              "char": "夢",
-              "strokes": 13
-            }
+            { "char": "正", "strokes": 5 },
+            { "char": "夢", "strokes": 13 }
           ]
         }
       ]
@@ -3883,46 +2337,25 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">かんせんどうろ</span>を走る。",
           "targets": [
-            {
-              "char": "幹",
-              "strokes": 13
-            },
-            {
-              "char": "線",
-              "strokes": 15
-            },
-            {
-              "char": "道",
-              "strokes": 12
-            },
-            {
-              "char": "路",
-              "strokes": 13
-            }
+            { "char": "幹", "strokes": 13 },
+            { "char": "線", "strokes": 15 },
+            { "char": "道", "strokes": 12 },
+            { "char": "路", "strokes": 13 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "大きな木の<span class=\"highlight-target\">みき</span>。",
           "targets": [
-            {
-              "char": "幹",
-              "strokes": 13
-            }
+            { "char": "幹", "strokes": 13 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">かんれい</span>にとらわれない。",
           "targets": [
-            {
-              "char": "慣",
-              "strokes": 14
-            },
-            {
-              "char": "例",
-              "strokes": 8
-            }
+            { "char": "慣", "strokes": 14 },
+            { "char": "例", "strokes": 8 }
           ]
         },
         {
@@ -3931,32 +2364,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "慣",
-              "strokes": 14
-            },
-            {
-              "char": "れ",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "慣", "strokes": 14 },
+            { "char": "れ", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "水質の<span class=\"highlight-target\">けんさ</span>。",
           "targets": [
-            {
-              "char": "検",
-              "strokes": 12
-            },
-            {
-              "char": "査",
-              "strokes": 9
-            }
+            { "char": "検", "strokes": 12 },
+            { "char": "査", "strokes": 9 }
           ]
         }
       ]
@@ -3969,28 +2387,16 @@
           "type": "normal",
           "sentenceHtml": "ドアで<span class=\"highlight-target\">がんめん</span>を打つ。",
           "targets": [
-            {
-              "char": "顔",
-              "strokes": 18
-            },
-            {
-              "char": "面",
-              "strokes": 9
-            }
+            { "char": "顔", "strokes": 18 },
+            { "char": "面", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "仕組みを<span class=\"highlight-target\">こうちく</span>する。",
           "targets": [
-            {
-              "char": "構",
-              "strokes": 14
-            },
-            {
-              "char": "築",
-              "strokes": 16
-            }
+            { "char": "構", "strokes": 14 },
+            { "char": "築", "strokes": 16 }
           ]
         },
         {
@@ -3999,42 +2405,24 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "築",
-              "strokes": 16
-            },
-            {
-              "char": "く",
-              "strokes": 1
-            }
+            { "char": "築", "strokes": 16 },
+            { "char": "く", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "銀の<span class=\"highlight-target\">こうざん</span>。",
           "targets": [
-            {
-              "char": "鉱",
-              "strokes": 13
-            },
-            {
-              "char": "山",
-              "strokes": 3
-            }
+            { "char": "鉱", "strokes": 13 },
+            { "char": "山", "strokes": 3 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">こうみゃく</span>をほり当てる。",
           "targets": [
-            {
-              "char": "鉱",
-              "strokes": 13
-            },
-            {
-              "char": "脈",
-              "strokes": 10
-            }
+            { "char": "鉱", "strokes": 13 },
+            { "char": "脈", "strokes": 10 }
           ]
         }
       ]
@@ -4047,82 +2435,43 @@
           "type": "normal",
           "sentenceHtml": "船で<span class=\"highlight-target\">こうかい</span>する。",
           "targets": [
-            {
-              "char": "航",
-              "strokes": 10
-            },
-            {
-              "char": "海",
-              "strokes": 9
-            }
+            { "char": "航", "strokes": 10 },
+            { "char": "海", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "絵画に<span class=\"highlight-target\">きょうみ</span>がある。",
           "targets": [
-            {
-              "char": "興",
-              "strokes": 16
-            },
-            {
-              "char": "味",
-              "strokes": 8
-            }
+            { "char": "興", "strokes": 16 },
+            { "char": "味", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じちたい</span>の活動。",
           "targets": [
-            {
-              "char": "自",
-              "strokes": 6
-            },
-            {
-              "char": "治",
-              "strokes": 8
-            },
-            {
-              "char": "体",
-              "strokes": 7
-            }
+            { "char": "自", "strokes": 6 },
+            { "char": "治", "strokes": 8 },
+            { "char": "体", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "食品の<span class=\"highlight-target\">しょうひきげん</span>。",
           "targets": [
-            {
-              "char": "消",
-              "strokes": 10
-            },
-            {
-              "char": "費",
-              "strokes": 12
-            },
-            {
-              "char": "期",
-              "strokes": 12
-            },
-            {
-              "char": "限",
-              "strokes": 9
-            }
+            { "char": "消", "strokes": 10 },
+            { "char": "費", "strokes": 12 },
+            { "char": "期", "strokes": 12 },
+            { "char": "限", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じっせき</span>がみとめられる。",
           "targets": [
-            {
-              "char": "実",
-              "strokes": 8
-            },
-            {
-              "char": "績",
-              "strokes": 17
-            }
+            { "char": "実", "strokes": 8 },
+            { "char": "績", "strokes": 17 }
           ]
         }
       ]
@@ -4135,14 +2484,8 @@
           "type": "normal",
           "sentenceHtml": "条件を<span class=\"highlight-target\">せってい</span>する。",
           "targets": [
-            {
-              "char": "設",
-              "strokes": 11
-            },
-            {
-              "char": "定",
-              "strokes": 8
-            }
+            { "char": "設", "strokes": 11 },
+            { "char": "定", "strokes": 8 }
           ]
         },
         {
@@ -4151,50 +2494,26 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "設",
-              "strokes": 11
-            },
-            {
-              "char": "け",
-              "strokes": 3
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "設", "strokes": 11 },
+            { "char": "け", "strokes": 3 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きょじゅうち</span>が変わる。",
           "targets": [
-            {
-              "char": "居",
-              "strokes": 8
-            },
-            {
-              "char": "住",
-              "strokes": 7
-            },
-            {
-              "char": "地",
-              "strokes": 6
-            }
+            { "char": "居", "strokes": 8 },
+            { "char": "住", "strokes": 7 },
+            { "char": "地", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">いま</span>でくつろぐ。",
           "targets": [
-            {
-              "char": "居",
-              "strokes": 8
-            },
-            {
-              "char": "間",
-              "strokes": 12
-            }
+            { "char": "居", "strokes": 8 },
+            { "char": "間", "strokes": 12 }
           ]
         },
         {
@@ -4203,14 +2522,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "厚",
-              "strokes": 9
-            },
-            {
-              "char": "い",
-              "strokes": 2
-            }
+            { "char": "厚", "strokes": 9 },
+            { "char": "い", "strokes": 2 }
           ]
         }
       ]
@@ -4223,14 +2536,8 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぼうりょく</span>に反対する。",
           "targets": [
-            {
-              "char": "暴",
-              "strokes": 15
-            },
-            {
-              "char": "力",
-              "strokes": 2
-            }
+            { "char": "暴", "strokes": 15 },
+            { "char": "力", "strokes": 2 }
           ]
         },
         {
@@ -4239,18 +2546,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "暴",
-              "strokes": 15
-            },
-            {
-              "char": "れ",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "暴", "strokes": 15 },
+            { "char": "れ", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
@@ -4259,42 +2557,24 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "許",
-              "strokes": 11
-            },
-            {
-              "char": "す",
-              "strokes": 2
-            }
+            { "char": "許", "strokes": 11 },
+            { "char": "す", "strokes": 2 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">きょか</span>をもらう。",
           "targets": [
-            {
-              "char": "許",
-              "strokes": 11
-            },
-            {
-              "char": "可",
-              "strokes": 5
-            }
+            { "char": "許", "strokes": 11 },
+            { "char": "可", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "先生に<span class=\"highlight-target\">かんしゃ</span>する。",
           "targets": [
-            {
-              "char": "感",
-              "strokes": 13
-            },
-            {
-              "char": "謝",
-              "strokes": 17
-            }
+            { "char": "感", "strokes": 13 },
+            { "char": "謝", "strokes": 17 }
           ]
         }
       ]
@@ -4307,14 +2587,8 @@
           "type": "normal",
           "sentenceHtml": "植物を<span class=\"highlight-target\">さいしゅう</span>する。",
           "targets": [
-            {
-              "char": "採",
-              "strokes": 11
-            },
-            {
-              "char": "集",
-              "strokes": 12
-            }
+            { "char": "採", "strokes": 11 },
+            { "char": "集", "strokes": 12 }
           ]
         },
         {
@@ -4323,42 +2597,24 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 2,
           "targets": [
-            {
-              "char": "採",
-              "strokes": 11
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "採", "strokes": 11 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ひょうばん</span>の働き者。",
           "targets": [
-            {
-              "char": "評",
-              "strokes": 12
-            },
-            {
-              "char": "判",
-              "strokes": 7
-            }
+            { "char": "評", "strokes": 12 },
+            { "char": "判", "strokes": 7 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じゅぎょう</span>を受ける。",
           "targets": [
-            {
-              "char": "授",
-              "strokes": 11
-            },
-            {
-              "char": "業",
-              "strokes": 13
-            }
+            { "char": "授", "strokes": 11 },
+            { "char": "業", "strokes": 13 }
           ]
         },
         {
@@ -4367,18 +2623,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "備",
-              "strokes": 12
-            },
-            {
-              "char": "え",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "備", "strokes": 12 },
+            { "char": "え", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         }
       ]
@@ -4391,56 +2638,32 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">じゅんび</span>をすませる。",
           "targets": [
-            {
-              "char": "準",
-              "strokes": 13
-            },
-            {
-              "char": "備",
-              "strokes": 12
-            }
+            { "char": "準", "strokes": 13 },
+            { "char": "備", "strokes": 12 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "選手の<span class=\"highlight-target\">しゅくしゃ</span>。",
           "targets": [
-            {
-              "char": "宿",
-              "strokes": 11
-            },
-            {
-              "char": "舎",
-              "strokes": 8
-            }
+            { "char": "宿", "strokes": 11 },
+            { "char": "舎", "strokes": 8 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">えん</span>劇（げき）を見に行く。",
           "targets": [
-            {
-              "char": "演",
-              "strokes": 14
-            }
+            { "char": "演", "strokes": 14 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">しょうひぜい</span>をはらう。",
           "targets": [
-            {
-              "char": "消",
-              "strokes": 10
-            },
-            {
-              "char": "費",
-              "strokes": 12
-            },
-            {
-              "char": "税",
-              "strokes": 12
-            }
+            { "char": "消", "strokes": 10 },
+            { "char": "費", "strokes": 12 },
+            { "char": "税", "strokes": 12 }
           ]
         },
         {
@@ -4449,14 +2672,8 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "余",
-              "strokes": 7
-            },
-            {
-              "char": "り",
-              "strokes": 2
-            }
+            { "char": "余", "strokes": 7 },
+            { "char": "り", "strokes": 2 }
           ]
         }
       ]
@@ -4469,70 +2686,40 @@
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">よけい</span>なお世話。",
           "targets": [
-            {
-              "char": "余",
-              "strokes": 7
-            },
-            {
-              "char": "計",
-              "strokes": 9
-            }
+            { "char": "余", "strokes": 7 },
+            { "char": "計", "strokes": 9 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "芸術家の<span class=\"highlight-target\">そしつ</span>。",
           "targets": [
-            {
-              "char": "素",
-              "strokes": 10
-            },
-            {
-              "char": "質",
-              "strokes": 15
-            }
+            { "char": "素", "strokes": 10 },
+            { "char": "質", "strokes": 15 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "大切な<span class=\"highlight-target\">ざいさん</span>。",
           "targets": [
-            {
-              "char": "財",
-              "strokes": 10
-            },
-            {
-              "char": "産",
-              "strokes": 11
-            }
+            { "char": "財", "strokes": 10 },
+            { "char": "産", "strokes": 11 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ちょすいち</span>の管理。",
           "targets": [
-            {
-              "char": "貯",
-              "strokes": 12
-            },
-            {
-              "char": "水",
-              "strokes": 4
-            },
-            {
-              "char": "池",
-              "strokes": 6
-            }
+            { "char": "貯", "strokes": 12 },
+            { "char": "水", "strokes": 4 },
+            { "char": "池", "strokes": 6 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "美しい<span class=\"highlight-target\">ぬの</span>を買う。",
           "targets": [
-            {
-              "char": "布",
-              "strokes": 5
-            }
+            { "char": "布", "strokes": 5 }
           ]
         }
       ]
@@ -4545,32 +2732,17 @@
           "type": "normal",
           "sentenceHtml": "人口の<span class=\"highlight-target\">ぶんぷ</span>。",
           "targets": [
-            {
-              "char": "分",
-              "strokes": 4
-            },
-            {
-              "char": "布",
-              "strokes": 5
-            }
+            { "char": "分", "strokes": 4 },
+            { "char": "布", "strokes": 5 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "調査の<span class=\"highlight-target\">ほうこくぶん</span>。",
           "targets": [
-            {
-              "char": "報",
-              "strokes": 12
-            },
-            {
-              "char": "告",
-              "strokes": 7
-            },
-            {
-              "char": "文",
-              "strokes": 4
-            }
+            { "char": "報", "strokes": 12 },
+            { "char": "告", "strokes": 7 },
+            { "char": "文", "strokes": 4 }
           ]
         },
         {
@@ -4579,18 +2751,9 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 3,
           "targets": [
-            {
-              "char": "告",
-              "strokes": 7
-            },
-            {
-              "char": "げ",
-              "strokes": 3
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "告", "strokes": 7 },
+            { "char": "げ", "strokes": 3 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
@@ -4599,32 +2762,17 @@
           "notice": "💡 おくりがなまで全部書いてね！",
           "maxChars": 4,
           "targets": [
-            {
-              "char": "務",
-              "strokes": 11
-            },
-            {
-              "char": "め",
-              "strokes": 2
-            },
-            {
-              "char": "る",
-              "strokes": 1
-            }
+            { "char": "務", "strokes": 11 },
+            { "char": "め", "strokes": 2 },
+            { "char": "る", "strokes": 1 }
           ]
         },
         {
           "type": "normal",
           "sentenceHtml": "<span class=\"highlight-target\">ぎむ</span>教育を終える。",
           "targets": [
-            {
-              "char": "義",
-              "strokes": 13
-            },
-            {
-              "char": "務",
-              "strokes": 11
-            }
+            { "char": "義", "strokes": 13 },
+            { "char": "務", "strokes": 11 }
           ]
         }
       ]
