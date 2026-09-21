@@ -19,6 +19,8 @@ const KANJI_REGEX = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
 
 class KanjiApp {
   constructor() {
+    this.gradeDataMap = new Map(); // 各学年の問題データを保持するキャッシュ
+    this.currentGrade = 5;
     this.gradeData = null;
     this.currentSet = null;
     this.currentQuestions = [];
@@ -74,6 +76,81 @@ class KanjiApp {
     }
   }
 
+  /**
+   * 1〜6年生の全問題ファイルを探索してプルダウンを動的構築する
+   */
+  async loadAvailableGrades() {
+    const grades = [1, 2, 3, 4, 5, 6];
+    const fetchPromises = grades.map(async (grade) => {
+      try {
+        const res = await fetch(`data/grade${grade}_questions.json`);
+        if (res.ok) {
+          const data = await res.json();
+          return { grade, data };
+        }
+      } catch (e) {
+        // ファイル未配置の場合は無視
+      }
+      return null;
+    });
+
+    const results = await Promise.all(fetchPromises);
+    results.forEach(res => {
+      if (res && res.data) {
+        this.gradeDataMap.set(res.grade, res.data);
+      }
+    });
+
+    const gradeSelect = document.getElementById('select-grade');
+    if (gradeSelect) {
+      gradeSelect.innerHTML = '';
+      grades.forEach(grade => {
+        const opt = document.createElement('option');
+        opt.value = String(grade);
+        const isAvailable = this.gradeDataMap.has(grade);
+        if (isAvailable) {
+          opt.textContent = `${grade}ねんせい`;
+        } else {
+          opt.textContent = `${grade}ねんせい（じゅんび中）`;
+          opt.disabled = true; // 存在しない学年は選択不可にグレーアウト
+        }
+        gradeSelect.appendChild(opt);
+      });
+
+      // 優先学年の選択（5年生が存在すれば5年生、なければ存在する最初の学年）
+      const defaultGrade = this.gradeDataMap.has(5) ? 5 : Array.from(this.gradeDataMap.keys())[0];
+      if (defaultGrade) {
+        this.currentGrade = defaultGrade;
+        gradeSelect.value = String(defaultGrade);
+        this.gradeData = this.gradeDataMap.get(defaultGrade);
+      }
+
+      // 学年変更イベントの登録
+      gradeSelect.addEventListener('change', (e) => {
+        const newGrade = parseInt(e.target.value, 10);
+        if (this.gradeDataMap.has(newGrade)) {
+          this.switchGrade(newGrade);
+        }
+      });
+    }
+  }
+
+  /**
+   * 学年切り替え処理
+   */
+  switchGrade(grade) {
+    this.currentGrade = grade;
+    this.gradeData = this.gradeDataMap.get(grade);
+    if (!this.gradeData) return;
+
+    this.challengeManager = new ChallengeManager(this.gradeData, Storage);
+    if (this.drillManager) {
+      this.drillManager.setGradeData(this.gradeData);
+      this.drillManager.updateBadgeCount();
+    }
+    this.menu.setData(this.gradeData, this.auth.getClearedSets());
+  }
+
   async init() {
     initAudioUnlock();
 
@@ -99,13 +176,12 @@ class KanjiApp {
 
     this.bindEvents();
 
-    try {
-      const res = await fetch('data/grade5_questions.json');
-      this.gradeData = await res.json();
+    // 全学年のファイル有無を動的読み込み
+    await this.loadAvailableGrades();
+
+    if (this.gradeData) {
       this.challengeManager = new ChallengeManager(this.gradeData, Storage);
       this.drillManager.setGradeData(this.gradeData);
-    } catch (e) {
-      console.error('問題データの読み込みに失敗しました:', e);
     }
 
     const authPromise = this.auth.initAuthFlow();
@@ -129,7 +205,7 @@ class KanjiApp {
 
     if (currentUser && btnStartApp) {
       if (spinnerWrapper) spinnerWrapper.style.display = 'none';
-      btnStartApp.style.display = 'block'; // inline-block から block に変更
+      btnStartApp.style.display = 'block';
 
       btnStartApp.onclick = () => {
         ensureAudioUnlocked();
